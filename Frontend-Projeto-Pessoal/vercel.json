@@ -1,0 +1,11 @@
+{
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://api-gateway-al-tacad-o-production.up.railway.app/api/:path*" },
+    { "source": "/cadastro/:path*", "destination": "https://api-gateway-al-tacad-o-production.up.railway.app/cadastro/:path*" },
+    { "source": "/cadastro", "destination": "https://api-gateway-al-tacad-o-production.up.railway.app/cadastro" },
+    { "source": "/fornecedor/:path*", "destination": "https://api-gateway-al-tacad-o-production.up.railway.app/fornecedor/:path*" },
+    { "source": "/fornecedor", "destination": "https://api-gateway-al-tacad-o-production.up.railway.app/fornecedor" },
+    { "source": "/estoque/:path*", "destination": "https://api-gateway-al-tacad-o-production.up.railway.app/estoque/:path*" },
+    { "source": "/estoque", "destination": "https://api-gateway-al-tacad-o-production.up.railway.app/estoque" }
+  ]
+}

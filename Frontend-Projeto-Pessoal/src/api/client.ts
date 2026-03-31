@@ -1,4 +1,3 @@
-const BASE = import.meta.env.VITE_API_URL ?? "";
 const h = { Accept: "application/json" };
 
 // ── Auth ──────────────────────────────────────────────────────────────────
@@ -6,7 +5,7 @@ export async function apiLogin(login: string, password: string): Promise<Respons
   const body = new URLSearchParams();
   body.set("login", login);
   body.set("password", password);
-  return fetch(`${BASE}/api/login`, {
+  return fetch("/api/login", {
     method: "POST",
     headers: { ...h, "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
     body: body.toString(),
@@ -17,14 +16,14 @@ export async function apiLogin(login: string, password: string): Promise<Respons
 export type MeResponse = { nome?: string; login: string; email: string; roles: string[] };
 
 export async function apiMe(): Promise<MeResponse | null> {
-  const res = await fetch(`${BASE}/api/auth/me`, { method: "GET", headers: h, credentials: "include" });
+  const res = await fetch("/api/auth/me", { method: "GET", headers: h, credentials: "include" });
   if (res.status === 401) return null;
   if (!res.ok) throw new Error("Falha ao obter sessão");
   return res.json() as Promise<MeResponse>;
 }
 
 export async function apiLogout(): Promise<void> {
-  await fetch(`${BASE}/api/logout`, { method: "POST", headers: h, credentials: "include" });
+  await fetch("/api/logout", { method: "POST", headers: h, credentials: "include" });
 }
 
 // ── Usuário ───────────────────────────────────────────────────────────────
@@ -44,7 +43,7 @@ export type ErroCampo = { message: string; campo: string };
 export type ErroResposta = { status: number; message: string; erros: ErroCampo[] };
 
 export async function apiCadastro(payload: CadastroPayload): Promise<Response> {
-  return fetch(`${BASE}/cadastro`, {
+  return fetch("/cadastro", {
     method: "POST",
     headers: { ...h, "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -65,7 +64,7 @@ function normalizeUsuario(raw: Record<string, unknown>): Usuario {
 }
 
 export async function apiListUsuarios(): Promise<Usuario[]> {
-  const res = await fetch(`${BASE}/cadastro?tamanha-pagina=1000`, { headers: h, credentials: "include" });
+  const res = await fetch("/cadastro?tamanha-pagina=1000", { headers: h, credentials: "include" });
   if (!res.ok) throw new Error("Erro ao listar usuários");
   const data = await res.json();
   const items: Record<string, unknown>[] = Array.isArray(data) ? data : (data.content ?? []);
@@ -73,7 +72,7 @@ export async function apiListUsuarios(): Promise<Usuario[]> {
 }
 
 export async function apiUpdateUsuario(id: string, payload: UpdateUsuarioPayload): Promise<Response> {
-  return fetch(`${BASE}/cadastro/${id}`, {
+  return fetch(`/cadastro/${id}`, {
     method: "PUT",
     headers: { ...h, "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -82,7 +81,7 @@ export async function apiUpdateUsuario(id: string, payload: UpdateUsuarioPayload
 }
 
 export async function apiDeleteUsuario(id: string): Promise<Response> {
-  return fetch(`${BASE}/cadastro/${id}`, { method: "DELETE", headers: h, credentials: "include" });
+  return fetch(`/cadastro/${id}`, { method: "DELETE", headers: h, credentials: "include" });
 }
 
 // ── Fornecedor ────────────────────────────────────────────────────────────
@@ -112,7 +111,7 @@ function normalizeFornecedor(raw: Record<string, unknown>): Fornecedor {
 }
 
 export async function apiListFornecedores(): Promise<Fornecedor[]> {
-  const res = await fetch(`${BASE}/fornecedor?tamanha-pagina=1000`, { headers: h, credentials: "include" });
+  const res = await fetch("/fornecedor?tamanha-pagina=1000", { headers: h, credentials: "include" });
   if (!res.ok) throw new Error(`Erro ${res.status} ao listar fornecedores`);
   const data = await res.json();
   // A API pode retornar array direto ou Page<T> do Spring { content: [...] }
@@ -121,7 +120,7 @@ export async function apiListFornecedores(): Promise<Fornecedor[]> {
 }
 
 export async function apiCreateFornecedor(payload: FornecedorPayload): Promise<Response> {
-  return fetch(`${BASE}/fornecedor`, {
+  return fetch("/fornecedor", {
     method: "POST",
     headers: { ...h, "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -130,7 +129,7 @@ export async function apiCreateFornecedor(payload: FornecedorPayload): Promise<R
 }
 
 export async function apiUpdateFornecedor(id: string, payload: FornecedorPayload): Promise<Response> {
-  return fetch(`${BASE}/fornecedor/${id}`, {
+  return fetch(`/fornecedor/${id}`, {
     method: "PUT",
     headers: { ...h, "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -139,7 +138,7 @@ export async function apiUpdateFornecedor(id: string, payload: FornecedorPayload
 }
 
 export async function apiDeleteFornecedor(id: string): Promise<Response> {
-  return fetch(`${BASE}/fornecedor/${id}`, { method: "DELETE", headers: h, credentials: "include" });
+  return fetch(`/fornecedor/${id}`, { method: "DELETE", headers: h, credentials: "include" });
 }
 
 // ── Estoque (Produto) ─────────────────────────────────────────────────────
@@ -172,7 +171,7 @@ function normalizeProduto(raw: Record<string, unknown>): Produto {
 }
 
 export async function apiListEstoque(): Promise<Produto[]> {
-  const res = await fetch(`${BASE}/estoque?tamanha-pagina=1000`, { headers: h, credentials: "include" });
+  const res = await fetch("/estoque?tamanha-pagina=1000", { headers: h, credentials: "include" });
   if (!res.ok) throw new Error(`Erro ${res.status} ao listar produtos`);
   const data = await res.json();
   // A API pode retornar array direto ou Page<T> do Spring { content: [...] }
@@ -181,7 +180,7 @@ export async function apiListEstoque(): Promise<Produto[]> {
 }
 
 export async function apiCreateProduto(payload: ProdutoPayload): Promise<Response> {
-  return fetch(`${BASE}/estoque`, {
+  return fetch("/estoque", {
     method: "POST",
     headers: { ...h, "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -190,7 +189,7 @@ export async function apiCreateProduto(payload: ProdutoPayload): Promise<Respons
 }
 
 export async function apiUpdateProduto(id: string, payload: ProdutoPayload): Promise<Response> {
-  return fetch(`${BASE}/estoque/${id}`, {
+  return fetch(`/estoque/${id}`, {
     method: "PUT",
     headers: { ...h, "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -199,5 +198,5 @@ export async function apiUpdateProduto(id: string, payload: ProdutoPayload): Pro
 }
 
 export async function apiDeleteProduto(id: string): Promise<Response> {
-  return fetch(`${BASE}/estoque/${id}`, { method: "DELETE", headers: h, credentials: "include" });
+  return fetch(`/estoque/${id}`, { method: "DELETE", headers: h, credentials: "include" });
 }
