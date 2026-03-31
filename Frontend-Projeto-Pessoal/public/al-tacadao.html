@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AL-TACADAO | Suplementos Nutricionais no Atacado</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --black-0: #0a0a0a;
+        --black-1: #111111;
+        --gray-0: #1a1a1a;
+        --gray-1: #222222;
+        --red-0: #cc0000;
+        --red-1: #e60000;
+        --white: #ffffff;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--black-0);
+        color: var(--white);
+        line-height: 1.45;
+        overflow-x: hidden;
+      }
+
+      body.no-cursor {
+        cursor: none;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: var(--black-1);
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: var(--red-0);
+        border-radius: 99px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--red-1);
+      }
+
+      .custom-cursor,
+      .cursor-trail {
+        position: fixed;
+        left: 0;
+        top: 0;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        z-index: 9999;
+      }
+
+      .custom-cursor {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--red-1);
+        box-shadow: 0 0 16px rgba(230, 0, 0, 0.9);
+      }
+
+      .cursor-trail {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 1px solid rgba(230, 0, 0, 0.45);
+      }
+
+      .container {
+        width: min(1200px, 92%);
+        margin-inline: auto;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: "Bebas Neue", sans-serif;
+        letter-spacing: 0.04em;
+      }
+
+      .section {
+        padding: 90px 0;
+        position: relative;
+      }
+
+      .section-title {
+        font-size: clamp(2.2rem, 4vw, 3.6rem);
+        line-height: 1;
+      }
+
+      .section-title .underline {
+        display: inline-block;
+        border-bottom: 4px solid var(--red-1);
+        padding-bottom: 4px;
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.7s ease;
+      }
+
+      .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .site-nav {
+        position: fixed;
+        inset: 0 0 auto 0;
+        z-index: 1000;
+        background: transparent;
+        transition: all 0.3s ease;
+      }
+
+      .site-nav.scrolled {
+        background: rgba(10, 10, 10, 0.88);
+        backdrop-filter: blur(8px);
+        border-bottom: 2px solid var(--red-0);
+      }
+
+      .nav-inner {
+        min-height: 72px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .logo {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 2rem;
+        color: var(--red-1);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .logo img {
+        width: 42px;
+        height: 42px;
+        object-fit: contain;
+        filter: brightness(0) saturate(100%) invert(15%) sepia(94%) saturate(6493%)
+          hue-rotate(357deg) brightness(104%) contrast(121%);
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 22px;
+        list-style: none;
+      }
+
+      .nav-links a {
+        color: var(--white);
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+      }
+
+      .nav-links a:hover {
+        color: var(--red-1);
+      }
+
+      .top-shortcuts {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-left: 10px;
+      }
+
+      .top-shortcuts a {
+        color: #d0d0d0;
+        text-decoration: none;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: all 0.3s ease;
+      }
+
+      .top-shortcuts a:hover {
+        color: var(--red-1);
+      }
+
+      .hamburger {
+        display: none;
+        background: transparent;
+        border: none;
+        width: 44px;
+        height: 44px;
+        position: relative;
+      }
+
+      .hamburger span {
+        position: absolute;
+        left: 9px;
+        right: 9px;
+        height: 2px;
+        background: var(--white);
+        transition: all 0.3s ease;
+      }
+
+      .hamburger span:nth-child(1) {
+        top: 14px;
+      }
+
+      .hamburger span:nth-child(2) {
+        top: 21px;
+      }
+
+      .hamburger span:nth-child(3) {
+        top: 28px;
+      }
+
+      .mobile-panel {
+        position: fixed;
+        top: 72px;
+        right: 0;
+        width: min(280px, 80vw);
+        height: calc(100vh - 72px);
+        background: var(--black-1);
+        border-left: 1px solid var(--gray-1);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        z-index: 999;
+        padding: 28px 22px;
+      }
+
+      .mobile-panel.open {
+        transform: translateX(0);
+      }
+
+      .mobile-panel a {
+        display: block;
+        color: var(--white);
+        text-decoration: none;
+        margin-bottom: 18px;
+        font-size: 1rem;
+      }
+
+      .hero {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        background: var(--black-0);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero-bg {
+        position: absolute;
+        inset: -8%;
+        background:
+          radial-gradient(circle at 50% 40%, rgba(230, 0, 0, 0.16), transparent 55%),
+          radial-gradient(circle at 80% 80%, rgba(204, 0, 0, 0.14), transparent 45%),
+          var(--black-0);
+        transform: translateY(0);
+      }
+
+      .hero-banner-asset {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.12;
+        filter: grayscale(100%) contrast(1.2);
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.2'/%3E%3C/svg%3E");
+        opacity: 0.14;
+        animation: grain 0.7s steps(2) infinite;
+        pointer-events: none;
+      }
+
+      @keyframes grain {
+        0% {
+          transform: translate(0, 0);
+        }
+
+        25% {
+          transform: translate(-3px, 2px);
+        }
+
+        50% {
+          transform: translate(2px, -2px);
+        }
+
+        75% {
+          transform: translate(-2px, 1px);
+        }
+
+        100% {
+          transform: translate(0, 0);
+        }
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 2;
+      }
+
+      .hero-title {
+        font-size: clamp(4rem, 17vw, 12rem);
+        line-height: 0.9;
+        text-transform: uppercase;
+        text-shadow: 0 0 18px rgba(230, 0, 0, 0.55), 0 0 45px rgba(230, 0, 0, 0.2);
+      }
+
+      .hero-title .accent {
+        color: var(--red-1);
+      }
+
+      .hero-subtitle {
+        margin: 18px auto 0;
+        max-width: 780px;
+        color: #d6d6d6;
+        font-size: clamp(0.96rem, 2.2vw, 1.25rem);
+      }
+
+      .hero-cta {
+        margin-top: 34px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 14px;
+      }
+
+      .btn {
+        border: 1px solid transparent;
+        text-decoration: none;
+        color: var(--white);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 170px;
+        padding: 13px 22px;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .btn.red {
+        background: var(--red-1);
+        border-color: var(--red-1);
+      }
+
+      .btn.red:hover {
+        box-shadow: 0 0 25px rgba(230, 0, 0, 0.45);
+        transform: translateY(-2px);
+      }
+
+      .btn.outline {
+        border-color: var(--red-0);
+      }
+
+      .btn.outline:hover {
+        background: rgba(230, 0, 0, 0.12);
+        box-shadow: 0 0 20px rgba(230, 0, 0, 0.35);
+      }
+
+      .scroll-indicator {
+        position: absolute;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: var(--white);
+        font-size: 0.78rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        display: grid;
+        place-items: center;
+        gap: 6px;
+      }
+
+      .scroll-arrow {
+        width: 18px;
+        height: 18px;
+        border-right: 2px solid var(--red-1);
+        border-bottom: 2px solid var(--red-1);
+        transform: rotate(45deg);
+        animation: bounce 1.5s ease infinite;
+      }
+
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: rotate(45deg) translate(0, 0);
+        }
+
+        50% {
+          transform: rotate(45deg) translate(6px, 6px);
+        }
+      }
+
+      .stats {
+        background: var(--black-1);
+        border-top: 1px solid var(--gray-1);
+        border-bottom: 1px solid var(--gray-1);
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 26px 16px;
+        border-right: 1px solid rgba(230, 0, 0, 0.45);
+      }
+
+      .stat-item:last-child {
+        border-right: none;
+      }
+
+      .stat-number {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: clamp(2.4rem, 6vw, 4.3rem);
+        color: var(--red-1);
+        line-height: 1;
+      }
+
+      .stat-label {
+        font-size: 0.94rem;
+        color: #d0d0d0;
+      }
+
+      .products-wrap {
+        background: var(--black-0);
+      }
+
+      .products-grid {
+        margin-top: 28px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+      }
+
+      .product-card {
+        background: var(--gray-0);
+        border-left: 3px solid var(--red-0);
+        padding: 16px;
+        transition: all 0.3s ease;
+      }
+
+      .product-card:hover {
+        transform: translateY(-4px) scale(1.01);
+        box-shadow: 0 0 18px rgba(230, 0, 0, 0.24);
+        border-left-color: var(--red-1);
+      }
+
+      .product-image {
+        height: 150px;
+        background: #151515;
+        border: 1px solid #2a2a2a;
+        margin-bottom: 12px;
+        overflow: hidden;
+      }
+
+      .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: saturate(0.85) contrast(1.05);
+      }
+
+      .product-name {
+        font-size: 1.02rem;
+        font-weight: 700;
+      }
+
+      .product-brand {
+        margin-top: 4px;
+        font-size: 0.8rem;
+        color: #bdbdbd;
+      }
+
+      .product-card .btn {
+        margin-top: 12px;
+        min-width: 0;
+        width: 100%;
+        padding: 10px 14px;
+        border-color: var(--red-0);
+      }
+
+      .product-meta {
+        margin-top: 8px;
+        font-size: 0.82rem;
+        color: #c5c5c5;
+      }
+
+      .suppliers {
+        background: var(--black-1);
+        clip-path: polygon(0 8%, 100% 0, 100% 100%, 0 100%);
+        padding-top: 120px;
+      }
+
+      .marquee {
+        margin-top: 28px;
+        border-top: 1px solid #2a2a2a;
+        border-bottom: 1px solid #2a2a2a;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      .marquee-track {
+        display: inline-flex;
+        align-items: center;
+        animation: marquee 22s linear infinite;
+      }
+
+      .marquee-item {
+        padding: 20px 28px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        color: var(--white);
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+      }
+
+      .marquee-item:hover {
+        color: var(--red-1);
+      }
+
+      @keyframes marquee {
+        from {
+          transform: translateX(0);
+        }
+
+        to {
+          transform: translateX(-50%);
+        }
+      }
+
+      .about {
+        background: var(--black-0);
+      }
+
+      .about-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 24px;
+        align-items: stretch;
+      }
+
+      .about-text p {
+        margin-top: 16px;
+        color: #d2d2d2;
+        max-width: 62ch;
+      }
+
+      .about-image {
+        min-height: 320px;
+        background:
+          linear-gradient(0deg, rgba(230, 0, 0, 0.17), rgba(230, 0, 0, 0.17)),
+          linear-gradient(180deg, #242424 0%, #111111 100%);
+        border: 1px solid #2a2a2a;
+        overflow: hidden;
+      }
+
+      .about-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.72;
+        mix-blend-mode: screen;
+      }
+
+      .contact {
+        background: var(--black-1);
+        clip-path: polygon(0 0, 100% 10%, 100% 100%, 0 100%);
+        padding-top: 130px;
+      }
+
+      .contact-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 20px;
+      }
+
+      .form-group {
+        margin-bottom: 12px;
+      }
+
+      .form-group input,
+      .form-group textarea {
+        width: 100%;
+        background: var(--gray-0);
+        color: var(--white);
+        border: 1px solid #2a2a2a;
+        padding: 12px 14px;
+        font: inherit;
+        transition: all 0.3s ease;
+      }
+
+      .form-group input:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: var(--red-1);
+        box-shadow: 0 0 0 3px rgba(230, 0, 0, 0.2);
+      }
+
+      .form-group textarea {
+        min-height: 140px;
+        resize: vertical;
+      }
+
+      .contact-info {
+        background: var(--gray-0);
+        border-left: 3px solid var(--red-0);
+        padding: 22px;
+      }
+
+      .contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      .icon {
+        color: var(--red-1);
+        font-size: 1.2rem;
+      }
+
+      .footer {
+        background: #000000;
+        border-top: 1px solid #1c1c1c;
+      }
+
+      .footer-top {
+        padding: 40px 0 26px;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 18px;
+      }
+
+      .footer h4 {
+        font-size: 1.7rem;
+        color: var(--red-1);
+      }
+
+      .footer-links a {
+        display: block;
+        color: #d1d1d1;
+        text-decoration: none;
+        margin-bottom: 8px;
+        transition: all 0.3s ease;
+      }
+
+      .footer-links a:hover {
+        color: var(--red-1);
+      }
+
+      .socials {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .social {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 1px solid #333;
+        display: grid;
+        place-items: center;
+        color: #d5d5d5;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+
+      .social:hover {
+        border-color: var(--red-1);
+        color: var(--red-1);
+        box-shadow: 0 0 14px rgba(230, 0, 0, 0.35);
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 6px #cc0000);
+      }
+
+      .copyright {
+        border-top: 1px solid #1c1c1c;
+        text-align: center;
+        font-size: 0.85rem;
+        color: #949494;
+        padding: 16px 0 24px;
+      }
+
+      @media (max-width: 1024px) {
+        .products-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .about-grid,
+        .contact-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .stat-item:nth-child(2) {
+          border-right: none;
+        }
+
+        .stat-item:nth-child(1),
+        .stat-item:nth-child(2) {
+          border-bottom: 1px solid rgba(230, 0, 0, 0.45);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .nav-links {
+          display: none;
+        }
+
+        .top-shortcuts {
+          display: none;
+        }
+
+        .hamburger {
+          display: block;
+        }
+
+        .hero-cta {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .btn {
+          width: min(270px, 92vw);
+        }
+
+        .products-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .footer-top {
+          grid-template-columns: 1fr;
+        }
+
+        .section {
+          padding: 72px 0;
+        }
+      }
+
+      [data-load] {
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: all 0.55s ease;
+      }
+
+      body.loaded [data-load] {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      body.loaded [data-load="1"] { transition-delay: 0.08s; }
+      body.loaded [data-load="2"] { transition-delay: 0.18s; }
+      body.loaded [data-load="3"] { transition-delay: 0.28s; }
+      body.loaded [data-load="4"] { transition-delay: 0.38s; }
+    </style>
+  </head>
+  <body>
+    <div class="custom-cursor"></div>
+    <div class="cursor-trail"></div>
+
+    <header class="site-nav" id="navbar">
+      <div class="container nav-inner">
+        <a href="#home" class="logo">
+          <img src="/src/pages/logo.png" alt="AL-TACADÃO logo" />
+          AL-TACADÃO
+        </a>
+        <ul class="nav-links">
+          <li><a href="#home">Início</a></li>
+          <li><a href="#products">Produtos</a></li>
+          <li><a href="#suppliers">Fornecedores</a></li>
+          <li><a href="#about">Sobre</a></li>
+          <li><a href="#contact">Contato</a></li>
+        </ul>
+        <div class="top-shortcuts">
+          <a href="#contact">Dúvidas</a>
+          <a href="#products">Favoritos</a>
+          <a href="#contact">Pedidos</a>
+          <a href="#about">Minha Conta</a>
+          <a href="#contact">Carrinho</a>
+        </div>
+        <button class="hamburger" id="hamburger" aria-label="Alternar menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <aside class="mobile-panel" id="mobileMenu">
+      <a href="#home">Início</a>
+      <a href="#products">Produtos</a>
+      <a href="#suppliers">Fornecedores</a>
+      <a href="#about">Sobre</a>
+      <a href="#contact">Contato</a>
+      <a href="#contact">Dúvidas</a>
+      <a href="#products">Favoritos</a>
+      <a href="#contact">Pedidos</a>
+      <a href="#about">Minha Conta</a>
+      <a href="#contact">Carrinho</a>
+    </aside>
+
+    <section class="hero" id="home">
+      <div class="hero-bg" id="heroParallax"></div>
+      <img class="hero-banner-asset" src="/src/pages/banner.png" alt="" aria-hidden="true" />
+      <div class="container hero-content">
+        <h1 class="hero-title" data-load="1">
+          AL-<span class="accent">T</span>ACADÃO
+        </h1>
+        <p class="hero-subtitle" data-load="2">
+          Suplementos Nutricionais no Atacado — Direto da fonte.
+        </p>
+        <div class="hero-cta" data-load="3">
+          <a href="#products" class="btn red magnetic">Ver Produtos</a>
+          <a href="#about" class="btn outline magnetic">Sobre Nós</a>
+        </div>
+      </div>
+      <div class="scroll-indicator" data-load="4">
+        Rolar
+        <span class="scroll-arrow"></span>
+      </div>
+    </section>
+
+    <section class="section stats">
+      <div class="container">
+        <div class="stats-grid reveal">
+          <div class="stat-item">
+            <div class="stat-number counter" data-target="500">0</div>
+            <p class="stat-label">Produtos</p>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number counter" data-target="50">0</div>
+            <p class="stat-label">Fornecedores</p>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number counter" data-target="10">0</div>
+            <p class="stat-label">Anos</p>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number counter" data-target="1000">0</div>
+            <p class="stat-label">Clientes</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section products-wrap" id="products">
+      <div class="container">
+        <h2 class="section-title reveal">Produtos em Destaque</h2>
+        <div class="products-grid" id="productsGrid"></div>
+      </div>
+    </section>
+
+    <section class="section suppliers" id="suppliers">
+      <div class="container">
+        <h2 class="section-title reveal">Nossos Fornecedores de Confiança</h2>
+      </div>
+      <div class="marquee reveal">
+        <div class="marquee-track" id="marqueeTrack"></div>
+      </div>
+    </section>
+
+    <section class="section about" id="about">
+      <div class="container about-grid">
+        <div class="about-text reveal">
+          <h2 class="section-title">
+            <span class="underline">Quem Somos</span>
+          </h2>
+          <p>
+            AL-TACADÃO é uma distribuidora atacadista de suplementos nutricionais focada em
+            performance, confiabilidade e escala. Conectamos varejistas, academias e lojas de
+            produtos saudáveis às principais marcas com abastecimento eficiente, alto giro e
+            logística direta.
+          </p>
+          <p>
+            Nossa missão é simples: disponibilidade consistente, preço competitivo e entrega rápida
+            para negócios que querem crescer em um mercado fitness altamente competitivo.
+          </p>
+        </div>
+        <div class="about-image reveal" aria-hidden="true">
+          <img src="/src/pages/banner.png" alt="" aria-hidden="true" />
+        </div>
+      </div>
+    </section>
+
+    <section class="section contact" id="contact">
+      <div class="container contact-grid">
+        <div class="reveal">
+          <h2 class="section-title">Fale Conosco</h2>
+          <form style="margin-top: 22px">
+            <div class="form-group">
+              <input type="text" placeholder="Nome" required />
+            </div>
+            <div class="form-group">
+              <input type="email" placeholder="E-mail" required />
+            </div>
+            <div class="form-group">
+              <textarea placeholder="Mensagem" required></textarea>
+            </div>
+            <button class="btn red magnetic" type="submit">Enviar Mensagem</button>
+          </form>
+        </div>
+        <div class="contact-info reveal">
+          <h3 style="font-size: 2rem; margin-bottom: 14px">Contato Direto</h3>
+          <div class="contact-item">
+            <span class="icon">📍</span>
+            <p>Av. Principal, 1500 - Centro, São Paulo, SP</p>
+          </div>
+          <div class="contact-item">
+            <span class="icon">📞</span>
+            <p>+55 (11) 99999-9999</p>
+          </div>
+          <div class="contact-item">
+            <span class="icon">✉</span>
+            <p>contato@al-tacadao.com.br</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container footer-top">
+        <div>
+          <h4>AL-TACADÃO</h4>
+          <p style="margin-top: 8px; color: #cfcfcf">
+            Suplementos Nutricionais no Atacado. Abastecimento bruto, direto da fonte.
+          </p>
+        </div>
+        <div class="footer-links">
+          <h3 style="font-size: 1.5rem; margin-bottom: 10px">Links Rápidos</h3>
+          <a href="#home">Início</a>
+          <a href="#products">Produtos</a>
+          <a href="#suppliers">Fornecedores</a>
+          <a href="#about">Sobre</a>
+          <a href="#contact">Contato</a>
+          <a href="#contact">Dúvidas</a>
+          <a href="#products">Favoritos</a>
+          <a href="#contact">Pedidos</a>
+          <a href="#about">Minha Conta</a>
+          <a href="#contact">Carrinho</a>
+        </div>
+        <div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 10px">REDES SOCIAIS</h3>
+          <div class="socials">
+            <a href="#instagram" class="social" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+              <svg width="32" height="32" viewBox="0 0 24 24" aria-hidden="true">
+                <defs>
+                  <radialGradient id="ig-radial" cx="30%" cy="107%" r="150%">
+                    <stop offset="0%" stop-color="#fdf497" />
+                    <stop offset="5%" stop-color="#fdf497" />
+                    <stop offset="45%" stop-color="#fd5949" />
+                    <stop offset="60%" stop-color="#d6249f" />
+                    <stop offset="90%" stop-color="#285AEB" />
+                  </radialGradient>
+                </defs>
+                <path fill="url(#ig-radial)" d="M7.8 2h8.4A5.8 5.8 0 0 1 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8A5.8 5.8 0 0 1 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2z"/>
+                <path fill="#fff" d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4z"/>
+                <circle cx="17.4" cy="6.6" r="1.2" fill="#fff" />
+              </svg>
+            </a>
+            <a href="#facebook" class="social" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+              <svg width="32" height="32" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#1877F2" d="M24 12a12 12 0 1 0-13.88 11.86v-8.39H7.08V12h3.04V9.36c0-3 1.79-4.66 4.53-4.66 1.31 0 2.68.24 2.68.24v2.95h-1.51c-1.49 0-1.95.92-1.95 1.87V12h3.33l-.53 3.47h-2.8v8.39A12 12 0 0 0 24 12z"/>
+                <path fill="#fff" d="M16.67 15.47 17.2 12h-3.33V9.76c0-.95.46-1.87 1.95-1.87h1.51V4.94s-1.37-.24-2.68-.24c-2.74 0-4.53 1.66-4.53 4.66V12H7.08v3.47h3.04v8.39c.62.09 1.25.14 1.88.14s1.26-.05 1.88-.14v-8.39h2.79z"/>
+              </svg>
+            </a>
+            <a href="#linkedin" class="social" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+              <svg width="32" height="32" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#0A66C2" d="M22.23 0H1.77A1.77 1.77 0 0 0 0 1.77v20.46C0 23.21.79 24 1.77 24h20.46A1.77 1.77 0 0 0 24 22.23V1.77A1.77 1.77 0 0 0 22.23 0z"/>
+                <path fill="#fff" d="M7.12 20.45H3.56V9h3.56v11.45zM5.34 7.44a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.37V9h3.4v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="container copyright">
+        © 2026 AL-TACADÃO. Todos os direitos reservados.
+      </div>
+    </footer>
+
+    <script>
+      window.addEventListener("load", () => {
+        document.body.classList.add("loaded");
+      });
+
+      const navbar = document.getElementById("navbar");
+      const heroParallax = document.getElementById("heroParallax");
+      const productsGrid = document.getElementById("productsGrid");
+      const marqueeTrack = document.getElementById("marqueeTrack");
+      const productSeed = [
+        {
+          nome: "Creatina Monohidratada",
+          tipo: "Creatina",
+          objetivo: "recuperação muscular",
+          preco: 79.9,
+          precoOpcoes: { credito: 79.9, creditoParcelado: 84.9, pix: 75.9 },
+          imagem:
+            "https://images.tcdn.com.br/img/img_prod/920697/tasty_whey_3w_900g_adaptogen_837_1_b6f504579c487c3def19678b05c70098.jpeg",
+          fabricante: "GROWTH_SUPPLEMENTS",
+        },
+        {
+          nome: "100% Whey Protein",
+          tipo: "Whey Protein",
+          objetivo: "ganho de massa muscular",
+          preco: 99.9,
+          precoOpcoes: { credito: 99.9, creditoParcelado: 106.9, pix: 94.9 },
+          imagem:
+            "https://images.tcdn.com.br/img/img_prod/920697/tasty_whey_3w_900g_adaptogen_837_1_b6f504579c487c3def19678b05c70098.jpeg",
+          fabricante: "MAX_TITANIUM",
+        },
+        {
+          nome: "Pre-Treino Insano",
+          tipo: "Pré Treino",
+          objetivo: "mais energia no treino",
+          preco: 89.9,
+          precoOpcoes: { credito: 89.9, creditoParcelado: 95.9, pix: 85.9 },
+          imagem:
+            "https://images.tcdn.com.br/img/img_prod/920697/tasty_whey_3w_900g_adaptogen_837_1_b6f504579c487c3def19678b05c70098.jpeg",
+          fabricante: "INTEGRAL_MEDICA",
+        },
+        {
+          nome: "BCAA 2400",
+          tipo: "BCAA",
+          objetivo: "recuperação muscular",
+          preco: 54.9,
+          precoOpcoes: { credito: 54.9, creditoParcelado: 58.9, pix: 52.9 },
+          imagem:
+            "https://images.tcdn.com.br/img/img_prod/920697/tasty_whey_3w_900g_adaptogen_837_1_b6f504579c487c3def19678b05c70098.jpeg",
+          fabricante: "PROBIOTICA",
+        },
+        {
+          nome: "Glutamina Powder",
+          tipo: "Glutamina",
+          objetivo: "recuperação muscular",
+          preco: 64.9,
+          precoOpcoes: { credito: 64.9, creditoParcelado: 69.9, pix: 61.9 },
+          imagem:
+            "https://images.tcdn.com.br/img/img_prod/920697/tasty_whey_3w_900g_adaptogen_837_1_b6f504579c487c3def19678b05c70098.jpeg",
+          fabricante: "DUX_NUTRITION",
+        },
+        {
+          nome: "Hipercalorico Mass Gainer",
+          tipo: "Hipercalórico",
+          objetivo: "ganho de massa muscular",
+          preco: 119.9,
+          precoOpcoes: { credito: 119.9, creditoParcelado: 129.9, pix: 113.9 },
+          imagem:
+            "https://images.tcdn.com.br/img/img_prod/920697/tasty_whey_3w_900g_adaptogen_837_1_b6f504579c487c3def19678b05c70098.jpeg",
+          fabricante: "BLACK_SKULL",
+        },
+        {
+          nome: "Termogenico Black Burn",
+          tipo: "Termogênico",
+          objetivo: "emagrecimento",
+          preco: 69.9,
+          precoOpcoes: { credito: 69.9, creditoParcelado: 74.9, pix: 65.9 },
+          imagem:
+            "https://images.tcdn.com.br/img/img_prod/920697/tasty_whey_3w_900g_adaptogen_837_1_b6f504579c487c3def19678b05c70098.jpeg",
+          fabricante: "ATLHETICA_NUTRITION",
+        },
+        {
+          nome: "Multivitaminico Daily",
+          tipo: "Multivitamínico",
+          objetivo: "recuperação muscular",
+          preco: 49.9,
+          precoOpcoes: { credito: 49.9, creditoParcelado: 54.9, pix: 46.9 },
+          imagem:
+            "https://images.tcdn.com.br/img/img_prod/920697/tasty_whey_3w_900g_adaptogen_837_1_b6f504579c487c3def19678b05c70098.jpeg",
+          fabricante: "VITAFOR",
+        },
+      ];
+      const brandEnum = [
+        "GROWTH_SUPPLEMENTS",
+        "MAX_TITANIUM",
+        "INTEGRAL_MEDICA",
+        "PROBIOTICA",
+        "DUX_NUTRITION",
+        "ATLHETICA_NUTRITION",
+        "BLACK_SKULL",
+        "VITAFOR",
+        "OPTIMUM_NUTRITION",
+        "MYPROTEIN",
+        "UNIVERSAL_NUTRITION",
+        "BSN",
+      ];
+
+      function formatarPreco(valor, moedaPadrao = "BRL") {
+        return new Intl.NumberFormat("pt-BR", { style: "currency", currency: moedaPadrao }).format(valor);
+      }
+
+      function renderProducts() {
+        productsGrid.innerHTML = "";
+        productSeed.forEach((produto) => {
+          const card = document.createElement("article");
+          card.className = "product-card reveal";
+          card.innerHTML = `
+            <div class="product-image"><img src="${produto.imagem}" alt="${produto.nome}" loading="lazy" /></div>
+            <h3 class="product-name">${produto.nome.toUpperCase()}</h3>
+            <p class="product-brand">${produto.fabricante}</p>
+            <p class="product-meta">${produto.tipo} • ${produto.objetivo}</p>
+            <p class="product-meta">${formatarPreco(produto.precoOpcoes?.credito ?? produto.preco)} no crédito</p>
+            <a href="#contact" class="btn outline magnetic">Ver Detalhes</a>
+          `;
+          productsGrid.appendChild(card);
+        });
+      }
+
+      function renderSuppliersMarquee() {
+        const unique = [...new Set([...productSeed.map((p) => p.fabricante), ...brandEnum])];
+        const doubled = [...unique, ...unique];
+        marqueeTrack.innerHTML = doubled.map((brand) => `<span class="marquee-item">${brand}</span>`).join("");
+      }
+
+      renderProducts();
+      renderSuppliersMarquee();
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 25) navbar.classList.add("scrolled");
+        else navbar.classList.remove("scrolled");
+        heroParallax.style.transform = `translateY(${window.scrollY * 0.2}px)`;
+      });
+
+      const revealObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("active");
+              revealObserver.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.14 }
+      );
+      document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
+
+      const counters = document.querySelectorAll(".counter");
+      const counterObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            const el = entry.target;
+            const target = Number(el.dataset.target || 0);
+            const duration = 1200;
+            const start = performance.now();
+            const update = (now) => {
+              const progress = Math.min((now - start) / duration, 1);
+              el.textContent = Math.floor(progress * target) + "+";
+              if (progress < 1) requestAnimationFrame(update);
+            };
+            requestAnimationFrame(update);
+            counterObserver.unobserve(el);
+          });
+        },
+        { threshold: 0.55 }
+      );
+      counters.forEach((c) => counterObserver.observe(c));
+
+      const magneticElements = document.querySelectorAll(".magnetic");
+      magneticElements.forEach((button) => {
+        button.addEventListener("mousemove", (e) => {
+          const rect = button.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          button.style.transform = `translate(${x * 0.12}px, ${y * 0.12}px)`;
+        });
+        button.addEventListener("mouseleave", () => {
+          button.style.transform = "translate(0, 0)";
+        });
+      });
+
+      const cursor = document.querySelector(".custom-cursor");
+      const trail = document.querySelector(".cursor-trail");
+      const supportsFinePointer = window.matchMedia("(pointer:fine)").matches;
+      if (supportsFinePointer) {
+        document.body.classList.add("no-cursor");
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let trailX = mouseX;
+        let trailY = mouseY;
+        window.addEventListener("mousemove", (e) => {
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+          cursor.style.left = mouseX + "px";
+          cursor.style.top = mouseY + "px";
+        });
+        const animateTrail = () => {
+          trailX += (mouseX - trailX) * 0.16;
+          trailY += (mouseY - trailY) * 0.16;
+          trail.style.left = trailX + "px";
+          trail.style.top = trailY + "px";
+          requestAnimationFrame(animateTrail);
+        };
+        animateTrail();
+      } else {
+        cursor.style.display = "none";
+        trail.style.display = "none";
+      }
+
+      const hamburger = document.getElementById("hamburger");
+      const mobileMenu = document.getElementById("mobileMenu");
+      hamburger.addEventListener("click", () => {
+        mobileMenu.classList.toggle("open");
+      });
+      mobileMenu.querySelectorAll("a").forEach((a) =>
+        a.addEventListener("click", () => mobileMenu.classList.remove("open"))
+      );
+    </script>
+  </body>
+</html>
