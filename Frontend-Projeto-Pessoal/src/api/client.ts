@@ -1,29 +1,37 @@
 const h = { Accept: "application/json" };
 
+// Helper para pegar o token armazenado no localStorage
+function authHeaders(): Record<string, string> {
+  const token = localStorage.getItem("jwt_token");
+  if (token) return { ...h, Authorization: `Bearer ${token}` };
+  return { ...h };
+}
+
 // ── Auth ──────────────────────────────────────────────────────────────────
 export async function apiLogin(login: string, password: string): Promise<Response> {
-  const body = new URLSearchParams();
-  body.set("login", login);
-  body.set("password", password);
-  return fetch("/api/login", {
+  return fetch("/api/auth/login", {
     method: "POST",
-    headers: { ...h, "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-    body: body.toString(),
-    credentials: "include",
+    headers: { ...h, "Content-Type": "application/json" },
+    body: JSON.stringify({ login, senha: password }),
   });
 }
 
 export type MeResponse = { nome?: string; login: string; email: string; roles: string[] };
 
 export async function apiMe(): Promise<MeResponse | null> {
-  const res = await fetch("/api/auth/me", { method: "GET", headers: h, credentials: "include" });
-  if (res.status === 401) return null;
+  const token = localStorage.getItem("jwt_token");
+  if (!token) return null;
+  const res = await fetch("/api/auth/me", { method: "GET", headers: authHeaders() });
+  if (res.status === 401) {
+    localStorage.removeItem("jwt_token");
+    return null;
+  }
   if (!res.ok) throw new Error("Falha ao obter sessão");
   return res.json() as Promise<MeResponse>;
 }
 
 export async function apiLogout(): Promise<void> {
-  await fetch("/api/logout", { method: "POST", headers: h, credentials: "include" });
+  localStorage.removeItem("jwt_token");
 }
 
 // ── Usuário ───────────────────────────────────────────────────────────────
@@ -47,7 +55,6 @@ export async function apiCadastro(payload: CadastroPayload): Promise<Response> {
     method: "POST",
     headers: { ...h, "Content-Type": "application/json" },
     body: JSON.stringify(payload),
-    credentials: "include",
   });
 }
 
@@ -64,7 +71,7 @@ function normalizeUsuario(raw: Record<string, unknown>): Usuario {
 }
 
 export async function apiListUsuarios(): Promise<Usuario[]> {
-  const res = await fetch("/cadastro?tamanha-pagina=1000", { headers: h, credentials: "include" });
+  const res = await fetch("/cadastro?tamanha-pagina=1000", { headers: authHeaders() });
   if (!res.ok) throw new Error("Erro ao listar usuários");
   const data = await res.json();
   const items: Record<string, unknown>[] = Array.isArray(data) ? data : (data.content ?? []);
@@ -74,14 +81,13 @@ export async function apiListUsuarios(): Promise<Usuario[]> {
 export async function apiUpdateUsuario(id: string, payload: UpdateUsuarioPayload): Promise<Response> {
   return fetch(`/cadastro/${id}`, {
     method: "PUT",
-    headers: { ...h, "Content-Type": "application/json" },
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify(payload),
-    credentials: "include",
   });
 }
 
 export async function apiDeleteUsuario(id: string): Promise<Response> {
-  return fetch(`/cadastro/${id}`, { method: "DELETE", headers: h, credentials: "include" });
+  return fetch(`/cadastro/${id}`, { method: "DELETE", headers: authHeaders() });
 }
 
 // ── Fornecedor ────────────────────────────────────────────────────────────
@@ -111,7 +117,7 @@ function normalizeFornecedor(raw: Record<string, unknown>): Fornecedor {
 }
 
 export async function apiListFornecedores(): Promise<Fornecedor[]> {
-  const res = await fetch("/fornecedor?tamanha-pagina=1000", { headers: h, credentials: "include" });
+  const res = await fetch("/fornecedor?tamanha-pagina=1000", { headers: authHeaders() });
   if (!res.ok) throw new Error(`Erro ${res.status} ao listar fornecedores`);
   const data = await res.json();
   // A API pode retornar array direto ou Page<T> do Spring { content: [...] }
@@ -122,23 +128,21 @@ export async function apiListFornecedores(): Promise<Fornecedor[]> {
 export async function apiCreateFornecedor(payload: FornecedorPayload): Promise<Response> {
   return fetch("/fornecedor", {
     method: "POST",
-    headers: { ...h, "Content-Type": "application/json" },
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify(payload),
-    credentials: "include",
   });
 }
 
 export async function apiUpdateFornecedor(id: string, payload: FornecedorPayload): Promise<Response> {
   return fetch(`/fornecedor/${id}`, {
     method: "PUT",
-    headers: { ...h, "Content-Type": "application/json" },
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify(payload),
-    credentials: "include",
   });
 }
 
 export async function apiDeleteFornecedor(id: string): Promise<Response> {
-  return fetch(`/fornecedor/${id}`, { method: "DELETE", headers: h, credentials: "include" });
+  return fetch(`/fornecedor/${id}`, { method: "DELETE", headers: authHeaders() });
 }
 
 // ── Estoque (Produto) ─────────────────────────────────────────────────────
@@ -171,7 +175,7 @@ function normalizeProduto(raw: Record<string, unknown>): Produto {
 }
 
 export async function apiListEstoque(): Promise<Produto[]> {
-  const res = await fetch("/estoque?tamanha-pagina=1000", { headers: h, credentials: "include" });
+  const res = await fetch("/api/estoque?tamanha-pagina=1000", { headers: authHeaders() });
   if (!res.ok) throw new Error(`Erro ${res.status} ao listar produtos`);
   const data = await res.json();
   // A API pode retornar array direto ou Page<T> do Spring { content: [...] }
@@ -180,23 +184,21 @@ export async function apiListEstoque(): Promise<Produto[]> {
 }
 
 export async function apiCreateProduto(payload: ProdutoPayload): Promise<Response> {
-  return fetch("/estoque", {
+  return fetch("/api/estoque", {
     method: "POST",
-    headers: { ...h, "Content-Type": "application/json" },
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify(payload),
-    credentials: "include",
   });
 }
 
 export async function apiUpdateProduto(id: string, payload: ProdutoPayload): Promise<Response> {
-  return fetch(`/estoque/${id}`, {
+  return fetch(`/api/estoque/${id}`, {
     method: "PUT",
-    headers: { ...h, "Content-Type": "application/json" },
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify(payload),
-    credentials: "include",
   });
 }
 
 export async function apiDeleteProduto(id: string): Promise<Response> {
-  return fetch(`/estoque/${id}`, { method: "DELETE", headers: h, credentials: "include" });
+  return fetch(`/api/estoque/${id}`, { method: "DELETE", headers: authHeaders() });
 }

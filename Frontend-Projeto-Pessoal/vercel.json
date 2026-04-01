@@ -5,7 +5,6 @@
     { "source": "/cadastro", "destination": "https://api-gateway-al-tacad-o-production.up.railway.app/cadastro" },
     { "source": "/fornecedor/:path*", "destination": "https://api-gateway-al-tacad-o-production.up.railway.app/fornecedor/:path*" },
     { "source": "/fornecedor", "destination": "https://api-gateway-al-tacad-o-production.up.railway.app/fornecedor" },
-    { "source": "/estoque/:path*", "destination": "https://api-gateway-al-tacad-o-production.up.railway.app/estoque/:path*" },
-    { "source": "/estoque", "destination": "https://api-gateway-al-tacad-o-production.up.railway.app/estoque" }
+    { "source": "/((?!api|cadastro|fornecedor|assets|favicon).*)", "destination": "/index.html" }
   ]
 }

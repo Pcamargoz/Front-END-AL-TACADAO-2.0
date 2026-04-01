@@ -33,8 +33,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (loginValue: string, password: string) => {
     const res = await apiLogin(loginValue, password);
     if (res.ok) {
-      const data = (await res.json()) as MeResponse;
-      setUser(data);
+      const data = await res.json();
+      // Salva o token JWT no localStorage
+      if (data.token) {
+        localStorage.setItem("jwt_token", data.token);
+      }
+      // Atualiza o estado do usuário com os dados retornados
+      setUser({
+        nome: data.nome,
+        login: data.login,
+        email: data.email,
+        roles: data.roles ?? [],
+      });
       return { ok: true as const };
     }
     let message = "Usuário ou senha incorretos";
