@@ -6,9 +6,9 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDate(date: string | Date) {
-  return new Intl.DateTimeFormat("pt-BR", {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
     day: "2-digit",
-    month: "2-digit",
     year: "numeric",
   }).format(new Date(date));
 }

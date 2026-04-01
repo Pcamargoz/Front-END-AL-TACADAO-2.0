@@ -1,18 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { useAuth } from "../../auth/AuthContext";
+import { useIsMobile } from "../../hooks/useIsMobile";
 import { motion } from "framer-motion";
-
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
-  useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handler);
-    return () => window.removeEventListener("resize", handler);
-  }, []);
-  return isMobile;
-}
 
 export function AppLayout() {
   const { user, loading } = useAuth();
@@ -29,9 +20,15 @@ export function AppLayout() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 rounded-full border-2 mx-auto mb-4 animate-spin"
-            style={{ borderColor: "rgba(0,240,255,0.2)", borderTopColor: "#00f0ff" }} />
-          <p className="text-sm text-slate-600">Carregando...</p>
+          <div
+            className="w-10 h-10 rounded-full border-2 mx-auto mb-4"
+            style={{
+              borderColor: "rgba(232,160,32,0.2)",
+              borderTopColor: "#E8A020",
+              animation: "spin 0.7s linear infinite",
+            }}
+          />
+          <p className="text-sm" style={{ color: "#3C3C44" }}>Loading...</p>
         </div>
       </div>
     );
@@ -39,14 +36,6 @@ export function AppLayout() {
 
   return (
     <div className="app-layout relative">
-      {/* Background */}
-      <div className="nucleus-bg">
-        <div className="nucleus-grid" />
-        <div className="nucleus-orb nucleus-orb-1" />
-        <div className="nucleus-orb nucleus-orb-2" />
-        <div className="nucleus-orb nucleus-orb-3" />
-      </div>
-
       <Sidebar
         expanded={expanded}
         onToggle={() => setExpanded((e) => !e)}
@@ -54,12 +43,12 @@ export function AppLayout() {
       />
 
       <motion.main
-        className="relative z-10 min-h-screen"
+        className="relative min-h-screen"
         animate={{
           paddingLeft: isMobile ? 0 : (expanded ? 220 : 60),
           paddingBottom: isMobile ? 60 : 0,
         }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
       >
         <Outlet />
       </motion.main>

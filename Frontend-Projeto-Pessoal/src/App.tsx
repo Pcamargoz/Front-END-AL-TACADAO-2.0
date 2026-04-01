@@ -2,30 +2,30 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { AppLayout } from "./components/layout/AppLayout";
 import { DashboardPage } from "./pages/DashboardPage";
-import { FornecedoresPage } from "./pages/FornecedoresPage";
-import { EstoquePage } from "./pages/EstoquePage";
+import { SuppliersPage } from "./pages/SuppliersPage";
+import { InventoryPage } from "./pages/InventoryPage";
 import { LoginPage } from "./pages/LoginPage";
-import { CadastroPage } from "./pages/CadastroPage";
-import { UsuariosPage } from "./pages/UsuariosPage";
+import { RegisterPage } from "./pages/RegisterPage";
+import { UsersPage } from "./pages/UsersPage";
 
 export default function App() {
   return (
     <AuthProvider>
       <Routes>
-        {/* Auth (public) */}
+        {/* Public */}
         <Route path="/login"    element={<LoginPage />} />
-        <Route path="/cadastro" element={<CadastroPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
-        {/* App (protected — AppLayout handles redirect) */}
+        {/* Protected — AppLayout handles auth redirect */}
         <Route element={<AppLayout />}>
-          <Route path="/"             element={<Navigate to="/home" replace />} />
-          <Route path="/home"         element={<DashboardPage />} />
-          <Route path="/usuarios"     element={<UsuariosPage />} />
-          <Route path="/fornecedores" element={<FornecedoresPage />} />
-          <Route path="/estoque"      element={<EstoquePage />} />
+          <Route path="/"           element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard"  element={<DashboardPage />} />
+          <Route path="/users"      element={<UsersPage />} />
+          <Route path="/suppliers"  element={<SuppliersPage />} />
+          <Route path="/inventory"  element={<InventoryPage />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/home" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </AuthProvider>
   );
