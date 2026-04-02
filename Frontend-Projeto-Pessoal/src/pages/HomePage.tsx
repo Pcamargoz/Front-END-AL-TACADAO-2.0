@@ -116,10 +116,11 @@ function BenefitItem({ icon, title, description }: { icon: React.ReactNode; titl
 }
 
 export function HomePage() {
-  const { data: products = [] } = useQuery({
+  const { data: productsData } = useQuery({
     queryKey: ["estoque"],
-    queryFn: apiListEstoque,
+    queryFn: () => apiListEstoque(),
   });
+  const products: Produto[] = productsData?.content ?? [];
 
   const featuredProducts = products.slice(0, 8);
 
