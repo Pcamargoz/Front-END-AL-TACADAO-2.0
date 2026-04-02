@@ -150,7 +150,7 @@ function SupplierForm({
 }
 
 export function SuppliersPage() {
-  const { isManager, hasCompany } = useAuth();
+  const { isManager } = useAuth();
 
   const qc = useQueryClient();
   const [search,     setSearch]     = useState("");

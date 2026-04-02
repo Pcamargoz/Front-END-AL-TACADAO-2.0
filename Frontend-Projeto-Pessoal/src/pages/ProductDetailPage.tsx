@@ -14,7 +14,7 @@ import {
   Zap,
   Scale
 } from "lucide-react";
-import { apiListEstoque } from "../api/client";
+import { apiListEstoque, type Produto } from "../api/client";
 import { BRAND_META, getMockPrice, formatCurrency } from "../lib/utils";
 import { useCart } from "../hooks/useCart";
 
@@ -46,10 +46,11 @@ export function ProductDetailPage() {
   const [selectedFlavor, setSelectedFlavor] = useState(MOCK_FLAVORS[0]);
   const [selectedSize, setSelectedSize] = useState(MOCK_SIZES[1]);
 
-  const { data: products = [], isLoading } = useQuery({
+  const { data: productsData, isLoading } = useQuery({
     queryKey: ["estoque"],
-    queryFn: apiListEstoque,
+    queryFn: () => apiListEstoque(),
   });
+  const products: Produto[] = productsData?.content ?? [];
 
   const product = products.find((p) => p.id === id);
   const inCart = isInCart(id || "");

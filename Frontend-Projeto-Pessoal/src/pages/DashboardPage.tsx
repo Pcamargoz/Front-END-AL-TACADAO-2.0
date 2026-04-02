@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Truck, Package, Users, TrendingUp, ArrowRight, DollarSign, ArrowUpRight, ArrowDownRight, Activity, Clock, ShoppingBag, Dumbbell, AlertTriangle, Building2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
-import { apiListFornecedores, apiListEstoque, apiListUsuarios } from "../api/client";
+import { apiListFornecedores, apiListEstoque, apiListUsuarios, type Produto, type Usuario } from "../api/client";
 import { BRAND_META, formatCurrency, getMockPrice } from "../lib/utils";
 import { useAuth } from "../auth/AuthContext";
 import { motion } from "framer-motion";
@@ -90,8 +90,8 @@ export function DashboardPage() {
   const { data: productsData } = useQuery({ queryKey: ["estoque"], queryFn: () => apiListEstoque() });
   const { data: usersData } = useQuery({ queryKey: ["usuarios"], queryFn: () => apiListUsuarios(), enabled: isManager });
   
-  const products = productsData?.content ?? [];
-  const users = usersData?.content ?? [];
+  const products: Produto[] = productsData?.content ?? [];
+  const users: Usuario[] = usersData?.content ?? [];
 
   const brandCount: Record<string, number> = {};
   products.forEach((p) => { if (p.marca) brandCount[p.marca] = (brandCount[p.marca] || 0) + 1; });

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, Plus, Search, Trash2, UserRound, Mail, Shield, Calendar, Building2, Link2 } from "lucide-react";
+import { Pencil, Search, Trash2, UserRound, Mail, Shield, Calendar, Building2, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   apiDeleteUsuario,

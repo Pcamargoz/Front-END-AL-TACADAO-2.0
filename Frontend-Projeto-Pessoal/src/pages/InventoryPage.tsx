@@ -212,7 +212,7 @@ export function InventoryPage() {
     queryKey: ["estoque"],
     queryFn:  () => apiListEstoque(),
   });
-  const products = productsData?.content ?? [];
+  const products: Produto[] = productsData?.content ?? [];
 
   const createMut = useMutation({
     mutationFn: (p: ProdutoPayload) => apiCreateProduto(p),

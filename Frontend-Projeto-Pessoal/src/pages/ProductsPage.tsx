@@ -130,10 +130,11 @@ export function ProductsPage() {
   const brandFilter = searchParams.get("marca") || "";
   const sortBy = searchParams.get("sort") || "nome";
 
-  const { data: products = [], isLoading } = useQuery({
+  const { data: productsData, isLoading } = useQuery({
     queryKey: ["estoque"],
-    queryFn: apiListEstoque,
+    queryFn: () => apiListEstoque(),
   });
+  const products: Produto[] = productsData?.content ?? [];
 
   // Filtragem e ordenação
   const filteredProducts = useMemo(() => {
