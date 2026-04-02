@@ -14,8 +14,8 @@ import {
   Zap,
   Scale
 } from "lucide-react";
-import { apiListEstoque, type Produto } from "../api/client";
-import { BRAND_META, getMockPrice, formatCurrency, ALL_BRANDS } from "../lib/utils";
+import { apiListEstoque } from "../api/client";
+import { BRAND_META, getMockPrice, formatCurrency } from "../lib/utils";
 import { useCart } from "../hooks/useCart";
 
 // Mock data for product details

@@ -8,7 +8,6 @@ import {
   LogOut,
   User,
   Store,
-  Settings,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../auth/AuthContext";

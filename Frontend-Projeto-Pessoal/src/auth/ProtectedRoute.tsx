@@ -13,7 +13,7 @@ export function ProtectedRoute({
   requiredRole,
   redirectTo = "/login" 
 }: ProtectedRouteProps) {
-  const { user, loading, isAuthenticated, role } = useAuth();
+  const { loading, isAuthenticated, role } = useAuth();
   const location = useLocation();
 
   if (loading) {

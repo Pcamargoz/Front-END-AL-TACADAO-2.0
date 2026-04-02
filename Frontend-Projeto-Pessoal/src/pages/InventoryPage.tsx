@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Search, Pencil, Trash2, Package, LayoutGrid, List, Scale, Dumbbell, DollarSign } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Package, LayoutGrid, List, Scale, Dumbbell } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {

@@ -14,7 +14,7 @@ import {
   Dumbbell
 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiCriarFornecedor, type Fornecedor } from "../api/client";
+import { apiCreateFornecedor, type FornecedorPayload } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 
 interface FormData {
@@ -94,8 +94,8 @@ export function SupplierRegisterPage() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: Partial<Fornecedor>) => {
-      const res = await apiCriarFornecedor(data);
+    mutationFn: async (data: FornecedorPayload) => {
+      const res = await apiCreateFornecedor(data);
       if (!res.ok) {
         throw new Error("Erro ao criar fornecedor");
       }
