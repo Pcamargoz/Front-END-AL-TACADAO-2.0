@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Search, Pencil, Trash2, Building2, Mail, Phone, Hash } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Building2, Mail, Phone, Hash, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -19,13 +19,32 @@ import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { useAuth } from "../auth/AuthContext";
 
 const schema = z.object({
-  cnpj:         z.string().min(14, "Invalid CNPJ"),
-  razaoSocial:  z.string().min(2, "Legal name is required"),
+  cnpj:         z.string().min(14, "CNPJ inválido"),
+  razaoSocial:  z.string().min(2, "Razão social é obrigatória"),
   nomeFantasia: z.string().optional(),
-  email:        z.string().email("Invalid email"),
+  email:        z.string().email("E-mail inválido"),
   telefone:     z.string().optional(),
 });
 type FormValues = z.infer<typeof schema>;
+
+// Formatar CNPJ
+function formatCNPJ(value: string) {
+  const nums = value.replace(/\D/g, "").slice(0, 14);
+  if (nums.length <= 2) return nums;
+  if (nums.length <= 5) return `${nums.slice(0, 2)}.${nums.slice(2)}`;
+  if (nums.length <= 8) return `${nums.slice(0, 2)}.${nums.slice(2, 5)}.${nums.slice(5)}`;
+  if (nums.length <= 12) return `${nums.slice(0, 2)}.${nums.slice(2, 5)}.${nums.slice(5, 8)}/${nums.slice(8)}`;
+  return `${nums.slice(0, 2)}.${nums.slice(2, 5)}.${nums.slice(5, 8)}/${nums.slice(8, 12)}-${nums.slice(12)}`;
+}
+
+// Formatar Telefone
+function formatPhone(value: string) {
+  const nums = value.replace(/\D/g, "").slice(0, 11);
+  if (nums.length <= 2) return nums.length ? `(${nums}` : "";
+  if (nums.length <= 7) return `(${nums.slice(0, 2)}) ${nums.slice(2)}`;
+  if (nums.length <= 10) return `(${nums.slice(0, 2)}) ${nums.slice(2, 6)}-${nums.slice(6)}`;
+  return `(${nums.slice(0, 2)}) ${nums.slice(2, 7)}-${nums.slice(7)}`;
+}
 
 function SupplierForm({
   defaultValues,
@@ -36,44 +55,96 @@ function SupplierForm({
   onSubmit: (v: FormValues) => void;
   loading?: boolean;
 }) {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues,
   });
 
-  const Field = ({ name, label, icon: Icon, placeholder, type = "text" }: {
-    name: keyof FormValues; label: string; icon: React.ElementType; placeholder: string; type?: string;
-  }) => (
-    <div className="input-group">
-      <label className="input-label">{label}</label>
-      <div className="relative">
-        <Icon size={13} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#3C3C44" }} />
-        <input
-          {...register(name)}
-          type={type}
-          placeholder={placeholder}
-          className={`input-field pl-9 ${errors[name] ? "error" : ""}`}
-        />
-      </div>
-      {errors[name] && <span className="input-error">{errors[name]?.message}</span>}
-    </div>
-  );
+  const handleCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValue("cnpj", formatCNPJ(e.target.value));
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValue("telefone", formatPhone(e.target.value));
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="sm:col-span-2">
-          <Field name="razaoSocial"  label="Legal name"    icon={Building2} placeholder="Company legal name" />
+          <div className="input-group">
+            <label className="input-label">Razão Social *</label>
+            <div className="relative">
+              <Building2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+              <input
+                {...register("razaoSocial")}
+                placeholder="Nome legal da empresa"
+                className={`input-field pl-10 ${errors.razaoSocial ? "error" : ""}`}
+              />
+            </div>
+            {errors.razaoSocial && <span className="input-error">{errors.razaoSocial.message}</span>}
+          </div>
         </div>
-        <Field name="nomeFantasia" label="Trade name"    icon={Building2} placeholder="Brand / trade name" />
-        <Field name="cnpj"         label="CNPJ"          icon={Hash}      placeholder="00.000.000/0001-00" />
-        <Field name="email"        label="Email"         icon={Mail}      placeholder="contact@company.com" type="email" />
-        <Field name="telefone"     label="Phone"         icon={Phone}     placeholder="(00) 00000-0000" />
+        
+        <div className="input-group">
+          <label className="input-label">Nome Fantasia</label>
+          <div className="relative">
+            <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+            <input
+              {...register("nomeFantasia")}
+              placeholder="Nome comercial"
+              className="input-field pl-10"
+            />
+          </div>
+        </div>
+        
+        <div className="input-group">
+          <label className="input-label">CNPJ *</label>
+          <div className="relative">
+            <Hash size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+            <input
+              {...register("cnpj")}
+              onChange={handleCNPJChange}
+              placeholder="00.000.000/0001-00"
+              className={`input-field pl-10 font-mono ${errors.cnpj ? "error" : ""}`}
+            />
+          </div>
+          {errors.cnpj && <span className="input-error">{errors.cnpj.message}</span>}
+        </div>
+        
+        <div className="input-group">
+          <label className="input-label">E-mail *</label>
+          <div className="relative">
+            <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+            <input
+              {...register("email")}
+              type="email"
+              placeholder="contato@empresa.com"
+              className={`input-field pl-10 ${errors.email ? "error" : ""}`}
+            />
+          </div>
+          {errors.email && <span className="input-error">{errors.email.message}</span>}
+        </div>
+        
+        <div className="input-group">
+          <label className="input-label">Telefone</label>
+          <div className="relative">
+            <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+            <input
+              {...register("telefone")}
+              onChange={handlePhoneChange}
+              placeholder="(00) 00000-0000"
+              className="input-field pl-10"
+            />
+          </div>
+        </div>
       </div>
-      <div className="divider" />
-      <button type="submit" className="btn btn-primary w-full" disabled={loading}>
-        {loading ? "Saving..." : "Save supplier"}
-      </button>
+      
+      <div className="border-t border-[#1A1D24] pt-4 mt-6">
+        <button type="submit" className="btn btn-primary w-full" disabled={loading}>
+          {loading ? "Salvando..." : "Salvar Fornecedor"}
+        </button>
+      </div>
     </form>
   );
 }
@@ -98,11 +169,11 @@ export function SuppliersPage() {
     mutationFn: (p: FornecedorPayload) => apiCreateFornecedor(p),
     onSuccess: async (res) => {
       if (res.ok) {
-        toast.success("Supplier created");
+        toast.success("Fornecedor criado com sucesso!");
         await qc.invalidateQueries({ queryKey: ["fornecedores"] });
         setModalOpen(false);
       } else {
-        toast.error("Failed to create supplier");
+        toast.error("Erro ao criar fornecedor");
       }
     },
   });
@@ -112,11 +183,11 @@ export function SuppliersPage() {
       apiUpdateFornecedor(id, payload),
     onSuccess: async (res) => {
       if (res.ok) {
-        toast.success("Supplier updated");
+        toast.success("Fornecedor atualizado!");
         await qc.invalidateQueries({ queryKey: ["fornecedores"] });
         setEditing(null);
       } else {
-        toast.error("Failed to update supplier");
+        toast.error("Erro ao atualizar fornecedor");
       }
     },
   });
@@ -124,7 +195,7 @@ export function SuppliersPage() {
   const deleteMut = useMutation({
     mutationFn: (id: string) => apiDeleteFornecedor(id),
     onSuccess: async () => {
-      toast.success("Supplier removed");
+      toast.success("Fornecedor removido");
       await qc.invalidateQueries({ queryKey: ["fornecedores"] });
       setDeleting(null);
     },
@@ -141,153 +212,176 @@ export function SuppliersPage() {
   });
 
   return (
-    <div className="page-container min-h-screen">
+    <div className="space-y-6">
       {error && (
-        <div className="alert alert-error mb-4">
-          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "#E5484D" }} />
-          Failed to load suppliers: {String(error)}
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-sm flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-red-500" />
+          Erro ao carregar fornecedores: {String(error)}
         </div>
       )}
 
-      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="page-header">
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
         <div>
-          <p className="page-eyebrow">Management</p>
-          <h1 className="page-title">Suppliers</h1>
-          <p className="page-subtitle">{suppliers.length} registered</p>
+          <p className="text-[#00FF87] text-sm font-medium tracking-wider uppercase mb-1">Gerenciamento</p>
+          <h1 className="text-2xl font-display font-bold text-[#F5F5F5]">Fornecedores</h1>
+          <p className="text-[#9CA3AF] text-sm mt-1">{suppliers.length} cadastrados</p>
         </div>
         {isManager && (
           <button onClick={() => setModalOpen(true)} className="btn btn-primary">
-            <Plus size={15} /> <span className="hidden sm:inline">New supplier</span>
+            <Plus size={18} /> <span>Novo Fornecedor</span>
           </button>
         )}
       </motion.div>
 
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-        className="search-bar mb-4" style={{ maxWidth: 360, width: "100%" }}>
-        <Search size={14} className="search-icon" />
+      <motion.div 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        transition={{ delay: 0.1 }}
+        className="relative max-w-md"
+      >
+        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
         <input
-          className="input-field"
-          placeholder="Search by name, CNPJ or email..."
+          className="input-field pl-10 w-full"
+          placeholder="Buscar por nome, CNPJ ou e-mail..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
       </motion.div>
 
       <motion.div
-        initial={{ opacity: 0, y: 14 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
         className="card overflow-hidden"
       >
         {isLoading ? (
-          <div className="p-8 space-y-3">
+          <div className="p-6 space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="skeleton h-11 w-full" style={{ animationDelay: `${i * 0.1}s` }} />
+              <div key={i} className="h-12 bg-[#1A1D24] rounded animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="empty-state">
-            <Building2 size={36} />
-            <p style={{ color: "#52525B", fontSize: "0.875rem", marginTop: "0.5rem" }}>
-              {search ? "No results found" : "No suppliers registered"}
+          <div className="p-12 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-sm bg-[#1A1D24] flex items-center justify-center">
+              <Building2 size={32} className="text-[#4B5563]" />
+            </div>
+            <p className="text-[#9CA3AF]">
+              {search ? "Nenhum resultado encontrado" : "Nenhum fornecedor cadastrado"}
             </p>
             {!search && isManager && (
               <button onClick={() => setModalOpen(true)} className="btn btn-primary mt-4">
-                <Plus size={14} /> Add supplier
+                <Plus size={16} /> Adicionar Fornecedor
               </button>
             )}
           </div>
         ) : (
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Company</th>
-                <th className="hidden md:table-cell">CNPJ</th>
-                <th className="hidden sm:table-cell">Email</th>
-                <th className="hidden lg:table-cell">Phone</th>
-                {(canEdit || isManager) && <th style={{ width: 90 }} />}
-              </tr>
-            </thead>
-            <tbody>
-              <AnimatePresence>
-                {filtered.map((f, i) => (
-                  <motion.tr
-                    key={f.id}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ delay: i * 0.035 }}
-                  >
-                    <td>
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold flex-shrink-0"
-                          style={{ background: "rgba(232,160,32,0.08)", color: "#E8A020" }}>
-                          {(f.nomeFantasia || f.razaoSocial).charAt(0).toUpperCase()}
-                        </div>
-                        <div className="min-w-0">
-                          <p style={{ fontSize: "0.875rem", color: "#EFEFEF", fontWeight: 500 }} className="truncate">
-                            {f.nomeFantasia || f.razaoSocial}
-                          </p>
-                          {f.nomeFantasia && (
-                            <p style={{ fontSize: "0.75rem", color: "#3C3C44" }} className="truncate">{f.razaoSocial}</p>
-                          )}
-                          <p style={{ fontSize: "0.75rem", color: "#3C3C44" }} className="truncate sm:hidden">{f.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="hidden md:table-cell">
-                      <span style={{ fontSize: "0.78rem", fontFamily: "'JetBrains Mono', monospace" }}>{f.cnpj}</span>
-                    </td>
-                    <td className="hidden sm:table-cell">
-                      <span style={{ fontSize: "0.875rem" }}>{f.email}</span>
-                    </td>
-                    <td className="hidden lg:table-cell">
-                      <span style={{ fontSize: "0.875rem" }}>
-                        {f.telefone || <span style={{ color: "#2E2E34" }}>—</span>}
-                      </span>
-                    </td>
-                    {(canEdit || isManager) && (
-                      <td>
-                        <div className="flex items-center gap-1 justify-end">
-                          {canEdit && (
-                            <button
-                              onClick={() => setEditing(f)}
-                              className="btn btn-ghost btn-icon"
-                              onMouseEnter={(e) => (e.currentTarget.style.color = "#E8A020")}
-                              onMouseLeave={(e) => (e.currentTarget.style.color = "")}
-                            >
-                              <Pencil size={13} />
-                            </button>
-                          )}
-                          {isManager && (
-                            <button
-                              onClick={() => setDeleting(f)}
-                              className="btn btn-ghost btn-icon"
-                              onMouseEnter={(e) => (e.currentTarget.style.color = "#E5484D")}
-                              onMouseLeave={(e) => (e.currentTarget.style.color = "")}
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          )}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[#1A1D24]">
+                  <th className="text-left text-xs font-medium text-[#4B5563] uppercase tracking-wider px-4 py-3">
+                    Empresa
+                  </th>
+                  <th className="text-left text-xs font-medium text-[#4B5563] uppercase tracking-wider px-4 py-3 hidden md:table-cell">
+                    CNPJ
+                  </th>
+                  <th className="text-left text-xs font-medium text-[#4B5563] uppercase tracking-wider px-4 py-3 hidden sm:table-cell">
+                    E-mail
+                  </th>
+                  <th className="text-left text-xs font-medium text-[#4B5563] uppercase tracking-wider px-4 py-3 hidden lg:table-cell">
+                    Telefone
+                  </th>
+                  {(canEdit || isManager) && (
+                    <th className="text-right text-xs font-medium text-[#4B5563] uppercase tracking-wider px-4 py-3 w-24">
+                      Ações
+                    </th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                <AnimatePresence>
+                  {filtered.map((f, i) => (
+                    <motion.tr
+                      key={f.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ delay: i * 0.03 }}
+                      className="border-b border-[#1A1D24] last:border-0 hover:bg-[#1A1D24]/50 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-10 h-10 rounded-sm flex items-center justify-center text-sm font-bold flex-shrink-0"
+                            style={{ background: "rgba(0,255,135,0.1)", color: "#00FF87" }}
+                          >
+                            {(f.nomeFantasia || f.razaoSocial).charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[#F5F5F5] font-medium truncate">
+                              {f.nomeFantasia || f.razaoSocial}
+                            </p>
+                            {f.nomeFantasia && (
+                              <p className="text-[#4B5563] text-xs truncate">{f.razaoSocial}</p>
+                            )}
+                            <p className="text-[#4B5563] text-xs truncate sm:hidden">{f.email}</p>
+                          </div>
                         </div>
                       </td>
-                    )}
-                  </motion.tr>
-                ))}
-              </AnimatePresence>
-            </tbody>
-          </table>
+                      <td className="px-4 py-3 hidden md:table-cell">
+                        <span className="text-sm font-mono text-[#9CA3AF]">{f.cnpj}</span>
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell">
+                        <span className="text-sm text-[#9CA3AF]">{f.email}</span>
+                      </td>
+                      <td className="px-4 py-3 hidden lg:table-cell">
+                        <span className="text-sm text-[#9CA3AF]">
+                          {f.telefone || <span className="text-[#4B5563]">—</span>}
+                        </span>
+                      </td>
+                      {(canEdit || isManager) && (
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1 justify-end">
+                            {canEdit && (
+                              <button
+                                onClick={() => setEditing(f)}
+                                className="p-2 rounded-sm text-[#4B5563] hover:text-[#00FF87] hover:bg-[#00FF87]/10 transition-colors"
+                              >
+                                <Pencil size={16} />
+                              </button>
+                            )}
+                            {isManager && (
+                              <button
+                                onClick={() => setDeleting(f)}
+                                className="p-2 rounded-sm text-[#4B5563] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      )}
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
+              </tbody>
+            </table>
+          </div>
         )}
       </motion.div>
 
       {isManager && (
-        <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="New supplier">
+        <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Novo Fornecedor">
           <SupplierForm onSubmit={(v) => createMut.mutate(v)} loading={createMut.isPending} />
         </Modal>
       )}
 
       {canEdit && (
-        <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit supplier">
+        <Modal open={!!editing} onClose={() => setEditing(null)} title="Editar Fornecedor">
           {editing && (
             <SupplierForm
               defaultValues={editing}
@@ -303,7 +397,7 @@ export function SuppliersPage() {
           open={!!deleting}
           onClose={() => setDeleting(null)}
           onConfirm={() => deleting && deleteMut.mutate(deleting.id)}
-          description={`Remove "${deleting?.nomeFantasia || deleting?.razaoSocial}"? This action cannot be undone.`}
+          description={`Deseja remover "${deleting?.nomeFantasia || deleting?.razaoSocial}"? Esta ação não pode ser desfeita.`}
           loading={deleteMut.isPending}
         />
       )}

@@ -1,32 +1,40 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Eye, EyeOff, Mail, User, Lock, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Mail, User, Lock, ArrowLeft, Dumbbell, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { apiCadastro, type ErroResposta } from "../api/client";
 
 const ROLES = [
-  { value: "GERENTE",    label: "Manager"  },
-  { value: "FUNCIONARIO", label: "Employee" },
-  { value: "ESTAGIARIO", label: "Intern"   },
+  { value: "GERENTE", label: "Gerente", desc: "Acesso total ao sistema" },
+  { value: "FUNCIONARIO", label: "Funcionário", desc: "Acesso ao catálogo e pedidos" },
+  { value: "ESTAGIARIO", label: "Estagiário", desc: "Acesso limitado" },
 ];
 
 export function RegisterPage() {
   const navigate = useNavigate();
 
-  const [nome,        setNome]       = useState("");
-  const [loginV,      setLoginV]     = useState("");
-  const [email,       setEmail]      = useState("");
-  const [senha,       setSenha]      = useState("");
-  const [showPass,    setShowPass]   = useState(false);
-  const [role,        setRole]       = useState("FUNCIONARIO");
-  const [errors,      setErrors]     = useState<Record<string, string>>({});
-  const [globalErr,   setGlobalErr]  = useState("");
-  const [submitting,  setSubmitting] = useState(false);
+  const [nome, setNome] = useState("");
+  const [loginV, setLoginV] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [confirmSenha, setConfirmSenha] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const [role, setRole] = useState("GERENTE");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [globalErr, setGlobalErr] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     setGlobalErr("");
+
+    // Client-side validation
+    if (senha !== confirmSenha) {
+      setErrors({ confirmSenha: "As senhas não coincidem" });
+      return;
+    }
+
     setSubmitting(true);
 
     const payload = { nome: nome.trim() || undefined, login: loginV, email, senha, roles: [role] };
@@ -42,9 +50,9 @@ export function RegisterPage() {
       body.erros?.forEach((e) => { fieldErrors[e.campo] = e.message; });
       setErrors(fieldErrors);
     } else if (res.status === 409) {
-      setGlobalErr("Username or email already registered.");
+      setGlobalErr("Usuário ou e-mail já cadastrado.");
     } else {
-      setGlobalErr("Unexpected error. Please try again.");
+      setGlobalErr("Erro inesperado. Tente novamente.");
     }
     setSubmitting(false);
   };
@@ -56,164 +64,214 @@ export function RegisterPage() {
     /[^A-Za-z0-9]/.test(senha),
   ].filter(Boolean).length;
 
-  const strengthColors = ["#E5484D", "#F59E0B", "#22C55E", "#E8A020"];
-  const strengthColor  = strengthColors[strengthScore - 1] ?? "#232328";
+  const strengthLabels = ["Fraca", "Regular", "Boa", "Forte"];
+  const strengthColors = ["#EF4444", "#F59E0B", "#00E5FF", "#00FF87"];
+  const strengthColor = strengthColors[strengthScore - 1] ?? "#1A1D24";
+  const strengthLabel = strengthScore > 0 ? strengthLabels[strengthScore - 1] : "";
 
   return (
-    <div className="auth-container">
+    <div className="min-h-screen bg-[#090B10] flex items-center justify-center px-4 py-12">
       <motion.div
-        initial={{ opacity: 0, scale: 0.97, y: 12 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-        className="auth-card"
-        style={{ maxWidth: 460 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-lg"
       >
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-4 mb-8">
           <Link to="/login" className="btn btn-ghost btn-icon">
-            <ArrowLeft size={15} />
+            <ArrowLeft size={18} />
           </Link>
-          <div>
-            <h2 style={{ fontSize: "1rem", fontWeight: 600, color: "#EFEFEF" }}>Create account</h2>
-            <p style={{ fontSize: "0.78rem", color: "#52525B" }}>Fill in your details to access the system</p>
+          <div className="flex-1">
+            <h1 className="text-xl font-display font-bold text-[#F5F5F5]">Criar conta</h1>
+            <p className="text-sm text-[#9CA3AF]">Preencha seus dados para começar</p>
           </div>
-          <div className="ml-auto w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ background: "#E8A020" }}>
-            <span style={{
-              fontFamily: "'Barlow Condensed', system-ui, sans-serif",
-              fontWeight: 700, fontSize: "0.75rem", color: "#0E0E10",
-            }}>AT</span>
+          <div className="w-10 h-10 rounded-sm bg-gradient-to-br from-[#00FF87] to-[#00E5FF] flex items-center justify-center">
+            <Dumbbell size={20} className="text-[#090B10]" />
           </div>
         </div>
 
-        {globalErr && (
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="alert alert-error mb-4"
-          >
-            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "#E5484D" }} />
-            {globalErr}
-          </motion.div>
-        )}
+        <div className="card p-8">
+          {globalErr && (
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-3 rounded-sm bg-[#EF4444]/10 border border-[#EF4444]/20 flex items-center gap-2"
+            >
+              <span className="w-2 h-2 rounded-full bg-[#EF4444]" />
+              <span className="text-sm text-[#EF4444]">{globalErr}</span>
+            </motion.div>
+          )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Full name */}
-          <div className="input-group">
-            <label className="input-label">Full name</label>
-            <div className="relative">
-              <User size={13} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#3C3C44" }} />
-              <input
-                className={`input-field pl-9 ${errors.nome ? "error" : ""}`}
-                placeholder="Your name"
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-              />
-            </div>
-            {errors.nome && <span className="input-error">{errors.nome}</span>}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            {/* Username */}
-            <div className="input-group">
-              <label className="input-label">Username</label>
-              <input
-                className={`input-field ${errors.login ? "error" : ""}`}
-                placeholder="username"
-                value={loginV}
-                onChange={(e) => setLoginV(e.target.value)}
-                required
-              />
-              {errors.login && <span className="input-error">{errors.login}</span>}
-            </div>
-
-            {/* Email */}
-            <div className="input-group">
-              <label className="input-label">Email</label>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Name */}
+            <div>
+              <label className="input-label mb-2 block">Nome completo</label>
               <div className="relative">
-                <Mail size={13} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#3C3C44" }} />
+                <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
                 <input
-                  className={`input-field pl-9 ${errors.email ? "error" : ""}`}
-                  type="email"
-                  placeholder="you@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+                  type="text"
+                  className={`input-field pl-10 ${errors.nome ? "border-[#EF4444]" : ""}`}
+                  placeholder="Seu nome"
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
                 />
               </div>
-              {errors.email && <span className="input-error">{errors.email}</span>}
+              {errors.nome && <span className="text-xs text-[#EF4444] mt-1 block">{errors.nome}</span>}
             </div>
-          </div>
 
-          {/* Password */}
-          <div className="input-group">
-            <label className="input-label">Password</label>
-            <div className="relative">
-              <Lock size={13} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#3C3C44" }} />
-              <input
-                className={`input-field pl-9 pr-10 ${errors.senha ? "error" : ""}`}
-                type={showPass ? "text" : "password"}
-                placeholder="••••••••"
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPass((s) => !s)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-                style={{ color: "#3C3C44" }}
-              >
-                {showPass ? <EyeOff size={13} /> : <Eye size={13} />}
-              </button>
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Username */}
+              <div>
+                <label className="input-label mb-2 block">Usuário</label>
+                <input
+                  type="text"
+                  className={`input-field ${errors.login ? "border-[#EF4444]" : ""}`}
+                  placeholder="seu.usuario"
+                  value={loginV}
+                  onChange={(e) => setLoginV(e.target.value)}
+                  required
+                />
+                {errors.login && <span className="text-xs text-[#EF4444] mt-1 block">{errors.login}</span>}
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="input-label mb-2 block">E-mail</label>
+                <div className="relative">
+                  <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+                  <input
+                    type="email"
+                    className={`input-field pl-10 ${errors.email ? "border-[#EF4444]" : ""}`}
+                    placeholder="voce@empresa.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                {errors.email && <span className="text-xs text-[#EF4444] mt-1 block">{errors.email}</span>}
+              </div>
             </div>
-            {senha && (
-              <div className="flex gap-1 mt-1.5">
-                {[1,2,3,4].map((s) => (
-                  <div key={s} className="flex-1 h-1 rounded-full transition-all duration-300"
-                    style={{ background: strengthScore >= s ? strengthColor : "rgba(255,255,255,0.06)" }} />
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Password */}
+              <div>
+                <label className="input-label mb-2 block">Senha</label>
+                <div className="relative">
+                  <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+                  <input
+                    type={showPass ? "text" : "password"}
+                    className={`input-field pl-10 pr-10 ${errors.senha ? "border-[#EF4444]" : ""}`}
+                    placeholder="••••••••"
+                    value={senha}
+                    onChange={(e) => setSenha(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass((s) => !s)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#9CA3AF] transition-colors"
+                  >
+                    {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {senha && (
+                  <div className="mt-2">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4].map((s) => (
+                        <div
+                          key={s}
+                          className="flex-1 h-1 rounded-full transition-all duration-300"
+                          style={{ background: strengthScore >= s ? strengthColor : "#1A1D24" }}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-xs mt-1" style={{ color: strengthColor }}>{strengthLabel}</p>
+                  </div>
+                )}
+                {errors.senha && <span className="text-xs text-[#EF4444] mt-1 block">{errors.senha}</span>}
+              </div>
+
+              {/* Confirm Password */}
+              <div>
+                <label className="input-label mb-2 block">Confirmar senha</label>
+                <div className="relative">
+                  <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+                  <input
+                    type={showPass ? "text" : "password"}
+                    className={`input-field pl-10 ${errors.confirmSenha ? "border-[#EF4444]" : ""}`}
+                    placeholder="••••••••"
+                    value={confirmSenha}
+                    onChange={(e) => setConfirmSenha(e.target.value)}
+                    required
+                  />
+                  {confirmSenha && senha === confirmSenha && (
+                    <Check size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#00FF87]" />
+                  )}
+                </div>
+                {errors.confirmSenha && <span className="text-xs text-[#EF4444] mt-1 block">{errors.confirmSenha}</span>}
+              </div>
+            </div>
+
+            {/* Role Selection */}
+            <div>
+              <label className="input-label mb-3 block">Tipo de acesso</label>
+              <div className="grid grid-cols-3 gap-3">
+                {ROLES.map((r) => (
+                  <button
+                    key={r.value}
+                    type="button"
+                    onClick={() => setRole(r.value)}
+                    className={`p-3 rounded-sm border-2 text-left transition-all ${
+                      role === r.value
+                        ? "border-[#00FF87] bg-[#00FF87]/5"
+                        : "border-[#1A1D24] hover:border-[#4B5563]"
+                    }`}
+                  >
+                    <span className={`text-sm font-medium block ${role === r.value ? "text-[#00FF87]" : "text-[#F5F5F5]"}`}>
+                      {r.label}
+                    </span>
+                    <span className="text-[10px] text-[#4B5563] line-clamp-1">{r.desc}</span>
+                  </button>
                 ))}
               </div>
-            )}
-            {errors.senha && <span className="input-error">{errors.senha}</span>}
+            </div>
+
+            <button type="submit" disabled={submitting} className="btn btn-primary w-full">
+              {submitting ? (
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full border-2 border-[#090B10]/30 border-t-[#090B10] animate-spin" />
+                  Criando conta...
+                </span>
+              ) : (
+                "Criar conta"
+              )}
+            </button>
+          </form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[#1A1D24]" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="px-2 bg-[#111318] text-[#4B5563]">ou</span>
+            </div>
           </div>
 
-          {/* Role */}
-          <div className="input-group">
-            <label className="input-label">Access role</label>
-            <select className="input-field" value={role} onChange={(e) => setRole(e.target.value)}>
-              {ROLES.map((r) => (
-                <option key={r.value} value={r.value}>{r.label}</option>
-              ))}
-            </select>
-          </div>
+          <p className="text-center text-sm text-[#9CA3AF]">
+            Já tem uma conta?{" "}
+            <Link to="/login" className="text-[#00FF87] hover:text-[#00E5FF] transition-colors font-medium">
+              Entrar
+            </Link>
+          </p>
+        </div>
 
-          <button type="submit" disabled={submitting} className="btn btn-primary w-full mt-1">
-            {submitting ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 rounded-full border-2 animate-spin"
-                  style={{ borderColor: "rgba(14,14,16,0.3)", borderTopColor: "#0E0E10" }} />
-                Creating account...
-              </span>
-            ) : (
-              "Create account"
-            )}
-          </button>
-        </form>
-
-        <div className="divider" />
-
-        <p className="text-center" style={{ fontSize: "0.875rem", color: "#52525B" }}>
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="font-semibold transition-colors"
-            style={{ color: "#E8A020" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#F0AB28")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#E8A020")}
-          >
-            Sign in
-          </Link>
+        {/* Footer */}
+        <p className="text-center text-xs text-[#4B5563] mt-6">
+          Ao criar uma conta, você concorda com nossos{" "}
+          <button className="text-[#9CA3AF] hover:text-[#00FF87] transition-colors">Termos de Uso</button>
+          {" "}e{" "}
+          <button className="text-[#9CA3AF] hover:text-[#00FF87] transition-colors">Política de Privacidade</button>
         </p>
       </motion.div>
     </div>

@@ -3,14 +3,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, Plus, Search, Trash2, UserRound } from "lucide-react";
+import { Pencil, Plus, Search, Trash2, UserRound, Mail, Shield, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import {
   apiDeleteUsuario,
   apiListUsuarios,
   apiUpdateUsuario,
+  apiCadastro,
   type UpdateUsuarioPayload,
   type Usuario,
 } from "../api/client";
@@ -21,65 +21,83 @@ import { useAuth } from "../auth/AuthContext";
 
 const schema = z.object({
   nome:  z.string().optional(),
-  login: z.string().min(1, "Username is required"),
-  email: z.string().email("Invalid email"),
+  login: z.string().min(1, "Usuário é obrigatório"),
+  email: z.string().email("E-mail inválido"),
+  senha: z.string().optional(),
   role:  z.enum(["GERENTE", "FUNCIONARIO", "ESTAGIARIO"]),
 });
 type FormValues = z.infer<typeof schema>;
 
 function roleBadge(role?: string) {
-  if (role === "GERENTE")    return { bg: "rgba(232,160,32,0.10)",  color: "#E8A020", label: "Manager"  };
-  if (role === "FUNCIONARIO") return { bg: "rgba(34,197,94,0.10)",  color: "#22C55E", label: "Employee" };
-  return                             { bg: "rgba(129,140,248,0.10)", color: "#818CF8", label: "Intern"   };
+  if (role === "GERENTE")    return { bg: "rgba(0,255,135,0.10)",  color: "#00FF87", label: "Gerente"     };
+  if (role === "FUNCIONARIO") return { bg: "rgba(0,229,255,0.10)", color: "#00E5FF", label: "Funcionário" };
+  return                             { bg: "rgba(245,158,11,0.10)", color: "#F59E0B", label: "Estagiário"  };
 }
 
 function UserForm({
   defaultValues,
   onSubmit,
   loading,
+  isNew,
 }: {
   defaultValues?: Partial<FormValues>;
   onSubmit: (v: FormValues) => void;
   loading?: boolean;
+  isNew?: boolean;
 }) {
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(isNew ? schema.extend({ senha: z.string().min(6, "Mínimo 6 caracteres") }) : schema),
     defaultValues,
   });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="input-group">
-        <label className="input-label">Full name (optional)</label>
-        <input {...register("nome")} className="input-field" placeholder="Full name" />
+      <div>
+        <label className="input-label mb-2 block">Nome completo</label>
+        <input {...register("nome")} className="input-field" placeholder="Nome do usuário" />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="input-group">
-          <label className="input-label">Username</label>
-          <input {...register("login")} className={`input-field ${errors.login ? "error" : ""}`} />
-          {errors.login && <span className="input-error">{errors.login.message}</span>}
+        <div>
+          <label className="input-label mb-2 block">Usuário *</label>
+          <input {...register("login")} className={`input-field ${errors.login ? "border-[#EF4444]" : ""}`} placeholder="usuario" />
+          {errors.login && <span className="text-xs text-[#EF4444] mt-1 block">{errors.login.message}</span>}
         </div>
-        <div className="input-group">
-          <label className="input-label">Email</label>
-          <input {...register("email")} className={`input-field ${errors.email ? "error" : ""}`} />
-          {errors.email && <span className="input-error">{errors.email.message}</span>}
+        <div>
+          <label className="input-label mb-2 block">E-mail *</label>
+          <input {...register("email")} type="email" className={`input-field ${errors.email ? "border-[#EF4444]" : ""}`} placeholder="email@empresa.com" />
+          {errors.email && <span className="text-xs text-[#EF4444] mt-1 block">{errors.email.message}</span>}
         </div>
       </div>
 
-      <div className="input-group">
-        <label className="input-label">Role</label>
-        <select {...register("role")} className={`input-field ${errors.role ? "error" : ""}`}>
-          <option value="GERENTE">Manager</option>
-          <option value="FUNCIONARIO">Employee</option>
-          <option value="ESTAGIARIO">Intern</option>
+      {isNew && (
+        <div>
+          <label className="input-label mb-2 block">Senha *</label>
+          <input {...register("senha")} type="password" className={`input-field ${errors.senha ? "border-[#EF4444]" : ""}`} placeholder="••••••••" />
+          {errors.senha && <span className="text-xs text-[#EF4444] mt-1 block">{errors.senha.message}</span>}
+        </div>
+      )}
+
+      <div>
+        <label className="input-label mb-2 block">Função</label>
+        <select {...register("role")} className={`input-field ${errors.role ? "border-[#EF4444]" : ""}`}>
+          <option value="GERENTE">Gerente</option>
+          <option value="FUNCIONARIO">Funcionário</option>
+          <option value="ESTAGIARIO">Estagiário</option>
         </select>
-        {errors.role && <span className="input-error">{errors.role.message}</span>}
+        {errors.role && <span className="text-xs text-[#EF4444] mt-1 block">{errors.role.message}</span>}
       </div>
 
-      <div className="divider" />
+      <div className="pt-4 border-t border-[#1A1D24]" />
       <button type="submit" className="btn btn-primary w-full" disabled={loading}>
-        {loading ? "Saving..." : "Save user"}
+        {loading ? (
+          <span className="flex items-center gap-2">
+            <span className="w-4 h-4 rounded-full border-2 border-[#090B10]/30 border-t-[#090B10] animate-spin" />
+            Salvando...
+          </span>
+        ) : (
+          isNew ? "Criar usuário" : "Salvar alterações"
+        )}
       </button>
     </form>
   );
@@ -95,10 +113,33 @@ export function UsersPage() {
   const [search,   setSearch]   = useState("");
   const [editing,  setEditing]  = useState<Usuario | null>(null);
   const [deleting, setDeleting] = useState<Usuario | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ["usuarios"],
     queryFn:  apiListUsuarios,
+  });
+
+  const createMut = useMutation({
+    mutationFn: async (v: FormValues) => {
+      const res = await apiCadastro({
+        nome: v.nome?.trim() || undefined,
+        login: v.login,
+        email: v.email,
+        senha: v.senha!,
+        roles: [v.role],
+      });
+      if (res.status !== 201) throw new Error("Falha ao criar usuário");
+      return res;
+    },
+    onSuccess: async () => {
+      toast.success("Usuário criado com sucesso");
+      await qc.invalidateQueries({ queryKey: ["usuarios"] });
+      setCreating(false);
+    },
+    onError: () => {
+      toast.error("Falha ao criar usuário");
+    },
   });
 
   const updateMut = useMutation({
@@ -106,11 +147,11 @@ export function UsersPage() {
       apiUpdateUsuario(id, payload),
     onSuccess: async (res) => {
       if (res.ok) {
-        toast.success("User updated");
+        toast.success("Usuário atualizado");
         await qc.invalidateQueries({ queryKey: ["usuarios"] });
         setEditing(null);
       } else {
-        toast.error("Failed to update user");
+        toast.error("Falha ao atualizar usuário");
       }
     },
   });
@@ -119,11 +160,11 @@ export function UsersPage() {
     mutationFn: (id: string) => apiDeleteUsuario(id),
     onSuccess: async (res) => {
       if (res.ok) {
-        toast.success("User removed");
+        toast.success("Usuário removido");
         await qc.invalidateQueries({ queryKey: ["usuarios"] });
         setDeleting(null);
       } else {
-        toast.error("Failed to remove user");
+        toast.error("Falha ao remover usuário");
       }
     },
   });
@@ -146,38 +187,44 @@ export function UsersPage() {
   } : undefined;
 
   return (
-    <div className="page-container min-h-screen">
+    <div className="space-y-6">
       {error && (
-        <div className="alert alert-error mb-4">
-          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "#E5484D" }} />
-          Failed to load users: {String(error)}
+        <div className="p-3 rounded-sm bg-[#EF4444]/10 border border-[#EF4444]/20 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#EF4444]" />
+          <span className="text-sm text-[#EF4444]">Falha ao carregar usuários: {String(error)}</span>
         </div>
       )}
 
-      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="page-header">
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <p className="page-eyebrow">Access</p>
-          <h1 className="page-title">Users</h1>
-          <p className="page-subtitle">{users.length} registered</p>
+          <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#00FF87] mb-1 block">
+            Gestão
+          </span>
+          <h1 className="text-2xl font-display font-bold text-[#F5F5F5]">Usuários</h1>
+          <p className="text-sm text-[#9CA3AF]">{users.length} usuário{users.length !== 1 ? "s" : ""} cadastrado{users.length !== 1 ? "s" : ""}</p>
         </div>
         {canUpdate && (
-          <Link to="/register" className="btn btn-primary">
-            <Plus size={15} /> New user
-          </Link>
+          <button onClick={() => setCreating(true)} className="btn btn-primary">
+            <Plus size={16} /> Novo Usuário
+          </button>
         )}
       </motion.div>
 
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-        className="search-bar mb-4" style={{ maxWidth: 360, width: "100%" }}>
-        <Search size={14} className="search-icon" />
-        <input
-          className="input-field"
-          placeholder="Search by name, username, email or role..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      {/* Search */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+        <div className="relative max-w-md">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+          <input
+            type="text"
+            className="input-field pl-10"
+            placeholder="Buscar por nome, usuário, e-mail ou função..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
       </motion.div>
 
+      {/* Table */}
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
@@ -185,91 +232,119 @@ export function UsersPage() {
         className="card overflow-hidden"
       >
         {isLoading ? (
-          <div className="p-8 space-y-3">
+          <div className="p-6 space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="skeleton h-11 w-full" style={{ animationDelay: `${i * 0.1}s` }} />
+              <div key={i} className="skeleton h-12 w-full" style={{ animationDelay: `${i * 0.1}s` }} />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="empty-state">
-            <UserRound size={36} />
-            <p style={{ color: "#52525B", fontSize: "0.875rem", marginTop: "0.5rem" }}>
-              {search ? "No results found" : "No users registered"}
+          <div className="text-center py-12">
+            <UserRound size={48} className="mx-auto text-[#4B5563] mb-3" />
+            <p className="text-[#9CA3AF]">
+              {search ? "Nenhum resultado encontrado" : "Nenhum usuário cadastrado"}
             </p>
           </div>
         ) : (
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Username</th>
-                <th className="hidden md:table-cell">Email</th>
-                <th className="hidden sm:table-cell">Role</th>
-                <th className="hidden lg:table-cell">Registered</th>
-                {(canUpdate || canDelete) && <th style={{ width: 90 }} />}
-              </tr>
-            </thead>
-            <tbody>
-              <AnimatePresence>
-                {filtered.map((u, i) => {
-                  const badge = roleBadge(u.roles[0]);
-                  return (
-                    <motion.tr
-                      key={u.id}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ delay: i * 0.035 }}
-                    >
-                      <td>
-                        <span style={{ color: "#EFEFEF", fontWeight: 500 }}>{u.nome || "—"}</span>
-                      </td>
-                      <td>{u.login}</td>
-                      <td className="hidden md:table-cell">{u.email}</td>
-                      <td className="hidden sm:table-cell">
-                        <span className="badge" style={{ background: badge.bg, color: badge.color }}>
-                          {badge.label}
-                        </span>
-                      </td>
-                      <td className="hidden lg:table-cell">
-                        {u.dataCadastro ? formatDate(u.dataCadastro) : "—"}
-                      </td>
-                      {(canUpdate || canDelete) && (
-                        <td>
-                          <div className="flex items-center gap-1 justify-end">
-                            {canUpdate && (
-                              <button
-                                onClick={() => setEditing(u)}
-                                className="btn btn-ghost btn-icon"
-                                onMouseEnter={(e) => (e.currentTarget.style.color = "#E8A020")}
-                                onMouseLeave={(e) => (e.currentTarget.style.color = "")}
-                              >
-                                <Pencil size={13} />
-                              </button>
-                            )}
-                            {canDelete && (
-                              <button
-                                onClick={() => setDeleting(u)}
-                                className="btn btn-ghost btn-icon"
-                                onMouseEnter={(e) => (e.currentTarget.style.color = "#E5484D")}
-                                onMouseLeave={(e) => (e.currentTarget.style.color = "")}
-                              >
-                                <Trash2 size={13} />
-                              </button>
-                            )}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="text-left text-xs text-[#4B5563] uppercase tracking-wider border-b border-[#1A1D24]">
+                  <th className="px-6 py-4">Usuário</th>
+                  <th className="px-6 py-4 hidden md:table-cell">E-mail</th>
+                  <th className="px-6 py-4 hidden sm:table-cell">Função</th>
+                  <th className="px-6 py-4 hidden lg:table-cell">Cadastro</th>
+                  {(canUpdate || canDelete) && <th className="px-6 py-4 w-24" />}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1A1D24]">
+                <AnimatePresence>
+                  {filtered.map((u, i) => {
+                    const badge = roleBadge(u.roles[0]);
+                    return (
+                      <motion.tr
+                        key={u.id}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ delay: i * 0.035 }}
+                        className="hover:bg-[#1A1D24]/30 transition-colors"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-sm flex items-center justify-center text-sm font-bold bg-[#00FF87]/10 text-[#00FF87]">
+                              {(u.nome || u.login).charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-[#F5F5F5]">{u.nome || "—"}</p>
+                              <p className="text-xs text-[#4B5563]">@{u.login}</p>
+                            </div>
                           </div>
                         </td>
-                      )}
-                    </motion.tr>
-                  );
-                })}
-              </AnimatePresence>
-            </tbody>
-          </table>
+                        <td className="px-6 py-4 hidden md:table-cell">
+                          <div className="flex items-center gap-2 text-sm text-[#9CA3AF]">
+                            <Mail size={14} className="text-[#4B5563]" />
+                            {u.email}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 hidden sm:table-cell">
+                          <span 
+                            className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-sm"
+                            style={{ background: badge.bg, color: badge.color }}
+                          >
+                            <Shield size={12} />
+                            {badge.label}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 hidden lg:table-cell">
+                          <div className="flex items-center gap-2 text-xs text-[#4B5563]">
+                            <Calendar size={12} />
+                            {u.dataCadastro ? formatDate(u.dataCadastro) : "—"}
+                          </div>
+                        </td>
+                        {(canUpdate || canDelete) && (
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-1 justify-end">
+                              {canUpdate && (
+                                <button
+                                  onClick={() => setEditing(u)}
+                                  className="btn btn-ghost btn-icon btn-sm hover:text-[#00FF87]"
+                                >
+                                  <Pencil size={14} />
+                                </button>
+                              )}
+                              {canDelete && (
+                                <button
+                                  onClick={() => setDeleting(u)}
+                                  className="btn btn-ghost btn-icon btn-sm hover:text-[#EF4444]"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        )}
+                      </motion.tr>
+                    );
+                  })}
+                </AnimatePresence>
+              </tbody>
+            </table>
+          </div>
         )}
       </motion.div>
 
-      <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit user">
+      {/* Create Modal */}
+      <Modal open={creating} onClose={() => setCreating(false)} title="Novo Usuário">
+        <UserForm
+          defaultValues={{ role: "FUNCIONARIO" }}
+          loading={createMut.isPending}
+          isNew
+          onSubmit={(v) => createMut.mutate(v)}
+        />
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal open={!!editing} onClose={() => setEditing(null)} title="Editar Usuário">
         {editing && (
           <UserForm
             defaultValues={defaultValues}
@@ -282,13 +357,14 @@ export function UsersPage() {
         )}
       </Modal>
 
+      {/* Delete Confirmation */}
       {canDelete && (
         <ConfirmDialog
           open={!!deleting}
           onClose={() => setDeleting(null)}
           onConfirm={() => deleting && deleteMut.mutate(deleting.id)}
           loading={deleteMut.isPending}
-          description={`Remove "${deleting?.nome || deleting?.login}"? This action cannot be undone.`}
+          description={`Remover "${deleting?.nome || deleting?.login}"? Esta ação não pode ser desfeita.`}
         />
       )}
     </div>

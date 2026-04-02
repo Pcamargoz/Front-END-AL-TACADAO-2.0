@@ -2,9 +2,15 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { ReactNode } from "react";
 import { apiLogin, apiLogout, apiMe, type MeResponse } from "../api/client";
 
+export type UserRole = "GERENTE" | "FUNCIONARIO" | "ESTAGIARIO";
+
 type AuthState = {
   user: MeResponse | null;
   loading: boolean;
+  isAuthenticated: boolean;
+  isManager: boolean;
+  isEmployee: boolean;
+  role: UserRole | null;
   refresh: () => Promise<void>;
   login: (login: string, password: string) => Promise<{ ok: true } | { ok: false; message: string }>;
   logout: () => Promise<void>;
@@ -34,11 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await apiLogin(loginValue, password);
     if (res.ok) {
       const data = await res.json();
-      // Salva o token JWT no localStorage
       if (data.token) {
         localStorage.setItem("jwt_token", data.token);
       }
-      // Atualiza o estado do usuário com os dados retornados
       setUser({
         nome: data.nome,
         login: data.login,
@@ -62,9 +66,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const role = (user?.roles?.[0] as UserRole) || null;
+  const isAuthenticated = !!user;
+  const isManager = role === "GERENTE";
+  const isEmployee = role === "FUNCIONARIO" || role === "ESTAGIARIO";
+
   const value = useMemo(
-    () => ({ user, loading, refresh, login, logout }),
-    [user, loading, refresh, login, logout],
+    () => ({ 
+      user, 
+      loading, 
+      isAuthenticated, 
+      isManager, 
+      isEmployee, 
+      role,
+      refresh, 
+      login, 
+      logout 
+    }),
+    [user, loading, isAuthenticated, isManager, isEmployee, role, refresh, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

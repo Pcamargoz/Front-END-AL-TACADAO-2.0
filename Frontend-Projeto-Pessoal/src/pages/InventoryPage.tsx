@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Search, Pencil, Trash2, Package, LayoutGrid, List, Weight } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Package, LayoutGrid, List, Scale, Dumbbell, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -17,14 +17,14 @@ import {
 } from "../api/client";
 import { Modal } from "../components/ui/Modal";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
-import { BRAND_META, ALL_BRANDS } from "../lib/utils";
+import { BRAND_META, ALL_BRANDS, getMockPrice, formatCurrency } from "../lib/utils";
 import { useAuth } from "../auth/AuthContext";
 
 const schema = z.object({
-  descricao:    z.string().min(2, "Description is required"),
+  descricao:    z.string().min(2, "Descrição é obrigatória"),
   medida:       z.string().optional(),
-  marca:        z.string().min(1, "Brand is required"),
-  fornecedorId: z.string().min(1, "Select a supplier"),
+  marca:        z.string().min(1, "Selecione uma marca"),
+  fornecedorId: z.string().min(1, "Selecione um fornecedor"),
 });
 type FormValues = z.infer<typeof schema>;
 
@@ -32,10 +32,12 @@ function ProductForm({
   defaultValues,
   onSubmit,
   loading,
+  isNew,
 }: {
   defaultValues?: Partial<FormValues>;
   onSubmit: (v: FormValues) => void;
   loading?: boolean;
+  isNew?: boolean;
 }) {
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -49,52 +51,59 @@ function ProductForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="input-group">
-        <label className="input-label">Description</label>
+      <div>
+        <label className="input-label mb-2 block">Descrição do produto *</label>
         <input
           {...register("descricao")}
-          placeholder="Product name / description"
-          className={`input-field ${errors.descricao ? "error" : ""}`}
+          placeholder="Ex: Whey Protein Isolado 900g"
+          className={`input-field ${errors.descricao ? "border-[#EF4444]" : ""}`}
         />
-        {errors.descricao && <span className="input-error">{errors.descricao.message}</span>}
+        {errors.descricao && <span className="text-xs text-[#EF4444] mt-1 block">{errors.descricao.message}</span>}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="input-group">
-          <label className="input-label">Weight (g)</label>
+        <div>
+          <label className="input-label mb-2 block">Peso (g)</label>
           <div className="relative">
-            <Weight size={13} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#3C3C44" }} />
-            <input {...register("medida")} type="number" placeholder="500" className="input-field pl-9" />
+            <Scale size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+            <input {...register("medida")} type="number" placeholder="900" className="input-field pl-10" />
           </div>
         </div>
-        <div className="input-group">
-          <label className="input-label">Brand *</label>
-          <select {...register("marca")} className={`input-field ${errors.marca ? "error" : ""}`}>
-            <option value="">Select brand</option>
+        <div>
+          <label className="input-label mb-2 block">Marca *</label>
+          <select {...register("marca")} className={`input-field ${errors.marca ? "border-[#EF4444]" : ""}`}>
+            <option value="">Selecione a marca</option>
             {ALL_BRANDS.map((b) => (
               <option key={b} value={b}>{BRAND_META[b].label}</option>
             ))}
           </select>
-          {errors.marca && <span className="input-error">{errors.marca.message}</span>}
+          {errors.marca && <span className="text-xs text-[#EF4444] mt-1 block">{errors.marca.message}</span>}
         </div>
       </div>
 
-      <div className="input-group">
-        <label className="input-label">Supplier *</label>
-        <select {...register("fornecedorId")} className={`input-field ${errors.fornecedorId ? "error" : ""}`}>
-          <option value="">Select supplier</option>
+      <div>
+        <label className="input-label mb-2 block">Fornecedor *</label>
+        <select {...register("fornecedorId")} className={`input-field ${errors.fornecedorId ? "border-[#EF4444]" : ""}`}>
+          <option value="">Selecione o fornecedor</option>
           {suppliers.map((f) => (
             <option key={f.id} value={f.id}>
               {f.nomeFantasia ? `${f.nomeFantasia} (${f.razaoSocial})` : f.razaoSocial}
             </option>
           ))}
         </select>
-        {errors.fornecedorId && <span className="input-error">{errors.fornecedorId.message}</span>}
+        {errors.fornecedorId && <span className="text-xs text-[#EF4444] mt-1 block">{errors.fornecedorId.message}</span>}
       </div>
 
-      <div className="divider" />
+      <div className="pt-4 border-t border-[#1A1D24]" />
       <button type="submit" className="btn btn-primary w-full" disabled={loading}>
-        {loading ? "Saving..." : "Save product"}
+        {loading ? (
+          <span className="flex items-center gap-2">
+            <span className="w-4 h-4 rounded-full border-2 border-[#090B10]/30 border-t-[#090B10] animate-spin" />
+            Salvando...
+          </span>
+        ) : (
+          isNew ? "Adicionar produto" : "Salvar alterações"
+        )}
       </button>
     </form>
   );
@@ -106,6 +115,8 @@ function ProductCard({
   product: Produto; onEdit: () => void; onDelete: () => void; canEdit: boolean; canDelete: boolean;
 }) {
   const meta = product.marca ? BRAND_META[product.marca] : null;
+  const price = getMockPrice(product.id);
+  
   return (
     <motion.div
       layout
@@ -113,54 +124,54 @@ function ProductCard({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.92 }}
       transition={{ duration: 0.2 }}
-      className="card card-hover flex flex-col gap-3 p-4"
-      style={{ borderColor: meta ? `${meta.color}18` : undefined }}
+      className="card p-4 hover:border-[#00FF87]/25 transition-all group"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="brand-chip" style={{ background: meta?.bg ?? "rgba(100,116,139,0.10)", color: meta?.color ?? "#52525B" }}>
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: meta?.color ?? "#52525B" }} />
-          {meta?.label ?? product.marca ?? "No brand"}
-        </div>
+      <div className="flex items-start justify-between gap-2 mb-3">
+        {meta && (
+          <span 
+            className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-sm"
+            style={{ background: meta.bg, color: meta.color }}
+          >
+            {meta.label}
+          </span>
+        )}
         {product.medida != null && (
-          <span style={{ fontSize: "0.72rem", color: "#3C3C44", fontFamily: "'JetBrains Mono', monospace" }}>
+          <span className="text-xs text-[#4B5563] font-mono">
             {product.medida}g
           </span>
         )}
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: meta?.bg ?? "rgba(100,116,139,0.08)" }}>
-          <Package size={16} style={{ color: meta?.color ?? "#52525B" }} />
+      <div className="flex items-center gap-3 mb-3">
+        <div 
+          className="w-10 h-10 rounded-sm flex items-center justify-center flex-shrink-0"
+          style={{ background: meta?.bg ?? "#1A1D24" }}
+        >
+          <Dumbbell size={18} style={{ color: meta?.color ?? "#4B5563" }} />
         </div>
-        <p style={{ fontSize: "0.875rem", fontWeight: 500, color: "#EFEFEF", lineHeight: 1.35 }}>
+        <p className="text-sm font-medium text-[#F5F5F5] line-clamp-2">
           {product.descricao}
         </p>
       </div>
 
-      {product.fornecedor && (
-        <p className="truncate" style={{ fontSize: "0.75rem", color: "#3C3C44" }}>
-          {product.fornecedor.nomeFantasia || product.fornecedor.razaoSocial}
-        </p>
-      )}
+      <div className="flex items-center justify-between mb-3">
+        <span className="price">{formatCurrency(price)}</span>
+        {product.fornecedor && (
+          <span className="text-xs text-[#4B5563] truncate max-w-[120px]">
+            {product.fornecedor.nomeFantasia || product.fornecedor.razaoSocial}
+          </span>
+        )}
+      </div>
 
-      <div className="flex items-center gap-2 pt-1 mt-auto" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+      <div className="flex items-center gap-2 pt-3 border-t border-[#1A1D24]">
         {canEdit && (
-          <button onClick={onEdit} className="btn btn-ghost btn-sm flex-1"
-            style={{ color: "#52525B" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#E8A020")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#52525B")}
-          >
-            <Pencil size={12} /> Edit
+          <button onClick={onEdit} className="btn btn-ghost btn-sm flex-1 hover:text-[#00FF87]">
+            <Pencil size={12} /> Editar
           </button>
         )}
         {canDelete && (
-          <button onClick={onDelete} className="btn btn-ghost btn-sm flex-1"
-            style={{ color: "#52525B" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#E5484D")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#52525B")}
-          >
-            <Trash2 size={12} /> Remove
+          <button onClick={onDelete} className="btn btn-ghost btn-sm flex-1 hover:text-[#EF4444]">
+            <Trash2 size={12} /> Remover
           </button>
         )}
       </div>
@@ -190,12 +201,12 @@ export function InventoryPage() {
     mutationFn: (p: ProdutoPayload) => apiCreateProduto(p),
     onSuccess: async (res) => {
       if (res.ok) {
-        toast.success("Product added");
+        toast.success("Produto adicionado com sucesso");
         await qc.invalidateQueries({ queryKey: ["estoque"] });
         setModalOpen(false);
       } else {
         const body = await res.json().catch(() => null);
-        toast.error(body?.message ?? "Failed to create product");
+        toast.error(body?.message ?? "Falha ao criar produto");
       }
     },
   });
@@ -205,12 +216,12 @@ export function InventoryPage() {
       apiUpdateProduto(id, payload),
     onSuccess: async (res) => {
       if (res.ok) {
-        toast.success("Product updated");
+        toast.success("Produto atualizado com sucesso");
         await qc.invalidateQueries({ queryKey: ["estoque"] });
         setEditing(null);
       } else {
         const body = await res.json().catch(() => null);
-        toast.error(body?.message ?? "Failed to update product");
+        toast.error(body?.message ?? "Falha ao atualizar produto");
       }
     },
   });
@@ -218,7 +229,7 @@ export function InventoryPage() {
   const deleteMut = useMutation({
     mutationFn: (id: string) => apiDeleteProduto(id),
     onSuccess: async () => {
-      toast.success("Product removed");
+      toast.success("Produto removido com sucesso");
       await qc.invalidateQueries({ queryKey: ["estoque"] });
       setDeleting(null);
     },
@@ -248,37 +259,39 @@ export function InventoryPage() {
   } : undefined;
 
   return (
-    <div className="page-container min-h-screen">
+    <div className="space-y-6">
       {error && (
-        <div className="alert alert-error mb-4">
-          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "#E5484D" }} />
-          Failed to load products: {String(error)}
+        <div className="p-3 rounded-sm bg-[#EF4444]/10 border border-[#EF4444]/20 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#EF4444]" />
+          <span className="text-sm text-[#EF4444]">Falha ao carregar produtos: {String(error)}</span>
         </div>
       )}
 
-      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="page-header">
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <p className="page-eyebrow">Inventory</p>
-          <h1 className="page-title">Products</h1>
-          <p className="page-subtitle">{products.length} items</p>
+          <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#00E5FF] mb-1 block">
+            Estoque
+          </span>
+          <h1 className="text-2xl font-display font-bold text-[#F5F5F5]">Produtos</h1>
+          <p className="text-sm text-[#9CA3AF]">{products.length} produto{products.length !== 1 ? "s" : ""} cadastrado{products.length !== 1 ? "s" : ""}</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={() => setView("grid")}
-            className={`btn btn-icon ${view === "grid" ? "btn-secondary" : "btn-ghost"}`}
+            className={`btn btn-icon btn-sm ${view === "grid" ? "btn-secondary" : "btn-ghost"}`}
           >
-            <LayoutGrid size={15} />
+            <LayoutGrid size={16} />
           </button>
           <button
             onClick={() => setView("list")}
-            className={`btn btn-icon ${view === "list" ? "btn-secondary" : "btn-ghost"}`}
+            className={`btn btn-icon btn-sm ${view === "list" ? "btn-secondary" : "btn-ghost"}`}
           >
-            <List size={15} />
+            <List size={16} />
           </button>
           {isManager && (
-            <button onClick={() => setModalOpen(true)} className="btn btn-primary ml-1">
-              <Plus size={15} />
-              <span className="hidden sm:inline">New product</span>
+            <button onClick={() => setModalOpen(true)} className="btn btn-primary ml-2">
+              <Plus size={16} />
+              <span className="hidden sm:inline">Novo Produto</span>
             </button>
           )}
         </div>
@@ -286,12 +299,13 @@ export function InventoryPage() {
 
       {/* Filters */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-        className="flex flex-wrap items-center gap-3 mb-5">
-        <div className="search-bar" style={{ minWidth: 0, flex: "1 1 200px", maxWidth: 320 }}>
-          <Search size={14} className="search-icon" />
+        className="flex flex-wrap items-center gap-4">
+        <div className="relative flex-1 min-w-[200px] max-w-md">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
           <input
-            className="input-field"
-            placeholder="Search product or brand..."
+            type="text"
+            className="input-field pl-10"
+            placeholder="Buscar produto ou marca..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -299,14 +313,13 @@ export function InventoryPage() {
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setBrand(null)}
-            className="badge cursor-pointer transition-all"
-            style={{
-              background: !brandFilter ? "rgba(232,160,32,0.10)" : "transparent",
-              color: !brandFilter ? "#E8A020" : "#52525B",
-              border: `1px solid ${!brandFilter ? "rgba(232,160,32,0.25)" : "rgba(255,255,255,0.06)"}`,
-            }}
+            className={`px-3 py-1.5 rounded-sm text-xs font-medium transition-colors ${
+              !brandFilter
+                ? "bg-[#00FF87]/10 text-[#00FF87] border border-[#00FF87]/25"
+                : "text-[#4B5563] border border-[#1A1D24] hover:border-[#4B5563]"
+            }`}
           >
-            All
+            Todas
           </button>
           {brandsPresent.map((b) => {
             const m = BRAND_META[b];
@@ -316,12 +329,12 @@ export function InventoryPage() {
               <button
                 key={b}
                 onClick={() => setBrand(active ? null : b)}
-                className="badge cursor-pointer transition-all"
-                style={{
-                  background: active ? m.bg : "transparent",
-                  color: active ? m.color : "#52525B",
-                  border: `1px solid ${active ? `${m.color}44` : "rgba(255,255,255,0.06)"}`,
-                }}
+                className={`px-3 py-1.5 rounded-sm text-xs font-medium transition-colors ${
+                  active
+                    ? "border"
+                    : "text-[#4B5563] border border-[#1A1D24] hover:border-[#4B5563]"
+                }`}
+                style={active ? { background: m.bg, color: m.color, borderColor: `${m.color}44` } : undefined}
               >
                 {m.label}
               </button>
@@ -332,25 +345,25 @@ export function InventoryPage() {
 
       {/* Content */}
       {isLoading ? (
-        <div className={`grid gap-3 ${view === "grid" ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"}`}>
+        <div className={`grid gap-4 ${view === "grid" ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"}`}>
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="skeleton rounded-xl" style={{ height: view === "grid" ? 168 : 68, animationDelay: `${i * 0.06}s` }} />
+            <div key={i} className="skeleton" style={{ height: view === "grid" ? 200 : 80, animationDelay: `${i * 0.06}s` }} />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="empty-state card rounded-xl">
-          <Package size={36} />
-          <p style={{ color: "#52525B", fontSize: "0.875rem", marginTop: "0.5rem" }}>
-            {search || brandFilter ? "No products found" : "Inventory is empty"}
+        <div className="card text-center py-12">
+          <Package size={48} className="mx-auto text-[#4B5563] mb-3" />
+          <p className="text-[#9CA3AF] mb-4">
+            {search || brandFilter ? "Nenhum produto encontrado" : "Estoque vazio"}
           </p>
           {!search && !brandFilter && isManager && (
-            <button onClick={() => setModalOpen(true)} className="btn btn-primary mt-4">
-              <Plus size={14} /> Add product
+            <button onClick={() => setModalOpen(true)} className="btn btn-primary">
+              <Plus size={16} /> Adicionar produto
             </button>
           )}
         </div>
       ) : view === "grid" ? (
-        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
           <AnimatePresence>
             {filtered.map((p) => (
               <ProductCard
@@ -370,94 +383,113 @@ export function InventoryPage() {
           animate={{ opacity: 1 }}
           className="card overflow-hidden"
         >
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th className="hidden sm:table-cell">Brand</th>
-                <th className="hidden md:table-cell">Weight</th>
-                <th className="hidden lg:table-cell">Supplier</th>
-                {(canEdit || isManager) && <th style={{ width: 90 }} />}
-              </tr>
-            </thead>
-            <tbody>
-              <AnimatePresence>
-                {filtered.map((p, i) => {
-                  const meta = p.marca ? BRAND_META[p.marca] : null;
-                  return (
-                    <motion.tr
-                      key={p.id}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ delay: i * 0.025 }}
-                    >
-                      <td>
-                        <div className="flex items-center gap-3">
-                          <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
-                            style={{ background: meta?.bg ?? "rgba(100,116,139,0.10)" }}>
-                            <Package size={13} style={{ color: meta?.color ?? "#52525B" }} />
-                          </div>
-                          <div className="min-w-0">
-                            <span style={{ color: "#EFEFEF", fontWeight: 500 }} className="truncate block">{p.descricao}</span>
-                            {meta && (
-                              <span className="text-xs sm:hidden" style={{ color: meta.color }}>{meta.label}</span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="hidden sm:table-cell">
-                        {meta
-                          ? <span className="brand-chip" style={{ background: meta.bg, color: meta.color }}>{meta.label}</span>
-                          : <span style={{ color: "#2E2E34" }}>—</span>}
-                      </td>
-                      <td className="hidden md:table-cell">
-                        {p.medida != null
-                          ? <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "0.82rem" }}>{p.medida}g</span>
-                          : <span style={{ color: "#2E2E34" }}>—</span>}
-                      </td>
-                      <td className="hidden lg:table-cell">
-                        {p.fornecedor
-                          ? p.fornecedor.nomeFantasia || p.fornecedor.razaoSocial
-                          : <span style={{ color: "#2E2E34" }}>—</span>}
-                      </td>
-                      {(canEdit || isManager) && (
-                        <td>
-                          <div className="flex items-center gap-1 justify-end">
-                            {canEdit && (
-                              <button onClick={() => setEditing(p)} className="btn btn-ghost btn-icon"
-                                onMouseEnter={(e) => (e.currentTarget.style.color = "#E8A020")}
-                                onMouseLeave={(e) => (e.currentTarget.style.color = "")}>
-                                <Pencil size={13} />
-                              </button>
-                            )}
-                            {isManager && (
-                              <button onClick={() => setDeleting(p)} className="btn btn-ghost btn-icon"
-                                onMouseEnter={(e) => (e.currentTarget.style.color = "#E5484D")}
-                                onMouseLeave={(e) => (e.currentTarget.style.color = "")}>
-                                <Trash2 size={13} />
-                              </button>
-                            )}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="text-left text-xs text-[#4B5563] uppercase tracking-wider border-b border-[#1A1D24]">
+                  <th className="px-6 py-4">Produto</th>
+                  <th className="px-6 py-4 hidden sm:table-cell">Marca</th>
+                  <th className="px-6 py-4 hidden md:table-cell">Peso</th>
+                  <th className="px-6 py-4 hidden lg:table-cell">Preço</th>
+                  <th className="px-6 py-4 hidden xl:table-cell">Fornecedor</th>
+                  {(canEdit || isManager) && <th className="px-6 py-4 w-24" />}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1A1D24]">
+                <AnimatePresence>
+                  {filtered.map((p, i) => {
+                    const meta = p.marca ? BRAND_META[p.marca] : null;
+                    const price = getMockPrice(p.id);
+                    return (
+                      <motion.tr
+                        key={p.id}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ delay: i * 0.025 }}
+                        className="hover:bg-[#1A1D24]/30 transition-colors"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-9 h-9 rounded-sm flex items-center justify-center flex-shrink-0"
+                              style={{ background: meta?.bg ?? "#1A1D24" }}
+                            >
+                              <Dumbbell size={14} style={{ color: meta?.color ?? "#4B5563" }} />
+                            </div>
+                            <div className="min-w-0">
+                              <span className="text-sm font-medium text-[#F5F5F5] truncate block">{p.descricao}</span>
+                              {meta && (
+                                <span className="text-xs sm:hidden" style={{ color: meta.color }}>{meta.label}</span>
+                              )}
+                            </div>
                           </div>
                         </td>
-                      )}
-                    </motion.tr>
-                  );
-                })}
-              </AnimatePresence>
-            </tbody>
-          </table>
+                        <td className="px-6 py-4 hidden sm:table-cell">
+                          {meta ? (
+                            <span 
+                              className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-sm"
+                              style={{ background: meta.bg, color: meta.color }}
+                            >
+                              {meta.label}
+                            </span>
+                          ) : (
+                            <span className="text-[#4B5563]">—</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 hidden md:table-cell">
+                          {p.medida != null ? (
+                            <span className="text-sm text-[#9CA3AF] font-mono">{p.medida}g</span>
+                          ) : (
+                            <span className="text-[#4B5563]">—</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 hidden lg:table-cell">
+                          <span className="price text-sm">{formatCurrency(price)}</span>
+                        </td>
+                        <td className="px-6 py-4 hidden xl:table-cell">
+                          {p.fornecedor ? (
+                            <span className="text-sm text-[#9CA3AF]">
+                              {p.fornecedor.nomeFantasia || p.fornecedor.razaoSocial}
+                            </span>
+                          ) : (
+                            <span className="text-[#4B5563]">—</span>
+                          )}
+                        </td>
+                        {(canEdit || isManager) && (
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-1 justify-end">
+                              {canEdit && (
+                                <button onClick={() => setEditing(p)} className="btn btn-ghost btn-icon btn-sm hover:text-[#00FF87]">
+                                  <Pencil size={14} />
+                                </button>
+                              )}
+                              {isManager && (
+                                <button onClick={() => setDeleting(p)} className="btn btn-ghost btn-icon btn-sm hover:text-[#EF4444]">
+                                  <Trash2 size={14} />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        )}
+                      </motion.tr>
+                    );
+                  })}
+                </AnimatePresence>
+              </tbody>
+            </table>
+          </div>
         </motion.div>
       )}
 
       {isManager && (
-        <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="New product">
-          <ProductForm onSubmit={(v) => createMut.mutate(toPayload(v))} loading={createMut.isPending} />
+        <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Novo Produto">
+          <ProductForm onSubmit={(v) => createMut.mutate(toPayload(v))} loading={createMut.isPending} isNew />
         </Modal>
       )}
 
       {canEdit && (
-        <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit product">
+        <Modal open={!!editing} onClose={() => setEditing(null)} title="Editar Produto">
           {editing && (
             <ProductForm
               defaultValues={editingDefaults}
@@ -473,7 +505,7 @@ export function InventoryPage() {
           open={!!deleting}
           onClose={() => setDeleting(null)}
           onConfirm={() => deleting && deleteMut.mutate(deleting.id)}
-          description={`Remove "${deleting?.descricao}"? This action cannot be undone.`}
+          description={`Remover "${deleting?.descricao}"? Esta ação não pode ser desfeita.`}
           loading={deleteMut.isPending}
         />
       )}
