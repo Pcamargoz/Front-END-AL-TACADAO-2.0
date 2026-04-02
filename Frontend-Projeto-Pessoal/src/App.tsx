@@ -17,6 +17,8 @@ import { RegisterPage } from "./pages/RegisterPage";
 
 // Protected Pages
 import { SupplierRegisterPage } from "./pages/SupplierRegisterPage";
+import { PendingCompanyPage } from "./pages/PendingCompanyPage";
+import { ProfilePage } from "./pages/ProfilePage";
 
 // Admin Pages
 import { DashboardPage } from "./pages/DashboardPage";
@@ -43,26 +45,49 @@ export default function App() {
             <Route path="/carrinho" element={<CartPage />} />
           </Route>
 
-          {/* ===== Protected Routes ===== */}
+          {/* ===== Protected Routes (Any authenticated user) ===== */}
           <Route element={<ProtectedRoute />}>
-            {/* Supplier Registration (Any authenticated user) */}
+            {/* Supplier Registration */}
             <Route path="/fornecedor/cadastro" element={<SupplierRegisterPage />} />
+            {/* Page for users waiting company linkage */}
+            <Route path="/aguardando-empresa" element={<PendingCompanyPage />} />
           </Route>
 
-          {/* ===== Admin Routes (AdminLayout + Manager Only) ===== */}
-          <Route element={<ProtectedRoute requiredRole="GERENTE" />}>
+          {/* ===== Dashboard Routes (With AdminLayout) ===== */}
+          <Route element={<ProtectedRoute />}>
             <Route element={<AdminLayout />}>
-              <Route path="/admin" element={<DashboardPage />} />
-              <Route path="/admin/usuarios" element={<UsersPage />} />
-              <Route path="/admin/produtos" element={<InventoryPage />} />
-              <Route path="/admin/fornecedores" element={<SuppliersPage />} />
-              {/* Legacy redirects */}
-              <Route path="/dashboard" element={<Navigate to="/admin" replace />} />
-              <Route path="/users" element={<Navigate to="/admin/usuarios" replace />} />
-              <Route path="/inventory" element={<Navigate to="/admin/produtos" replace />} />
-              <Route path="/suppliers" element={<Navigate to="/admin/fornecedores" replace />} />
+              {/* Dashboard - acessível a todos autenticados */}
+              <Route path="/dashboard" element={<DashboardPage />} />
+              
+              {/* Profile - any authenticated user */}
+              <Route path="/perfil" element={<ProfilePage />} />
+              
+              {/* Produtos - precisa ter empresa para criar, mas pode ver */}
+              <Route path="/estoque" element={<InventoryPage />} />
+              
+              {/* Fornecedores - qualquer autenticado pode ver/criar */}
+              <Route path="/fornecedores" element={<SuppliersPage />} />
             </Route>
           </Route>
+
+          {/* ===== Admin Routes (GERENTE Only) ===== */}
+          <Route element={<ProtectedRoute requiredRole="GERENTE" />}>
+            <Route element={<AdminLayout />}>
+              {/* Admin Dashboard */}
+              <Route path="/admin" element={<DashboardPage />} />
+              {/* Gestão de Usuários */}
+              <Route path="/admin/usuarios" element={<UsersPage />} />
+              {/* Produtos (admin view) */}
+              <Route path="/admin/produtos" element={<InventoryPage />} />
+              {/* Fornecedores (admin view) */}
+              <Route path="/admin/fornecedores" element={<SuppliersPage />} />
+            </Route>
+          </Route>
+
+          {/* ===== Legacy Redirects ===== */}
+          <Route path="/users" element={<Navigate to="/admin/usuarios" replace />} />
+          <Route path="/inventory" element={<Navigate to="/estoque" replace />} />
+          <Route path="/suppliers" element={<Navigate to="/fornecedores" replace />} />
 
           {/* ===== Catch-all ===== */}
           <Route path="*" element={<Navigate to="/" replace />} />

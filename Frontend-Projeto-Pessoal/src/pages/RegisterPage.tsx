@@ -4,12 +4,6 @@ import { Eye, EyeOff, Mail, User, Lock, ArrowLeft, Dumbbell, Check } from "lucid
 import { motion } from "framer-motion";
 import { apiCadastro, type ErroResposta } from "../api/client";
 
-const ROLES = [
-  { value: "GERENTE", label: "Gerente", desc: "Acesso total ao sistema" },
-  { value: "FUNCIONARIO", label: "Funcionário", desc: "Acesso ao catálogo e pedidos" },
-  { value: "ESTAGIARIO", label: "Estagiário", desc: "Acesso limitado" },
-];
-
 export function RegisterPage() {
   const navigate = useNavigate();
 
@@ -19,7 +13,6 @@ export function RegisterPage() {
   const [senha, setSenha] = useState("");
   const [confirmSenha, setConfirmSenha] = useState("");
   const [showPass, setShowPass] = useState(false);
-  const [role, setRole] = useState("GERENTE");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [globalErr, setGlobalErr] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -35,9 +28,15 @@ export function RegisterPage() {
       return;
     }
 
+    if (senha.length < 6) {
+      setErrors({ senha: "A senha deve ter no mínimo 6 caracteres" });
+      return;
+    }
+
     setSubmitting(true);
 
-    const payload = { nome: nome.trim() || undefined, login: loginV, email, senha, roles: [role] };
+    // Cadastro público - sempre cria com role=USER, sem empresa
+    const payload = { nome: nome.trim() || undefined, login: loginV, email, senha };
     const res = await apiCadastro(payload);
 
     if (res.status === 201) {
@@ -103,6 +102,13 @@ export function RegisterPage() {
             </motion.div>
           )}
 
+          {/* Info about registration flow */}
+          <div className="mb-6 p-3 rounded-sm bg-[#00E5FF]/10 border border-[#00E5FF]/20">
+            <p className="text-xs text-[#00E5FF]">
+              Após o cadastro, um gerente precisará vincular você a uma empresa para acesso completo ao sistema.
+            </p>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Name */}
             <div>
@@ -123,7 +129,7 @@ export function RegisterPage() {
             <div className="grid md:grid-cols-2 gap-4">
               {/* Username */}
               <div>
-                <label className="input-label mb-2 block">Usuário</label>
+                <label className="input-label mb-2 block">Usuário *</label>
                 <input
                   type="text"
                   className={`input-field ${errors.login ? "border-[#EF4444]" : ""}`}
@@ -137,7 +143,7 @@ export function RegisterPage() {
 
               {/* Email */}
               <div>
-                <label className="input-label mb-2 block">E-mail</label>
+                <label className="input-label mb-2 block">E-mail *</label>
                 <div className="relative">
                   <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
                   <input
@@ -156,7 +162,7 @@ export function RegisterPage() {
             <div className="grid md:grid-cols-2 gap-4">
               {/* Password */}
               <div>
-                <label className="input-label mb-2 block">Senha</label>
+                <label className="input-label mb-2 block">Senha *</label>
                 <div className="relative">
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
                   <input
@@ -194,7 +200,7 @@ export function RegisterPage() {
 
               {/* Confirm Password */}
               <div>
-                <label className="input-label mb-2 block">Confirmar senha</label>
+                <label className="input-label mb-2 block">Confirmar senha *</label>
                 <div className="relative">
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
                   <input
@@ -210,30 +216,6 @@ export function RegisterPage() {
                   )}
                 </div>
                 {errors.confirmSenha && <span className="text-xs text-[#EF4444] mt-1 block">{errors.confirmSenha}</span>}
-              </div>
-            </div>
-
-            {/* Role Selection */}
-            <div>
-              <label className="input-label mb-3 block">Tipo de acesso</label>
-              <div className="grid grid-cols-3 gap-3">
-                {ROLES.map((r) => (
-                  <button
-                    key={r.value}
-                    type="button"
-                    onClick={() => setRole(r.value)}
-                    className={`p-3 rounded-sm border-2 text-left transition-all ${
-                      role === r.value
-                        ? "border-[#00FF87] bg-[#00FF87]/5"
-                        : "border-[#1A1D24] hover:border-[#4B5563]"
-                    }`}
-                  >
-                    <span className={`text-sm font-medium block ${role === r.value ? "text-[#00FF87]" : "text-[#F5F5F5]"}`}>
-                      {r.label}
-                    </span>
-                    <span className="text-[10px] text-[#4B5563] line-clamp-1">{r.desc}</span>
-                  </button>
-                ))}
               </div>
             </div>
 

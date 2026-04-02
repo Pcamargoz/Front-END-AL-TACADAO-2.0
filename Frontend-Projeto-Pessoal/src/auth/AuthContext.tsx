@@ -1,16 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { apiLogin, apiLogout, apiMe, type MeResponse } from "../api/client";
-
-export type UserRole = "GERENTE" | "FUNCIONARIO" | "ESTAGIARIO";
+import { apiLogin, apiLogout, apiMe, type MeResponse, type UserRole } from "../api/client";
 
 type AuthState = {
   user: MeResponse | null;
   loading: boolean;
   isAuthenticated: boolean;
   isManager: boolean;
-  isEmployee: boolean;
-  role: UserRole | null;
+  hasCompany: boolean;
+  roles: UserRole[];
   refresh: () => Promise<void>;
   login: (login: string, password: string) => Promise<{ ok: true } | { ok: false; message: string }>;
   logout: () => Promise<void>;
@@ -43,12 +41,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.token) {
         localStorage.setItem("jwt_token", data.token);
       }
-      setUser({
-        nome: data.nome,
-        login: data.login,
-        email: data.email,
-        roles: data.roles ?? [],
-      });
+      // Busca dados completos do usuário via /me após login
+      await refresh();
       return { ok: true as const };
     }
     let message = "Usuário ou senha incorretos";
@@ -59,31 +53,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       /* ignore */
     }
     return { ok: false as const, message };
-  }, []);
+  }, [refresh]);
 
   const logout = useCallback(async () => {
     await apiLogout();
     setUser(null);
   }, []);
 
-  const role = (user?.roles?.[0] as UserRole) || null;
+  const roles = user?.roles ?? [];
   const isAuthenticated = !!user;
-  const isManager = role === "GERENTE";
-  const isEmployee = role === "FUNCIONARIO" || role === "ESTAGIARIO";
+  const isManager = roles.includes("GERENTE");
+  const hasCompany = !!user?.fornecedorId;
 
   const value = useMemo(
     () => ({ 
       user, 
       loading, 
       isAuthenticated, 
-      isManager, 
-      isEmployee, 
-      role,
+      isManager,
+      hasCompany,
+      roles,
       refresh, 
       login, 
       logout 
     }),
-    [user, loading, isAuthenticated, isManager, isEmployee, role, refresh, login, logout],
+    [user, loading, isAuthenticated, isManager, hasCompany, roles, refresh, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -94,3 +88,6 @@ export function useAuth(): AuthState {
   if (!ctx) throw new Error("useAuth deve estar dentro de AuthProvider");
   return ctx;
 }
+
+// Re-export types
+export type { UserRole } from "../api/client";

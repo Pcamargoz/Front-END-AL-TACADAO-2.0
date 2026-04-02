@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Truck, Package, Users, TrendingUp, ArrowRight, DollarSign, ArrowUpRight, ArrowDownRight, Activity, Clock, ShoppingBag, Dumbbell } from "lucide-react";
+import { Truck, Package, Users, TrendingUp, ArrowRight, DollarSign, ArrowUpRight, ArrowDownRight, Activity, Clock, ShoppingBag, Dumbbell, AlertTriangle, Building2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
 import { apiListFornecedores, apiListEstoque, apiListUsuarios } from "../api/client";
@@ -84,11 +84,14 @@ function RecentActivity({ items }: { items: RecentActivityItem[] }) {
 }
 
 export function DashboardPage() {
-  const { user } = useAuth();
+  const { user, isManager, hasCompany } = useAuth();
 
   const { data: suppliers = [] } = useQuery({ queryKey: ["fornecedores"], queryFn: apiListFornecedores });
-  const { data: products  = [] } = useQuery({ queryKey: ["estoque"],      queryFn: apiListEstoque      });
-  const { data: users     = [] } = useQuery({ queryKey: ["usuarios"],     queryFn: apiListUsuarios     });
+  const { data: productsData } = useQuery({ queryKey: ["estoque"], queryFn: () => apiListEstoque() });
+  const { data: usersData } = useQuery({ queryKey: ["usuarios"], queryFn: () => apiListUsuarios(), enabled: isManager });
+  
+  const products = productsData?.content ?? [];
+  const users = usersData?.content ?? [];
 
   const brandCount: Record<string, number> = {};
   products.forEach((p) => { if (p.marca) brandCount[p.marca] = (brandCount[p.marca] || 0) + 1; });
@@ -104,7 +107,10 @@ export function DashboardPage() {
 
   // Mock metrics
   const totalRevenue = products.reduce((acc, p) => acc + getMockPrice(p.id), 0);
-  const activeUsers = users.filter((u) => u.roles?.includes("FUNCIONARIO") || u.roles?.includes("ESTAGIARIO")).length;
+  const activeUsers = users.filter((u) => u.roles?.includes("USER") || u.roles?.includes("GERENTE")).length;
+  
+  // Usuários sem empresa
+  const pendingUsers = users.filter((u) => !u.fornecedorId).length;
   
   // Top products (by mock price)
   const topProducts = [...products]
@@ -124,6 +130,64 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {/* Aviso: Usuário sem empresa */}
+      {!hasCompany && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-4 rounded-sm bg-[#F59E0B]/10 border border-[#F59E0B]/20"
+        >
+          <div className="flex items-start gap-3">
+            <AlertTriangle size={24} className="text-[#F59E0B] flex-shrink-0" />
+            <div>
+              <h4 className="text-sm font-medium text-[#F59E0B]">Você ainda não está vinculado a uma empresa</h4>
+              <p className="text-xs text-[#9CA3AF] mt-1 mb-3">
+                Para criar e gerenciar produtos no estoque, você precisa ser vinculado a uma empresa por um gerente.
+                Enquanto isso, você pode visualizar informações gerais do sistema.
+              </p>
+              <Link
+                to="/aguardando-empresa"
+                className="inline-flex items-center gap-2 text-xs font-medium text-[#F59E0B] hover:text-[#FBBF24] transition-colors"
+              >
+                <Building2 size={14} />
+                Ver status de vinculação
+                <ArrowRight size={12} />
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Aviso para Gerente: usuários pendentes */}
+      {isManager && pendingUsers > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="p-4 rounded-sm bg-[#00E5FF]/10 border border-[#00E5FF]/20"
+        >
+          <div className="flex items-start gap-3">
+            <Users size={24} className="text-[#00E5FF] flex-shrink-0" />
+            <div>
+              <h4 className="text-sm font-medium text-[#00E5FF]">
+                {pendingUsers} usuário{pendingUsers !== 1 ? "s" : ""} aguardando vinculação
+              </h4>
+              <p className="text-xs text-[#9CA3AF] mt-1 mb-3">
+                Existem usuários cadastrados que ainda não foram vinculados a uma empresa.
+                Vincule-os para que possam acessar o sistema completo.
+              </p>
+              <Link
+                to="/admin/usuarios"
+                className="inline-flex items-center gap-2 text-xs font-medium text-[#00E5FF] hover:text-[#67E8F9] transition-colors"
+              >
+                Gerenciar usuários
+                <ArrowRight size={12} />
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Welcome Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -139,12 +203,16 @@ export function DashboardPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Link to="/admin/produtos" className="btn btn-secondary">
-            <Package size={16} /> Novo Produto
-          </Link>
-          <Link to="/admin/usuarios" className="btn btn-primary">
-            <Users size={16} /> Novo Usuário
-          </Link>
+          {hasCompany && (
+            <Link to="/admin/produtos" className="btn btn-secondary">
+              <Package size={16} /> Novo Produto
+            </Link>
+          )}
+          {isManager && (
+            <Link to="/admin/usuarios" className="btn btn-primary">
+              <Users size={16} /> Gerenciar Equipe
+            </Link>
+          )}
         </div>
       </motion.div>
 

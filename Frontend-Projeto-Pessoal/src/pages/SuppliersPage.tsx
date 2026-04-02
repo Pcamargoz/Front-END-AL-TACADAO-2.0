@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Search, Pencil, Trash2, Building2, Mail, Phone, Hash, Globe } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Building2, Mail, Phone, Hash, Globe, Info } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -150,9 +150,7 @@ function SupplierForm({
 }
 
 export function SuppliersPage() {
-  const { user } = useAuth();
-  const isManager = user?.roles?.includes("GERENTE") ?? false;
-  const canEdit   = isManager || (user?.roles?.includes("FUNCIONARIO") ?? false);
+  const { isManager, hasCompany } = useAuth();
 
   const qc = useQueryClient();
   const [search,     setSearch]     = useState("");
@@ -169,11 +167,12 @@ export function SuppliersPage() {
     mutationFn: (p: FornecedorPayload) => apiCreateFornecedor(p),
     onSuccess: async (res) => {
       if (res.ok) {
-        toast.success("Fornecedor criado com sucesso!");
+        toast.success("Empresa/Fornecedor criado com sucesso!");
         await qc.invalidateQueries({ queryKey: ["fornecedores"] });
         setModalOpen(false);
       } else {
-        toast.error("Erro ao criar fornecedor");
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.message || "Erro ao criar empresa/fornecedor");
       }
     },
   });
@@ -183,11 +182,11 @@ export function SuppliersPage() {
       apiUpdateFornecedor(id, payload),
     onSuccess: async (res) => {
       if (res.ok) {
-        toast.success("Fornecedor atualizado!");
+        toast.success("Empresa/Fornecedor atualizado!");
         await qc.invalidateQueries({ queryKey: ["fornecedores"] });
         setEditing(null);
       } else {
-        toast.error("Erro ao atualizar fornecedor");
+        toast.error("Erro ao atualizar empresa/fornecedor");
       }
     },
   });
@@ -195,7 +194,7 @@ export function SuppliersPage() {
   const deleteMut = useMutation({
     mutationFn: (id: string) => apiDeleteFornecedor(id),
     onSuccess: async () => {
-      toast.success("Fornecedor removido");
+      toast.success("Empresa/Fornecedor removido");
       await qc.invalidateQueries({ queryKey: ["fornecedores"] });
       setDeleting(null);
     },
@@ -216,9 +215,30 @@ export function SuppliersPage() {
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-sm flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-red-500" />
-          Erro ao carregar fornecedores: {String(error)}
+          Erro ao carregar empresas/fornecedores: {String(error)}
         </div>
       )}
+
+      {/* Info Box */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="p-4 rounded-sm bg-[#00E5FF]/10 border border-[#00E5FF]/20"
+      >
+        <div className="flex items-start gap-3">
+          <Info size={18} className="text-[#00E5FF] mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-sm text-[#F5F5F5] font-medium mb-1">
+              Fornecedor = Empresa
+            </p>
+            <p className="text-xs text-[#9CA3AF]">
+              No AL-TACADÃO, um "Fornecedor" representa uma empresa/organização. 
+              Usuários são vinculados a um Fornecedor para acessar o sistema. 
+              Produtos no estoque também são associados a Fornecedores (de quem são comprados).
+            </p>
+          </div>
+        </div>
+      </motion.div>
 
       <motion.div 
         initial={{ opacity: 0, y: -10 }} 
@@ -227,14 +247,13 @@ export function SuppliersPage() {
       >
         <div>
           <p className="text-[#00FF87] text-sm font-medium tracking-wider uppercase mb-1">Gerenciamento</p>
-          <h1 className="text-2xl font-display font-bold text-[#F5F5F5]">Fornecedores</h1>
+          <h1 className="text-2xl font-display font-bold text-[#F5F5F5]">Empresas / Fornecedores</h1>
           <p className="text-[#9CA3AF] text-sm mt-1">{suppliers.length} cadastrados</p>
         </div>
-        {isManager && (
-          <button onClick={() => setModalOpen(true)} className="btn btn-primary">
-            <Plus size={18} /> <span>Novo Fornecedor</span>
-          </button>
-        )}
+        {/* Qualquer usuário autenticado pode criar fornecedor */}
+        <button onClick={() => setModalOpen(true)} className="btn btn-primary">
+          <Plus size={18} /> <span>Nova Empresa</span>
+        </button>
       </motion.div>
 
       <motion.div 
@@ -270,11 +289,11 @@ export function SuppliersPage() {
               <Building2 size={32} className="text-[#4B5563]" />
             </div>
             <p className="text-[#9CA3AF]">
-              {search ? "Nenhum resultado encontrado" : "Nenhum fornecedor cadastrado"}
+              {search ? "Nenhum resultado encontrado" : "Nenhuma empresa cadastrada"}
             </p>
-            {!search && isManager && (
+            {!search && (
               <button onClick={() => setModalOpen(true)} className="btn btn-primary mt-4">
-                <Plus size={16} /> Adicionar Fornecedor
+                <Plus size={16} /> Adicionar Empresa
               </button>
             )}
           </div>
@@ -295,7 +314,7 @@ export function SuppliersPage() {
                   <th className="text-left text-xs font-medium text-[#4B5563] uppercase tracking-wider px-4 py-3 hidden lg:table-cell">
                     Telefone
                   </th>
-                  {(canEdit || isManager) && (
+                  {isManager && (
                     <th className="text-right text-xs font-medium text-[#4B5563] uppercase tracking-wider px-4 py-3 w-24">
                       Ações
                     </th>
@@ -343,25 +362,21 @@ export function SuppliersPage() {
                           {f.telefone || <span className="text-[#4B5563]">—</span>}
                         </span>
                       </td>
-                      {(canEdit || isManager) && (
+                      {isManager && (
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1 justify-end">
-                            {canEdit && (
-                              <button
-                                onClick={() => setEditing(f)}
-                                className="p-2 rounded-sm text-[#4B5563] hover:text-[#00FF87] hover:bg-[#00FF87]/10 transition-colors"
-                              >
-                                <Pencil size={16} />
-                              </button>
-                            )}
-                            {isManager && (
-                              <button
-                                onClick={() => setDeleting(f)}
-                                className="p-2 rounded-sm text-[#4B5563] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            )}
+                            <button
+                              onClick={() => setEditing(f)}
+                              className="p-2 rounded-sm text-[#4B5563] hover:text-[#00FF87] hover:bg-[#00FF87]/10 transition-colors"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              onClick={() => setDeleting(f)}
+                              className="p-2 rounded-sm text-[#4B5563] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           </div>
                         </td>
                       )}
@@ -374,14 +389,12 @@ export function SuppliersPage() {
         )}
       </motion.div>
 
-      {isManager && (
-        <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Novo Fornecedor">
-          <SupplierForm onSubmit={(v) => createMut.mutate(v)} loading={createMut.isPending} />
-        </Modal>
-      )}
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Nova Empresa / Fornecedor">
+        <SupplierForm onSubmit={(v) => createMut.mutate(v)} loading={createMut.isPending} />
+      </Modal>
 
-      {canEdit && (
-        <Modal open={!!editing} onClose={() => setEditing(null)} title="Editar Fornecedor">
+      {isManager && (
+        <Modal open={!!editing} onClose={() => setEditing(null)} title="Editar Empresa / Fornecedor">
           {editing && (
             <SupplierForm
               defaultValues={editing}

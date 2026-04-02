@@ -4,15 +4,19 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, Plus, Search, Trash2, UserRound, Mail, Shield, Calendar } from "lucide-react";
+import { Pencil, Plus, Search, Trash2, UserRound, Mail, Shield, Calendar, Building2, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   apiDeleteUsuario,
   apiListUsuarios,
   apiUpdateUsuario,
-  apiCadastro,
+  apiUpdateUsuarioRoles,
+  apiVincularUsuarioEmpresa,
+  apiListFornecedores,
   type UpdateUsuarioPayload,
   type Usuario,
+  type Fornecedor,
+  type UserRole,
 } from "../api/client";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { Modal } from "../components/ui/Modal";
@@ -24,14 +28,12 @@ const schema = z.object({
   login: z.string().min(1, "Usuário é obrigatório"),
   email: z.string().email("E-mail inválido"),
   senha: z.string().optional(),
-  role:  z.enum(["GERENTE", "FUNCIONARIO", "ESTAGIARIO"]),
 });
 type FormValues = z.infer<typeof schema>;
 
 function roleBadge(role?: string) {
-  if (role === "GERENTE")    return { bg: "rgba(0,255,135,0.10)",  color: "#00FF87", label: "Gerente"     };
-  if (role === "FUNCIONARIO") return { bg: "rgba(0,229,255,0.10)", color: "#00E5FF", label: "Funcionário" };
-  return                             { bg: "rgba(245,158,11,0.10)", color: "#F59E0B", label: "Estagiário"  };
+  if (role === "GERENTE") return { bg: "rgba(0,255,135,0.10)",  color: "#00FF87", label: "Gerente" };
+  return                         { bg: "rgba(0,229,255,0.10)", color: "#00E5FF", label: "Usuário" };
 }
 
 function UserForm({
@@ -78,16 +80,6 @@ function UserForm({
         </div>
       )}
 
-      <div>
-        <label className="input-label mb-2 block">Função</label>
-        <select {...register("role")} className={`input-field ${errors.role ? "border-[#EF4444]" : ""}`}>
-          <option value="GERENTE">Gerente</option>
-          <option value="FUNCIONARIO">Funcionário</option>
-          <option value="ESTAGIARIO">Estagiário</option>
-        </select>
-        {errors.role && <span className="text-xs text-[#EF4444] mt-1 block">{errors.role.message}</span>}
-      </div>
-
       <div className="pt-4 border-t border-[#1A1D24]" />
       <button type="submit" className="btn btn-primary w-full" disabled={loading}>
         {loading ? (
@@ -103,43 +95,181 @@ function UserForm({
   );
 }
 
+// Modal para vincular usuário à empresa
+function VincularEmpresaModal({
+  open,
+  onClose,
+  usuario,
+  fornecedores,
+  onVincular,
+  loading,
+}: {
+  open: boolean;
+  onClose: () => void;
+  usuario: Usuario | null;
+  fornecedores: Fornecedor[];
+  onVincular: (fornecedorId: string) => void;
+  loading: boolean;
+}) {
+  const [selectedFornecedor, setSelectedFornecedor] = useState<string>("");
+
+  return (
+    <Modal open={open} onClose={onClose} title="Vincular à Empresa">
+      <div className="space-y-4">
+        <p className="text-sm text-[#9CA3AF]">
+          Selecione a empresa para vincular o usuário <strong className="text-[#F5F5F5]">{usuario?.nome || usuario?.login}</strong>
+        </p>
+
+        <div>
+          <label className="input-label mb-2 block">Empresa (Fornecedor)</label>
+          <select
+            value={selectedFornecedor}
+            onChange={(e) => setSelectedFornecedor(e.target.value)}
+            className="input-field"
+          >
+            <option value="">Selecione uma empresa...</option>
+            {fornecedores.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.nomeFantasia || f.razaoSocial} - {f.cnpj}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {fornecedores.length === 0 && (
+          <div className="p-3 rounded-sm bg-[#F59E0B]/10 border border-[#F59E0B]/20">
+            <p className="text-xs text-[#F59E0B]">
+              Nenhuma empresa cadastrada. Crie uma empresa primeiro na página de Fornecedores.
+            </p>
+          </div>
+        )}
+
+        <div className="pt-4 border-t border-[#1A1D24]" />
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="btn btn-secondary flex-1"
+            disabled={loading}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={() => selectedFornecedor && onVincular(selectedFornecedor)}
+            className="btn btn-primary flex-1"
+            disabled={loading || !selectedFornecedor}
+          >
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded-full border-2 border-[#090B10]/30 border-t-[#090B10] animate-spin" />
+                Vinculando...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <Link2 size={16} />
+                Vincular
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// Modal para alterar role do usuário
+function AlterarRoleModal({
+  open,
+  onClose,
+  usuario,
+  onAlterar,
+  loading,
+}: {
+  open: boolean;
+  onClose: () => void;
+  usuario: Usuario | null;
+  onAlterar: (roles: UserRole[]) => void;
+  loading: boolean;
+}) {
+  const currentRole = usuario?.roles?.[0] ?? "USER";
+  const [selectedRole, setSelectedRole] = useState<UserRole>(currentRole as UserRole);
+
+  return (
+    <Modal open={open} onClose={onClose} title="Alterar Função">
+      <div className="space-y-4">
+        <p className="text-sm text-[#9CA3AF]">
+          Alterar função do usuário <strong className="text-[#F5F5F5]">{usuario?.nome || usuario?.login}</strong>
+        </p>
+
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => setSelectedRole("USER")}
+            className={`p-4 rounded-sm border-2 text-left transition-all ${
+              selectedRole === "USER"
+                ? "border-[#00E5FF] bg-[#00E5FF]/5"
+                : "border-[#1A1D24] hover:border-[#4B5563]"
+            }`}
+          >
+            <span className={`text-sm font-medium block ${selectedRole === "USER" ? "text-[#00E5FF]" : "text-[#F5F5F5]"}`}>
+              Usuário
+            </span>
+            <span className="text-xs text-[#4B5563]">Acesso básico ao sistema</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedRole("GERENTE")}
+            className={`p-4 rounded-sm border-2 text-left transition-all ${
+              selectedRole === "GERENTE"
+                ? "border-[#00FF87] bg-[#00FF87]/5"
+                : "border-[#1A1D24] hover:border-[#4B5563]"
+            }`}
+          >
+            <span className={`text-sm font-medium block ${selectedRole === "GERENTE" ? "text-[#00FF87]" : "text-[#F5F5F5]"}`}>
+              Gerente
+            </span>
+            <span className="text-xs text-[#4B5563]">Acesso total ao sistema</span>
+          </button>
+        </div>
+
+        <div className="pt-4 border-t border-[#1A1D24]" />
+        <div className="flex gap-3">
+          <button onClick={onClose} className="btn btn-secondary flex-1" disabled={loading}>
+            Cancelar
+          </button>
+          <button
+            onClick={() => onAlterar([selectedRole])}
+            className="btn btn-primary flex-1"
+            disabled={loading}
+          >
+            {loading ? "Salvando..." : "Salvar"}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
 export function UsersPage() {
-  const { user } = useAuth();
-  const role      = user?.roles?.[0];
-  const canUpdate = role === "GERENTE" || role === "FUNCIONARIO";
-  const canDelete = role === "GERENTE";
+  const { user, isManager } = useAuth();
 
   const qc = useQueryClient();
-  const [search,   setSearch]   = useState("");
-  const [editing,  setEditing]  = useState<Usuario | null>(null);
-  const [deleting, setDeleting] = useState<Usuario | null>(null);
-  const [creating, setCreating] = useState(false);
+  const [search,       setSearch]       = useState("");
+  const [editing,      setEditing]      = useState<Usuario | null>(null);
+  const [deleting,     setDeleting]     = useState<Usuario | null>(null);
+  const [vinculando,   setVinculando]   = useState<Usuario | null>(null);
+  const [alterandoRole, setAlterandoRole] = useState<Usuario | null>(null);
+  const [filterPending, setFilterPending] = useState(false);
 
-  const { data: users = [], isLoading, error } = useQuery({
+  const { data: usersData, isLoading, error } = useQuery({
     queryKey: ["usuarios"],
-    queryFn:  apiListUsuarios,
+    queryFn:  () => apiListUsuarios(),
   });
+  const users = usersData?.content ?? [];
 
-  const createMut = useMutation({
-    mutationFn: async (v: FormValues) => {
-      const res = await apiCadastro({
-        nome: v.nome?.trim() || undefined,
-        login: v.login,
-        email: v.email,
-        senha: v.senha!,
-        roles: [v.role],
-      });
-      if (res.status !== 201) throw new Error("Falha ao criar usuário");
-      return res;
-    },
-    onSuccess: async () => {
-      toast.success("Usuário criado com sucesso");
-      await qc.invalidateQueries({ queryKey: ["usuarios"] });
-      setCreating(false);
-    },
-    onError: () => {
-      toast.error("Falha ao criar usuário");
-    },
+  const { data: fornecedores = [] } = useQuery({
+    queryKey: ["fornecedores"],
+    queryFn:  apiListFornecedores,
+    enabled:  isManager,
   });
 
   const updateMut = useMutation({
@@ -169,7 +299,40 @@ export function UsersPage() {
     },
   });
 
+  const vincularMut = useMutation({
+    mutationFn: ({ usuarioId, fornecedorId }: { usuarioId: string; fornecedorId: string }) =>
+      apiVincularUsuarioEmpresa(usuarioId, fornecedorId),
+    onSuccess: async (res) => {
+      if (res.ok) {
+        toast.success("Usuário vinculado à empresa com sucesso!");
+        await qc.invalidateQueries({ queryKey: ["usuarios"] });
+        setVinculando(null);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.message || "Falha ao vincular usuário");
+      }
+    },
+  });
+
+  const rolesMut = useMutation({
+    mutationFn: ({ id, roles }: { id: string; roles: UserRole[] }) =>
+      apiUpdateUsuarioRoles(id, roles),
+    onSuccess: async (res) => {
+      if (res.ok) {
+        toast.success("Função alterada com sucesso!");
+        await qc.invalidateQueries({ queryKey: ["usuarios"] });
+        setAlterandoRole(null);
+      } else {
+        toast.error("Falha ao alterar função");
+      }
+    },
+  });
+
+  // Filtrar usuários
   const filtered = users.filter((u) => {
+    // Filtro de pendentes (sem empresa)
+    if (filterPending && u.fornecedorId) return false;
+    
     const q = search.toLowerCase();
     return (
       (u.nome ?? "").toLowerCase().includes(q) ||
@@ -179,11 +342,13 @@ export function UsersPage() {
     );
   });
 
+  // Contar usuários pendentes
+  const pendingCount = users.filter((u) => !u.fornecedorId).length;
+
   const defaultValues = editing ? {
     nome:  editing.nome ?? "",
     login: editing.login,
     email: editing.email,
-    role:  (editing.roles[0] ?? "ESTAGIARIO") as FormValues["role"],
   } : undefined;
 
   return (
@@ -201,27 +366,37 @@ export function UsersPage() {
             Gestão
           </span>
           <h1 className="text-2xl font-display font-bold text-[#F5F5F5]">Usuários</h1>
-          <p className="text-sm text-[#9CA3AF]">{users.length} usuário{users.length !== 1 ? "s" : ""} cadastrado{users.length !== 1 ? "s" : ""}</p>
+          <p className="text-sm text-[#9CA3AF]">
+            {users.length} usuário{users.length !== 1 ? "s" : ""} cadastrado{users.length !== 1 ? "s" : ""}
+            {pendingCount > 0 && (
+              <span className="text-[#F59E0B]"> • {pendingCount} aguardando vinculação</span>
+            )}
+          </p>
         </div>
-        {canUpdate && (
-          <button onClick={() => setCreating(true)} className="btn btn-primary">
-            <Plus size={16} /> Novo Usuário
-          </button>
-        )}
       </motion.div>
 
-      {/* Search */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-        <div className="relative max-w-md">
+      {/* Filters */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1 max-w-md">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
           <input
             type="text"
-            className="input-field pl-10"
-            placeholder="Buscar por nome, usuário, e-mail ou função..."
+            className="input-field pl-10 w-full"
+            placeholder="Buscar por nome, usuário, e-mail..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        
+        {pendingCount > 0 && (
+          <button
+            onClick={() => setFilterPending(!filterPending)}
+            className={`btn ${filterPending ? "btn-primary" : "btn-secondary"}`}
+          >
+            <Building2 size={16} />
+            Sem empresa ({pendingCount})
+          </button>
+        )}
       </motion.div>
 
       {/* Table */}
@@ -241,7 +416,7 @@ export function UsersPage() {
           <div className="text-center py-12">
             <UserRound size={48} className="mx-auto text-[#4B5563] mb-3" />
             <p className="text-[#9CA3AF]">
-              {search ? "Nenhum resultado encontrado" : "Nenhum usuário cadastrado"}
+              {search || filterPending ? "Nenhum resultado encontrado" : "Nenhum usuário cadastrado"}
             </p>
           </div>
         ) : (
@@ -252,14 +427,18 @@ export function UsersPage() {
                   <th className="px-6 py-4">Usuário</th>
                   <th className="px-6 py-4 hidden md:table-cell">E-mail</th>
                   <th className="px-6 py-4 hidden sm:table-cell">Função</th>
-                  <th className="px-6 py-4 hidden lg:table-cell">Cadastro</th>
-                  {(canUpdate || canDelete) && <th className="px-6 py-4 w-24" />}
+                  <th className="px-6 py-4 hidden lg:table-cell">Empresa</th>
+                  <th className="px-6 py-4 hidden xl:table-cell">Cadastro</th>
+                  {isManager && <th className="px-6 py-4 w-32" />}
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1A1D24]">
                 <AnimatePresence>
                   {filtered.map((u, i) => {
                     const badge = roleBadge(u.roles[0]);
+                    const isSelf = u.id === user?.id;
+                    const hasCompany = !!u.fornecedorId;
+                    
                     return (
                       <motion.tr
                         key={u.id}
@@ -287,35 +466,61 @@ export function UsersPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 hidden sm:table-cell">
-                          <span 
-                            className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-sm"
+                          <button
+                            onClick={() => isManager && !isSelf && setAlterandoRole(u)}
+                            disabled={!isManager || isSelf}
+                            className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-sm transition-opacity ${
+                              isManager && !isSelf ? "hover:opacity-80 cursor-pointer" : ""
+                            }`}
                             style={{ background: badge.bg, color: badge.color }}
                           >
                             <Shield size={12} />
                             {badge.label}
-                          </span>
+                          </button>
                         </td>
                         <td className="px-6 py-4 hidden lg:table-cell">
+                          {hasCompany ? (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-sm bg-[#10B981]/10 text-[#10B981]">
+                              <Building2 size={12} />
+                              Vinculado
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-sm bg-[#F59E0B]/10 text-[#F59E0B]">
+                              <Building2 size={12} />
+                              Pendente
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 hidden xl:table-cell">
                           <div className="flex items-center gap-2 text-xs text-[#4B5563]">
                             <Calendar size={12} />
                             {u.dataCadastro ? formatDate(u.dataCadastro) : "—"}
                           </div>
                         </td>
-                        {(canUpdate || canDelete) && (
+                        {isManager && (
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-1 justify-end">
-                              {canUpdate && (
+                              {!hasCompany && (
                                 <button
-                                  onClick={() => setEditing(u)}
-                                  className="btn btn-ghost btn-icon btn-sm hover:text-[#00FF87]"
+                                  onClick={() => setVinculando(u)}
+                                  className="btn btn-ghost btn-icon btn-sm hover:text-[#00E5FF]"
+                                  title="Vincular à empresa"
                                 >
-                                  <Pencil size={14} />
+                                  <Link2 size={14} />
                                 </button>
                               )}
-                              {canDelete && (
+                              <button
+                                onClick={() => setEditing(u)}
+                                className="btn btn-ghost btn-icon btn-sm hover:text-[#00FF87]"
+                                title="Editar"
+                              >
+                                <Pencil size={14} />
+                              </button>
+                              {!isSelf && (
                                 <button
                                   onClick={() => setDeleting(u)}
                                   className="btn btn-ghost btn-icon btn-sm hover:text-[#EF4444]"
+                                  title="Remover"
                                 >
                                   <Trash2 size={14} />
                                 </button>
@@ -333,16 +538,6 @@ export function UsersPage() {
         )}
       </motion.div>
 
-      {/* Create Modal */}
-      <Modal open={creating} onClose={() => setCreating(false)} title="Novo Usuário">
-        <UserForm
-          defaultValues={{ role: "FUNCIONARIO" }}
-          loading={createMut.isPending}
-          isNew
-          onSubmit={(v) => createMut.mutate(v)}
-        />
-      </Modal>
-
       {/* Edit Modal */}
       <Modal open={!!editing} onClose={() => setEditing(null)} title="Editar Usuário">
         {editing && (
@@ -351,14 +546,33 @@ export function UsersPage() {
             loading={updateMut.isPending}
             onSubmit={(v) => updateMut.mutate({
               id: editing.id,
-              payload: { nome: v.nome?.trim() || undefined, login: v.login, email: v.email, roles: [v.role] },
+              payload: { nome: v.nome?.trim() || undefined, login: v.login, email: v.email },
             })}
           />
         )}
       </Modal>
 
+      {/* Vincular Empresa Modal */}
+      <VincularEmpresaModal
+        open={!!vinculando}
+        onClose={() => setVinculando(null)}
+        usuario={vinculando}
+        fornecedores={fornecedores}
+        onVincular={(fornecedorId) => vinculando && vincularMut.mutate({ usuarioId: vinculando.id, fornecedorId })}
+        loading={vincularMut.isPending}
+      />
+
+      {/* Alterar Role Modal */}
+      <AlterarRoleModal
+        open={!!alterandoRole}
+        onClose={() => setAlterandoRole(null)}
+        usuario={alterandoRole}
+        onAlterar={(roles) => alterandoRole && rolesMut.mutate({ id: alterandoRole.id, roles })}
+        loading={rolesMut.isPending}
+      />
+
       {/* Delete Confirmation */}
-      {canDelete && (
+      {isManager && (
         <ConfirmDialog
           open={!!deleting}
           onClose={() => setDeleting(null)}

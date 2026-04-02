@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Search, Pencil, Trash2, Package, LayoutGrid, List, Scale, Dumbbell } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Package, LayoutGrid, List, Scale, Dumbbell, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -14,6 +14,7 @@ import {
   apiListFornecedores,
   type Produto,
   type ProdutoPayload,
+  MARCAS_VALIDAS,
 } from "../api/client";
 import { Modal } from "../components/ui/Modal";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
@@ -22,6 +23,7 @@ import { useAuth } from "../auth/AuthContext";
 
 const schema = z.object({
   descricao:    z.string().min(2, "Descrição é obrigatória"),
+  sabor:        z.string().optional(),
   medida:       z.string().optional(),
   marca:        z.string().min(1, "Selecione uma marca"),
   fornecedorId: z.string().min(1, "Selecione um fornecedor"),
@@ -63,35 +65,50 @@ function ProductForm({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="input-label mb-2 block">Peso (g)</label>
+          <label className="input-label mb-2 block">Sabor</label>
+          <input
+            {...register("sabor")}
+            placeholder="Ex: Chocolate, Baunilha..."
+            className="input-field"
+          />
+        </div>
+        <div>
+          <label className="input-label mb-2 block">Medida (ex: 1.5, 2.0)</label>
           <div className="relative">
             <Scale size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
-            <input {...register("medida")} type="number" placeholder="900" className="input-field pl-10" />
+            <input {...register("medida")} type="number" step="0.01" placeholder="1.5" className="input-field pl-10" />
           </div>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="input-label mb-2 block">Marca *</label>
           <select {...register("marca")} className={`input-field ${errors.marca ? "border-[#EF4444]" : ""}`}>
             <option value="">Selecione a marca</option>
             {ALL_BRANDS.map((b) => (
-              <option key={b} value={b}>{BRAND_META[b].label}</option>
+              <option key={b} value={b}>{BRAND_META[b]?.label ?? b}</option>
+            ))}
+            {/* Também inclui marcas da API se existirem */}
+            {MARCAS_VALIDAS.filter(m => !ALL_BRANDS.includes(m)).map((b) => (
+              <option key={b} value={b}>{b}</option>
             ))}
           </select>
           {errors.marca && <span className="text-xs text-[#EF4444] mt-1 block">{errors.marca.message}</span>}
         </div>
-      </div>
-
-      <div>
-        <label className="input-label mb-2 block">Fornecedor *</label>
-        <select {...register("fornecedorId")} className={`input-field ${errors.fornecedorId ? "border-[#EF4444]" : ""}`}>
-          <option value="">Selecione o fornecedor</option>
-          {suppliers.map((f) => (
-            <option key={f.id} value={f.id}>
-              {f.nomeFantasia ? `${f.nomeFantasia} (${f.razaoSocial})` : f.razaoSocial}
-            </option>
-          ))}
-        </select>
-        {errors.fornecedorId && <span className="text-xs text-[#EF4444] mt-1 block">{errors.fornecedorId.message}</span>}
+        <div>
+          <label className="input-label mb-2 block">Fornecedor do Produto *</label>
+          <select {...register("fornecedorId")} className={`input-field ${errors.fornecedorId ? "border-[#EF4444]" : ""}`}>
+            <option value="">Selecione o fornecedor</option>
+            {suppliers.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.nomeFantasia ? `${f.nomeFantasia} (${f.razaoSocial})` : f.razaoSocial}
+              </option>
+            ))}
+          </select>
+          {errors.fornecedorId && <span className="text-xs text-[#EF4444] mt-1 block">{errors.fornecedorId.message}</span>}
+          <p className="text-xs text-[#4B5563] mt-1">De quem o produto é comprado</p>
+        </div>
       </div>
 
       <div className="pt-4 border-t border-[#1A1D24]" />
@@ -180,9 +197,8 @@ function ProductCard({
 }
 
 export function InventoryPage() {
-  const { user } = useAuth();
-  const isManager = user?.roles?.includes("GERENTE") ?? false;
-  const canEdit   = isManager || (user?.roles?.includes("FUNCIONARIO") ?? false);
+  const { isManager, hasCompany } = useAuth();
+  const canEdit = true; // Criador ou GERENTE podem editar
 
   const qc = useQueryClient();
   const [search,     setSearch]     = useState("");
@@ -192,10 +208,11 @@ export function InventoryPage() {
   const [editing,    setEditing]    = useState<Produto | null>(null);
   const [deleting,   setDeleting]   = useState<Produto | null>(null);
 
-  const { data: products = [], isLoading, error } = useQuery<Produto[], Error>({
+  const { data: productsData, isLoading, error } = useQuery({
     queryKey: ["estoque"],
-    queryFn:  apiListEstoque,
+    queryFn:  () => apiListEstoque(),
   });
+  const products = productsData?.content ?? [];
 
   const createMut = useMutation({
     mutationFn: (p: ProdutoPayload) => apiCreateProduto(p),
@@ -237,6 +254,7 @@ export function InventoryPage() {
 
   const toPayload = (v: FormValues): ProdutoPayload => ({
     descricao: v.descricao,
+    sabor: v.sabor,
     medida: v.medida ? Number(v.medida) : undefined,
     marca: v.marca,
     fornecedorId: v.fornecedorId,
@@ -253,6 +271,7 @@ export function InventoryPage() {
 
   const editingDefaults = editing ? {
     descricao:    editing.descricao,
+    sabor:        editing.sabor ?? "",
     medida:       editing.medida?.toString(),
     marca:        editing.marca ?? "",
     fornecedorId: editing.fornecedor?.id ?? "",
@@ -260,6 +279,24 @@ export function InventoryPage() {
 
   return (
     <div className="space-y-6">
+      {/* Aviso para usuário sem empresa */}
+      {!hasCompany && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-4 rounded-sm bg-[#F59E0B]/10 border border-[#F59E0B]/20 flex items-start gap-3"
+        >
+          <AlertTriangle size={20} className="text-[#F59E0B] flex-shrink-0 mt-0.5" />
+          <div>
+            <h4 className="text-sm font-medium text-[#F59E0B]">Acesso Limitado</h4>
+            <p className="text-xs text-[#9CA3AF] mt-1">
+              Você ainda não está vinculado a uma empresa. Você pode visualizar os produtos, mas não pode criar novos.
+              Aguarde um gerente vincular você à empresa ou entre em contato com a administração.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
       {error && (
         <div className="p-3 rounded-sm bg-[#EF4444]/10 border border-[#EF4444]/20 flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-[#EF4444]" />
@@ -288,7 +325,7 @@ export function InventoryPage() {
           >
             <List size={16} />
           </button>
-          {isManager && (
+          {hasCompany && (
             <button onClick={() => setModalOpen(true)} className="btn btn-primary ml-2">
               <Plus size={16} />
               <span className="hidden sm:inline">Novo Produto</span>
@@ -356,7 +393,7 @@ export function InventoryPage() {
           <p className="text-[#9CA3AF] mb-4">
             {search || brandFilter ? "Nenhum produto encontrado" : "Estoque vazio"}
           </p>
-          {!search && !brandFilter && isManager && (
+          {!search && !brandFilter && hasCompany && (
             <button onClick={() => setModalOpen(true)} className="btn btn-primary">
               <Plus size={16} /> Adicionar produto
             </button>
@@ -482,13 +519,13 @@ export function InventoryPage() {
         </motion.div>
       )}
 
-      {isManager && (
+      {hasCompany && (
         <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Novo Produto">
           <ProductForm onSubmit={(v) => createMut.mutate(toPayload(v))} loading={createMut.isPending} isNew />
         </Modal>
       )}
 
-      {canEdit && (
+      {canEdit && hasCompany && (
         <Modal open={!!editing} onClose={() => setEditing(null)} title="Editar Produto">
           {editing && (
             <ProductForm

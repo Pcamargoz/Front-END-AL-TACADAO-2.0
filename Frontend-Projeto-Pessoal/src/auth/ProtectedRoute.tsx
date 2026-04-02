@@ -5,15 +5,17 @@ import { LoadingScreen } from "../components/ui/Spinner";
 interface ProtectedRouteProps {
   children?: React.ReactNode;
   requiredRole?: UserRole;
+  requireCompany?: boolean;
   redirectTo?: string;
 }
 
 export function ProtectedRoute({ 
   children, 
   requiredRole,
+  requireCompany = false,
   redirectTo = "/login" 
 }: ProtectedRouteProps) {
-  const { loading, isAuthenticated, role } = useAuth();
+  const { loading, isAuthenticated, isManager, hasCompany } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -25,12 +27,15 @@ export function ProtectedRoute({
   }
 
   // Se requer role específica (ex: GERENTE para admin)
-  if (requiredRole && role !== requiredRole) {
-    // Redireciona usuário não-gerente para o catálogo
-    return <Navigate to="/produtos" replace />;
+  if (requiredRole === "GERENTE" && !isManager) {
+    return <Navigate to="/dashboard" replace />;
   }
 
-  // Se children foi passado diretamente, renderiza; caso contrário, usa Outlet
+  // Se requer empresa vinculada (para criar produtos, etc.)
+  if (requireCompany && !hasCompany) {
+    return <Navigate to="/aguardando-empresa" replace />;
+  }
+
   return children ? <>{children}</> : <Outlet />;
 }
 
@@ -39,15 +44,17 @@ interface GuestRouteProps {
   redirectTo?: string;
 }
 
-export function GuestRoute({ children, redirectTo = "/" }: GuestRouteProps) {
-  const { isAuthenticated, loading } = useAuth();
+export function GuestRoute({ children, redirectTo = "/dashboard" }: GuestRouteProps) {
+  const { isAuthenticated, loading, isManager } = useAuth();
 
   if (loading) {
     return <LoadingScreen message="Carregando..." />;
   }
 
   if (isAuthenticated) {
-    return <Navigate to={redirectTo} replace />;
+    // Gerente vai para admin, usuário comum vai para dashboard
+    const dest = isManager ? "/admin" : redirectTo;
+    return <Navigate to={dest} replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;
