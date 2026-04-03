@@ -45,27 +45,31 @@ export default function App() {
             <Route path="/carrinho" element={<CartPage />} />
           </Route>
 
-          {/* ===== Protected Routes (Any authenticated user) ===== */}
-          <Route element={<ProtectedRoute />}>
-            {/* Supplier Registration */}
-            <Route path="/fornecedor/cadastro" element={<SupplierRegisterPage />} />
-            {/* Page for users waiting company linkage */}
+          {/* ===== Pending Approval Route (allows pending users) ===== */}
+          <Route element={<ProtectedRoute allowPending />}>
+            {/* Page for users waiting approval */}
             <Route path="/aguardando-empresa" element={<PendingCompanyPage />} />
           </Route>
 
-          {/* ===== Dashboard Routes (With AdminLayout) ===== */}
+          {/* ===== Protected Routes (Requires approved company) ===== */}
+          <Route element={<ProtectedRoute />}>
+            {/* Supplier Registration - para criar empresa manualmente */}
+            <Route path="/fornecedor/cadastro" element={<SupplierRegisterPage />} />
+          </Route>
+
+          {/* ===== Dashboard Routes (With AdminLayout, requires company) ===== */}
           <Route element={<ProtectedRoute />}>
             <Route element={<AdminLayout />}>
-              {/* Dashboard - acessível a todos autenticados */}
+              {/* Dashboard - acessível a todos autenticados com empresa */}
               <Route path="/dashboard" element={<DashboardPage />} />
               
-              {/* Profile - any authenticated user */}
+              {/* Profile - any authenticated user with company */}
               <Route path="/perfil" element={<ProfilePage />} />
               
-              {/* Produtos - precisa ter empresa para criar, mas pode ver */}
+              {/* Produtos - precisa ter empresa */}
               <Route path="/estoque" element={<InventoryPage />} />
               
-              {/* Fornecedores - qualquer autenticado pode ver/criar */}
+              {/* Fornecedores - qualquer autenticado com empresa pode ver/criar */}
               <Route path="/fornecedores" element={<SuppliersPage />} />
             </Route>
           </Route>
@@ -75,7 +79,7 @@ export default function App() {
             <Route element={<AdminLayout />}>
               {/* Admin Dashboard */}
               <Route path="/admin" element={<DashboardPage />} />
-              {/* Gestão de Usuários */}
+              {/* Gestão de Usuários - onde gerente aprova usuários pendentes */}
               <Route path="/admin/usuarios" element={<UsersPage />} />
               {/* Produtos (admin view) */}
               <Route path="/admin/produtos" element={<InventoryPage />} />

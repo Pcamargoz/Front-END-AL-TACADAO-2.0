@@ -69,18 +69,63 @@ export type Usuario = {
   dataAtualizacao: string;
 };
 
-export type CadastroPayload = { nome?: string; login: string; senha: string; email: string };
+export type CadastroPayload = { nome?: string; login: string; senha: string; email: string; fornecedorId?: string };
 export type UpdateUsuarioPayload = { nome?: string; login?: string; email?: string; senha?: string };
 export type ErroCampo = { message: string; campo: string };
 export type ErroResposta = { status: number; message: string; erros: ErroCampo[] };
 
-// Cadastro público - sempre cria com role=USER, sem empresa
+// Payload para cadastro combinado (empresa + usuário)
+export type CadastroCompletoPayload = {
+  empresa: {
+    cnpj: string;
+    razaoSocial: string;
+    nomeFantasia?: string;
+    email: string;
+    telefone?: string;
+  };
+  usuario: {
+    nome?: string;
+    login: string;
+    email: string;
+    senha: string;
+  };
+};
+
+// Resposta do cadastro completo
+export type CadastroCompletoResponse = {
+  empresa: Fornecedor;
+  usuario: Usuario;
+  token: string;
+};
+
+// Cadastro público - cria usuário (pode ter fornecedorId para vincular a empresa existente)
 export async function apiCadastro(payload: CadastroPayload): Promise<Response> {
   return fetch("/cadastro", {
     method: "POST",
     headers: { ...h, "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
+}
+
+// Cadastro combinado: cria empresa + usuário (usuário será GERENTE da empresa)
+export async function apiCadastroComEmpresa(payload: CadastroCompletoPayload): Promise<Response> {
+  return fetch("/cadastro/empresa-usuario", {
+    method: "POST",
+    headers: { ...h, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+// Buscar empresa por CNPJ (para verificar se existe)
+export async function apiBuscarEmpresaPorCNPJ(cnpj: string): Promise<Fornecedor | null> {
+  const cnpjLimpo = cnpj.replace(/\D/g, "");
+  const res = await fetch(`/fornecedor/buscar?cnpj=${cnpjLimpo}`, {
+    method: "GET",
+    headers: h,
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error("Erro ao buscar empresa");
+  return normalizeFornecedor(await res.json());
 }
 
 function normalizeUsuario(raw: Record<string, unknown>): Usuario {
@@ -150,6 +195,22 @@ export async function apiVincularUsuarioEmpresa(usuarioId: string, fornecedorId:
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ fornecedorId }),
+  });
+}
+
+// [GERENTE] Aprova usuário pendente na empresa
+export async function apiAprovarUsuario(usuarioId: string): Promise<Response> {
+  return fetchWithAuth(`/cadastro/${usuarioId}/aprovar`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+// [GERENTE] Rejeita usuário pendente
+export async function apiRejeitarUsuario(usuarioId: string): Promise<Response> {
+  return fetchWithAuth(`/cadastro/${usuarioId}/rejeitar`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
   });
 }
 

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, Search, Trash2, UserRound, Mail, Shield, Calendar, Building2, Link2 } from "lucide-react";
+import { Pencil, Search, Trash2, UserRound, Mail, Shield, Calendar, Building2, Link2, UserCheck, UserX, CheckCircle2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import {
   apiDeleteUsuario,
@@ -12,6 +12,8 @@ import {
   apiUpdateUsuario,
   apiUpdateUsuarioRoles,
   apiVincularUsuarioEmpresa,
+  apiAprovarUsuario,
+  apiRejeitarUsuario,
   apiListFornecedores,
   type UpdateUsuarioPayload,
   type Usuario,
@@ -314,6 +316,34 @@ export function UsersPage() {
     },
   });
 
+  // Mutation para aprovar usuário pendente
+  const aprovarMut = useMutation({
+    mutationFn: (usuarioId: string) => apiAprovarUsuario(usuarioId),
+    onSuccess: async (res) => {
+      if (res.ok) {
+        toast.success("Usuário aprovado com sucesso!");
+        await qc.invalidateQueries({ queryKey: ["usuarios"] });
+      } else {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.message || "Falha ao aprovar usuário");
+      }
+    },
+  });
+
+  // Mutation para rejeitar usuário pendente
+  const rejeitarMut = useMutation({
+    mutationFn: (usuarioId: string) => apiRejeitarUsuario(usuarioId),
+    onSuccess: async (res) => {
+      if (res.ok) {
+        toast.success("Usuário rejeitado");
+        await qc.invalidateQueries({ queryKey: ["usuarios"] });
+      } else {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.message || "Falha ao rejeitar usuário");
+      }
+    },
+  });
+
   const rolesMut = useMutation({
     mutationFn: ({ id, roles }: { id: string; roles: UserRole[] }) =>
       apiUpdateUsuarioRoles(id, roles),
@@ -330,7 +360,7 @@ export function UsersPage() {
 
   // Filtrar usuários
   const filtered = users.filter((u) => {
-    // Filtro de pendentes (sem empresa)
+    // Filtro de pendentes (aguardando aprovação - tem fornecedorId mas status pendente, ou sem fornecedorId)
     if (filterPending && u.fornecedorId) return false;
     
     const q = search.toLowerCase();
@@ -342,7 +372,7 @@ export function UsersPage() {
     );
   });
 
-  // Contar usuários pendentes
+  // Contar usuários pendentes (sem empresa vinculada/aprovada)
   const pendingCount = users.filter((u) => !u.fornecedorId).length;
 
   const defaultValues = editing ? {
@@ -369,11 +399,32 @@ export function UsersPage() {
           <p className="text-sm text-[#9CA3AF]">
             {users.length} usuário{users.length !== 1 ? "s" : ""} cadastrado{users.length !== 1 ? "s" : ""}
             {pendingCount > 0 && (
-              <span className="text-[#F59E0B]"> • {pendingCount} aguardando vinculação</span>
+              <span className="text-[#F59E0B]"> • {pendingCount} aguardando aprovação</span>
             )}
           </p>
         </div>
       </motion.div>
+
+      {/* Pending Users Alert */}
+      {pendingCount > 0 && isManager && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-4 rounded-sm bg-[#F59E0B]/10 border border-[#F59E0B]/20"
+        >
+          <div className="flex items-start gap-3">
+            <Clock size={20} className="text-[#F59E0B] flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-[#F5F5F5]">
+                {pendingCount} usuário{pendingCount !== 1 ? "s" : ""} aguardando aprovação
+              </p>
+              <p className="text-xs text-[#9CA3AF] mt-1">
+                Revise e aprove os usuários que solicitaram acesso à sua empresa.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Filters */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="flex flex-col sm:flex-row gap-4">
@@ -393,8 +444,8 @@ export function UsersPage() {
             onClick={() => setFilterPending(!filterPending)}
             className={`btn ${filterPending ? "btn-primary" : "btn-secondary"}`}
           >
-            <Building2 size={16} />
-            Sem empresa ({pendingCount})
+            <Clock size={16} />
+            Pendentes ({pendingCount})
           </button>
         )}
       </motion.div>
@@ -481,13 +532,13 @@ export function UsersPage() {
                         <td className="px-6 py-4 hidden lg:table-cell">
                           {hasCompany ? (
                             <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-sm bg-[#10B981]/10 text-[#10B981]">
-                              <Building2 size={12} />
-                              Vinculado
+                              <CheckCircle2 size={12} />
+                              Aprovado
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-sm bg-[#F59E0B]/10 text-[#F59E0B]">
-                              <Building2 size={12} />
-                              Pendente
+                              <Clock size={12} />
+                              Aguardando
                             </span>
                           )}
                         </td>
@@ -500,11 +551,33 @@ export function UsersPage() {
                         {isManager && (
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-1 justify-end">
+                              {/* Botões de aprovar/rejeitar para usuários pendentes */}
                               {!hasCompany && (
+                                <>
+                                  <button
+                                    onClick={() => aprovarMut.mutate(u.id)}
+                                    disabled={aprovarMut.isPending}
+                                    className="btn btn-ghost btn-icon btn-sm hover:text-[#00FF87] hover:bg-[#00FF87]/10"
+                                    title="Aprovar usuário"
+                                  >
+                                    <UserCheck size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => rejeitarMut.mutate(u.id)}
+                                    disabled={rejeitarMut.isPending}
+                                    className="btn btn-ghost btn-icon btn-sm hover:text-[#EF4444] hover:bg-[#EF4444]/10"
+                                    title="Rejeitar usuário"
+                                  >
+                                    <UserX size={14} />
+                                  </button>
+                                </>
+                              )}
+                              {/* Vincular manualmente (fallback para usuários antigos sem empresa) */}
+                              {!hasCompany && fornecedores.length > 0 && (
                                 <button
                                   onClick={() => setVinculando(u)}
                                   className="btn btn-ghost btn-icon btn-sm hover:text-[#00E5FF]"
-                                  title="Vincular à empresa"
+                                  title="Vincular à outra empresa"
                                 >
                                   <Link2 size={14} />
                                 </button>

@@ -8,6 +8,7 @@ type AuthState = {
   isAuthenticated: boolean;
   isManager: boolean;
   hasCompany: boolean;
+  isPendingApproval: boolean;
   roles: UserRole[];
   refresh: () => Promise<void>;
   login: (login: string, password: string) => Promise<{ ok: true } | { ok: false; message: string }>;
@@ -64,6 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAuthenticated = !!user;
   const isManager = roles.includes("GERENTE");
   const hasCompany = !!user?.fornecedorId;
+  // Usuário está pendente se está autenticado mas não tem empresa aprovada
+  const isPendingApproval = isAuthenticated && !hasCompany;
 
   const value = useMemo(
     () => ({ 
@@ -72,12 +75,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated, 
       isManager,
       hasCompany,
+      isPendingApproval,
       roles,
       refresh, 
       login, 
       logout 
     }),
-    [user, loading, isAuthenticated, isManager, hasCompany, roles, refresh, login, logout],
+    [user, loading, isAuthenticated, isManager, hasCompany, isPendingApproval, roles, refresh, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
