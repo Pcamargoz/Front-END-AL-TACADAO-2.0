@@ -4,20 +4,17 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, Search, Trash2, UserRound, Mail, Shield, Calendar, Link2, UserCheck, UserX, CheckCircle2, Clock } from "lucide-react";
+import { Pencil, Search, Trash2, UserRound, Mail, Shield, Calendar, UserCheck, UserX, CheckCircle2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import {
   apiDeleteUsuario,
   apiListUsuarios,
   apiUpdateUsuario,
   apiUpdateUsuarioRoles,
-  apiVincularUsuarioEmpresa,
   apiAprovarUsuario,
   apiRejeitarUsuario,
-  apiListFornecedores,
   type UpdateUsuarioPayload,
   type Usuario,
-  type Fornecedor,
   type UserRole,
 } from "../api/client";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
@@ -94,87 +91,6 @@ function UserForm({
         )}
       </button>
     </form>
-  );
-}
-
-// Modal para vincular usuário à empresa
-function VincularEmpresaModal({
-  open,
-  onClose,
-  usuario,
-  fornecedores,
-  onVincular,
-  loading,
-}: {
-  open: boolean;
-  onClose: () => void;
-  usuario: Usuario | null;
-  fornecedores: Fornecedor[];
-  onVincular: (empresaId: string) => void;
-  loading: boolean;
-}) {
-  const [selectedEmpresa, setSelectedEmpresa] = useState<string>("");
-
-  return (
-    <Modal open={open} onClose={onClose} title="Vincular à Empresa">
-      <div className="space-y-4">
-        <p className="text-sm text-[#9CA3AF]">
-          Selecione a empresa para vincular o usuário <strong className="text-[#F5F5F5]">{usuario?.nome || usuario?.login}</strong>
-        </p>
-
-        <div>
-          <label className="input-label mb-2 block">Empresa</label>
-          <select
-            value={selectedEmpresa}
-            onChange={(e) => setSelectedEmpresa(e.target.value)}
-            className="input-field"
-          >
-            <option value="">Selecione uma empresa...</option>
-            {fornecedores.map((f) => (
-              <option key={f.id} value={f.id}>
-                {f.nomeFantasia || f.razaoSocial} - {f.cnpj}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {fornecedores.length === 0 && (
-          <div className="p-3 rounded-sm bg-[#F59E0B]/10 border border-[#F59E0B]/20">
-            <p className="text-xs text-[#F59E0B]">
-              Nenhuma empresa cadastrada. Crie uma empresa primeiro na página de Fornecedores.
-            </p>
-          </div>
-        )}
-
-        <div className="pt-4 border-t border-[#1A1D24]" />
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="btn btn-secondary flex-1"
-            disabled={loading}
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={() => selectedEmpresa && onVincular(selectedEmpresa)}
-            className="btn btn-primary flex-1"
-            disabled={loading || !selectedEmpresa}
-          >
-            {loading ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 rounded-full border-2 border-[#090B10]/30 border-t-[#090B10] animate-spin" />
-                Vinculando...
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <Link2 size={16} />
-                Vincular
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
-    </Modal>
   );
 }
 
@@ -258,7 +174,6 @@ export function UsersPage() {
   const [search,       setSearch]       = useState("");
   const [editing,      setEditing]      = useState<Usuario | null>(null);
   const [deleting,     setDeleting]     = useState<Usuario | null>(null);
-  const [vinculando,   setVinculando]   = useState<Usuario | null>(null);
   const [alterandoRole, setAlterandoRole] = useState<Usuario | null>(null);
   const [filterPending, setFilterPending] = useState(false);
 
@@ -267,12 +182,6 @@ export function UsersPage() {
     queryFn:  () => apiListUsuarios(),
   });
   const users = usersData?.content ?? [];
-
-  const { data: fornecedores = [] } = useQuery({
-    queryKey: ["fornecedores"],
-    queryFn:  apiListFornecedores,
-    enabled:  isManager,
-  });
 
   const updateMut = useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateUsuarioPayload }) =>
@@ -297,21 +206,6 @@ export function UsersPage() {
         setDeleting(null);
       } else {
         toast.error("Falha ao remover usuário");
-      }
-    },
-  });
-
-  const vincularMut = useMutation({
-    mutationFn: ({ usuarioId, empresaId }: { usuarioId: string; empresaId: string }) =>
-      apiVincularUsuarioEmpresa(usuarioId, empresaId),
-    onSuccess: async (res) => {
-      if (res.ok) {
-        toast.success("Usuário vinculado à empresa com sucesso!");
-        await qc.invalidateQueries({ queryKey: ["usuarios"] });
-        setVinculando(null);
-      } else {
-        const data = await res.json().catch(() => ({}));
-        toast.error(data.message || "Falha ao vincular usuário");
       }
     },
   });
@@ -576,16 +470,6 @@ export function UsersPage() {
                                   </button>
                                 </>
                               )}
-                              {/* Vincular manualmente (fallback para usuários antigos sem empresa) */}
-                              {isPending && fornecedores.length > 0 && (
-                                <button
-                                  onClick={() => setVinculando(u)}
-                                  className="btn btn-ghost btn-icon btn-sm hover:text-[#00E5FF]"
-                                  title="Vincular à outra empresa"
-                                >
-                                  <Link2 size={14} />
-                                </button>
-                              )}
                               <button
                                 onClick={() => setEditing(u)}
                                 className="btn btn-ghost btn-icon btn-sm hover:text-[#00FF87]"
@@ -628,16 +512,6 @@ export function UsersPage() {
           />
         )}
       </Modal>
-
-      {/* Vincular Empresa Modal */}
-      <VincularEmpresaModal
-        open={!!vinculando}
-        onClose={() => setVinculando(null)}
-        usuario={vinculando}
-        fornecedores={fornecedores}
-        onVincular={(empresaId) => vinculando && vincularMut.mutate({ usuarioId: vinculando.id, empresaId })}
-        loading={vincularMut.isPending}
-      />
 
       {/* Alterar Role Modal */}
       <AlterarRoleModal

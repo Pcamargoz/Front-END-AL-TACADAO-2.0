@@ -31,7 +31,9 @@ export type Empresa = {
   nomeFantasia?: string;
   email: string;
   telefone?: string;
+  ativo?: boolean;
   dataCadastro?: string;
+  dataAtualizacao?: string;
 };
 
 export type EmpresaPayload = Omit<Empresa, "id" | "dataCadastro">;
@@ -165,7 +167,9 @@ function normalizeEmpresa(raw: Record<string, unknown>): Empresa {
     nomeFantasia: raw.nomeFantasia ? String(raw.nomeFantasia) : undefined,
     email: String(raw.email ?? ""),
     telefone: raw.telefone ? String(raw.telefone) : undefined,
+    ativo: raw.ativo != null ? Boolean(raw.ativo) : undefined,
     dataCadastro: raw.dataCadastro ? String(raw.dataCadastro) : undefined,
+    dataAtualizacao: raw.dataAtualizacao ? String(raw.dataAtualizacao) : undefined,
   };
 }
 
@@ -277,21 +281,12 @@ export async function apiDeleteUsuario(id: string): Promise<Response> {
   return fetchWithAuth(`/cadastro/${id}`, { method: "DELETE" });
 }
 
-// [GERENTE] Altera roles do usuário
+// [GERENTE] Altera roles do usuário — API espera array puro: ["GERENTE", "USER"]
 export async function apiUpdateUsuarioRoles(id: string, roles: UserRole[]): Promise<Response> {
   return fetchWithAuth(`/cadastro/${id}/roles`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ roles }),
-  });
-}
-
-// [GERENTE] Vincula usuário à empresa
-export async function apiVincularUsuarioEmpresa(usuarioId: string, empresaId: string): Promise<Response> {
-  return fetchWithAuth(`/cadastro/${usuarioId}/vincular-empresa`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ empresaId }),
+    body: JSON.stringify(roles),
   });
 }
 
@@ -403,8 +398,21 @@ export type ProdutoPayload = {
   fornecedorId: string;
 };
 
-// Enum de marcas válidas (ajuste conforme API)
-export const MARCAS_VALIDAS = ["MARCA_1", "MARCA_2"] as const;
+// Enum de marcas válidas conforme API backend
+export const MARCAS_VALIDAS = [
+  "GROWTH_SUPPLEMENTS",
+  "MAX_TITANIUM",
+  "INTEGRAL_MEDICA",
+  "PROBIOTICA",
+  "DUX_NUTRITION",
+  "ATLHETICA_NUTRITION",
+  "BLACK_SKULL",
+  "VITAFOR",
+  "OPTIMUM_NUTRITION",
+  "MYPROTEIN",
+  "UNIVERSAL_NUTRITION",
+  "BSN",
+] as const;
 export type MarcaValida = typeof MARCAS_VALIDAS[number];
 
 // ResultadoPesquisaProduto retorna "Descricao" (D maiúsculo) — normalizamos.
@@ -421,13 +429,14 @@ function normalizeProduto(raw: Record<string, unknown>): Produto {
 }
 
 // Lista produtos da empresa (usuário deve ter fornecedorId)
-export async function apiListEstoque(params?: { pagina?: number; tamanhaPagina?: number; descricao?: string; marca?: string }): Promise<{ content: Produto[]; totalElements: number; totalPages: number }> {
+export async function apiListEstoque(params?: { pagina?: number; tamanhaPagina?: number; descricao?: string; medida?: number; marca?: string }): Promise<{ content: Produto[]; totalElements: number; totalPages: number }> {
   const p = params ?? {};
   const query = new URLSearchParams({
     pagina: String(p.pagina ?? 0),
     "tamanha-pagina": String(p.tamanhaPagina ?? 1000),
   });
   if (p.descricao) query.set("descricao", p.descricao);
+  if (p.medida != null) query.set("medida", String(p.medida));
   if (p.marca) query.set("marca", p.marca);
   
   const res = await fetchWithAuth(`/api/estoque?${query}`);
