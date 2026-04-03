@@ -17,7 +17,7 @@ export function ProtectedRoute({
   allowPending = false,
   redirectTo = "/login" 
 }: ProtectedRouteProps) {
-  const { loading, isAuthenticated, isManager, hasCompany, isPendingApproval } = useAuth();
+  const { loading, isAuthenticated, isManager, hasCompany, isPendingApproval, empresaId } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -43,7 +43,7 @@ export function ProtectedRoute({
   }
 
   // Se requer empresa vinculada (para criar produtos, etc.)
-  if (requireCompany && !hasCompany) {
+  if (requireCompany && !hasCompany && !empresaId) {
     return <Navigate to="/aguardando-empresa" replace />;
   }
 

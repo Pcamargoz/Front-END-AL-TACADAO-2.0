@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, Search, Trash2, UserRound, Mail, Shield, Calendar, Link2, UserCheck, UserX, CheckCircle2, Clock } from "lucide-react";
+import { Pencil, Search, Trash2, UserRound, Mail, Shield, Calendar, Link2, UserCheck, UserX, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import {
   apiDeleteUsuario,
@@ -110,10 +110,10 @@ function VincularEmpresaModal({
   onClose: () => void;
   usuario: Usuario | null;
   fornecedores: Fornecedor[];
-  onVincular: (fornecedorId: string) => void;
+  onVincular: (empresaId: string) => void;
   loading: boolean;
 }) {
-  const [selectedFornecedor, setSelectedFornecedor] = useState<string>("");
+  const [selectedEmpresa, setSelectedEmpresa] = useState<string>("");
 
   return (
     <Modal open={open} onClose={onClose} title="Vincular à Empresa">
@@ -123,10 +123,10 @@ function VincularEmpresaModal({
         </p>
 
         <div>
-          <label className="input-label mb-2 block">Empresa (Fornecedor)</label>
+          <label className="input-label mb-2 block">Empresa</label>
           <select
-            value={selectedFornecedor}
-            onChange={(e) => setSelectedFornecedor(e.target.value)}
+            value={selectedEmpresa}
+            onChange={(e) => setSelectedEmpresa(e.target.value)}
             className="input-field"
           >
             <option value="">Selecione uma empresa...</option>
@@ -156,9 +156,9 @@ function VincularEmpresaModal({
             Cancelar
           </button>
           <button
-            onClick={() => selectedFornecedor && onVincular(selectedFornecedor)}
+            onClick={() => selectedEmpresa && onVincular(selectedEmpresa)}
             className="btn btn-primary flex-1"
-            disabled={loading || !selectedFornecedor}
+            disabled={loading || !selectedEmpresa}
           >
             {loading ? (
               <span className="flex items-center gap-2">
@@ -302,8 +302,8 @@ export function UsersPage() {
   });
 
   const vincularMut = useMutation({
-    mutationFn: ({ usuarioId, fornecedorId }: { usuarioId: string; fornecedorId: string }) =>
-      apiVincularUsuarioEmpresa(usuarioId, fornecedorId),
+    mutationFn: ({ usuarioId, empresaId }: { usuarioId: string; empresaId: string }) =>
+      apiVincularUsuarioEmpresa(usuarioId, empresaId),
     onSuccess: async (res) => {
       if (res.ok) {
         toast.success("Usuário vinculado à empresa com sucesso!");
@@ -360,8 +360,9 @@ export function UsersPage() {
 
   // Filtrar usuários
   const filtered = users.filter((u) => {
-    // Filtro de pendentes (aguardando aprovação - tem fornecedorId mas status pendente, ou sem fornecedorId)
-    if (filterPending && u.fornecedorId) return false;
+    // Filtro de pendentes (status PENDENTE ou sem empresaId)
+    const isPending = u.status === "PENDENTE" || !u.empresaId;
+    if (filterPending && !isPending) return false;
     
     const q = search.toLowerCase();
     return (
@@ -372,8 +373,9 @@ export function UsersPage() {
     );
   });
 
-  // Contar usuários pendentes (sem empresa vinculada/aprovada)
-  const pendingCount = users.filter((u) => !u.fornecedorId).length;
+  // Contar usuários pendentes
+  const pendingCount = users.filter((u) => u.status === "PENDENTE" || !u.empresaId).length;
+  const activeCount = users.filter((u) => u.status === "ATIVO" && u.empresaId).length;
 
   const defaultValues = editing ? {
     nome:  editing.nome ?? "",
@@ -397,7 +399,7 @@ export function UsersPage() {
           </span>
           <h1 className="text-2xl font-display font-bold text-[#F5F5F5]">Usuários</h1>
           <p className="text-sm text-[#9CA3AF]">
-            {users.length} usuário{users.length !== 1 ? "s" : ""} cadastrado{users.length !== 1 ? "s" : ""}
+            {activeCount} usuário{activeCount !== 1 ? "s" : ""} ativo{activeCount !== 1 ? "s" : ""}
             {pendingCount > 0 && (
               <span className="text-[#F59E0B]"> • {pendingCount} aguardando aprovação</span>
             )}
@@ -488,7 +490,7 @@ export function UsersPage() {
                   {filtered.map((u, i) => {
                     const badge = roleBadge(u.roles[0]);
                     const isSelf = u.id === user?.id;
-                    const hasCompany = !!u.fornecedorId;
+                    const isPending = u.status === "PENDENTE" || !u.empresaId;
                     
                     return (
                       <motion.tr
@@ -501,7 +503,9 @@ export function UsersPage() {
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-sm flex items-center justify-center text-sm font-bold bg-[#00FF87]/10 text-[#00FF87]">
+                            <div className={`w-9 h-9 rounded-sm flex items-center justify-center text-sm font-bold ${
+                              isPending ? "bg-[#F59E0B]/10 text-[#F59E0B]" : "bg-[#00FF87]/10 text-[#00FF87]"
+                            }`}>
                               {(u.nome || u.login).charAt(0).toUpperCase()}
                             </div>
                             <div>
@@ -518,10 +522,10 @@ export function UsersPage() {
                         </td>
                         <td className="px-6 py-4 hidden sm:table-cell">
                           <button
-                            onClick={() => isManager && !isSelf && setAlterandoRole(u)}
-                            disabled={!isManager || isSelf}
+                            onClick={() => isManager && !isSelf && !isPending && setAlterandoRole(u)}
+                            disabled={!isManager || isSelf || isPending}
                             className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-sm transition-opacity ${
-                              isManager && !isSelf ? "hover:opacity-80 cursor-pointer" : ""
+                              isManager && !isSelf && !isPending ? "hover:opacity-80 cursor-pointer" : ""
                             }`}
                             style={{ background: badge.bg, color: badge.color }}
                           >
@@ -530,15 +534,15 @@ export function UsersPage() {
                           </button>
                         </td>
                         <td className="px-6 py-4 hidden lg:table-cell">
-                          {hasCompany ? (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-sm bg-[#10B981]/10 text-[#10B981]">
-                              <CheckCircle2 size={12} />
-                              Aprovado
-                            </span>
-                          ) : (
+                          {isPending ? (
                             <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-sm bg-[#F59E0B]/10 text-[#F59E0B]">
                               <Clock size={12} />
-                              Aguardando
+                              Pendente
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-sm bg-[#10B981]/10 text-[#10B981]">
+                              <CheckCircle2 size={12} />
+                              Ativo
                             </span>
                           )}
                         </td>
@@ -552,7 +556,7 @@ export function UsersPage() {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-1 justify-end">
                               {/* Botões de aprovar/rejeitar para usuários pendentes */}
-                              {!hasCompany && (
+                              {isPending && (
                                 <>
                                   <button
                                     onClick={() => aprovarMut.mutate(u.id)}
@@ -573,7 +577,7 @@ export function UsersPage() {
                                 </>
                               )}
                               {/* Vincular manualmente (fallback para usuários antigos sem empresa) */}
-                              {!hasCompany && fornecedores.length > 0 && (
+                              {isPending && fornecedores.length > 0 && (
                                 <button
                                   onClick={() => setVinculando(u)}
                                   className="btn btn-ghost btn-icon btn-sm hover:text-[#00E5FF]"
@@ -631,7 +635,7 @@ export function UsersPage() {
         onClose={() => setVinculando(null)}
         usuario={vinculando}
         fornecedores={fornecedores}
-        onVincular={(fornecedorId) => vinculando && vincularMut.mutate({ usuarioId: vinculando.id, fornecedorId })}
+        onVincular={(empresaId) => vinculando && vincularMut.mutate({ usuarioId: vinculando.id, empresaId })}
         loading={vincularMut.isPending}
       />
 

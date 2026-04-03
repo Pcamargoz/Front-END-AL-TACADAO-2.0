@@ -20,7 +20,57 @@ async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Re
   return res;
 }
 
-// ── Auth ──────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// TYPES - EMPRESA
+// ══════════════════════════════════════════════════════════════════════════════
+
+export type Empresa = {
+  id: string;
+  cnpj: string;
+  razaoSocial: string;
+  nomeFantasia?: string;
+  email: string;
+  telefone?: string;
+  dataCadastro?: string;
+};
+
+export type EmpresaPayload = Omit<Empresa, "id" | "dataCadastro">;
+
+export type UserRole = "USER" | "GERENTE";
+export type UserStatus = "ATIVO" | "PENDENTE" | "INATIVO";
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TYPES - AUTH
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Resposta do /api/auth/me - inclui empresaId
+export type MeResponse = {
+  id: string;
+  nome?: string;
+  login: string;
+  email: string;
+  roles: UserRole[];
+  empresaId?: string | null;
+  empresaNome?: string;
+  status?: UserStatus;
+};
+
+// Resposta do login
+export type LoginResponse = {
+  token: string;
+  nome?: string;
+  login: string;
+  email: string;
+  roles: UserRole[];
+  empresaId?: string | null;
+  empresaNome?: string;
+  status?: UserStatus;
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// AUTH ENDPOINTS
+// ══════════════════════════════════════════════════════════════════════════════
+
 export async function apiLogin(login: string, password: string): Promise<Response> {
   return fetch("/api/auth/login", {
     method: "POST",
@@ -28,18 +78,6 @@ export async function apiLogin(login: string, password: string): Promise<Respons
     body: JSON.stringify({ login, senha: password }),
   });
 }
-
-// Resposta do /api/auth/me - inclui fornecedorId (empresa vinculada)
-export type MeResponse = {
-  id: string;
-  nome?: string;
-  login: string;
-  email: string;
-  roles: UserRole[];
-  fornecedorId?: string | null;
-};
-
-export type UserRole = "USER" | "GERENTE";
 
 export async function apiMe(): Promise<MeResponse | null> {
   const token = localStorage.getItem("jwt_token");
@@ -57,76 +95,116 @@ export async function apiLogout(): Promise<void> {
   localStorage.removeItem("jwt_token");
 }
 
-// ── Usuário ───────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// EMPRESA ENDPOINTS
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Payload para registrar empresa + gerente
+export type RegistrarEmpresaPayload = {
+  cnpj: string;
+  razaoSocial: string;
+  nomeFantasia?: string;
+  email: string;
+  telefone?: string;
+  nomeUsuario?: string;
+  loginUsuario: string;
+  senhaUsuario: string;
+  emailUsuario: string;
+};
+
+// Resposta do registro de empresa
+export type RegistrarEmpresaResponse = {
+  empresa: Empresa;
+  usuario: Usuario;
+  token: string;
+};
+
+// POST /api/empresa/registrar - Cria empresa + primeiro gerente (público)
+export async function apiRegistrarEmpresa(payload: RegistrarEmpresaPayload): Promise<Response> {
+  return fetch("/api/empresa/registrar", {
+    method: "POST",
+    headers: { ...h, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+// GET /api/empresa/buscar?cnpj={cnpj} - Busca empresa por CNPJ (público)
+export async function apiBuscarEmpresaPorCNPJ(cnpj: string): Promise<Empresa | null> {
+  const cnpjLimpo = cnpj.replace(/\D/g, "");
+  const res = await fetch(`/api/empresa/buscar?cnpj=${cnpjLimpo}`, {
+    method: "GET",
+    headers: h,
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error("Erro ao buscar empresa");
+  return normalizeEmpresa(await res.json());
+}
+
+// GET /api/empresa/minha - Dados da empresa do usuário logado
+export async function apiMinhaEmpresa(): Promise<Empresa | null> {
+  const res = await fetchWithAuth("/api/empresa/minha");
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error("Erro ao buscar empresa");
+  return normalizeEmpresa(await res.json());
+}
+
+// PUT /api/empresa/{id} - Atualiza dados da empresa (GERENTE)
+export async function apiUpdateEmpresa(id: string, payload: EmpresaPayload): Promise<Response> {
+  return fetchWithAuth(`/api/empresa/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+function normalizeEmpresa(raw: Record<string, unknown>): Empresa {
+  return {
+    id: String(raw.id ?? ""),
+    cnpj: String(raw.cnpj ?? ""),
+    razaoSocial: String(raw.razaosocial ?? raw.razaoSocial ?? ""),
+    nomeFantasia: raw.nomeFantasia ? String(raw.nomeFantasia) : undefined,
+    email: String(raw.email ?? ""),
+    telefone: raw.telefone ? String(raw.telefone) : undefined,
+    dataCadastro: raw.dataCadastro ? String(raw.dataCadastro) : undefined,
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// USUÁRIO TYPES & ENDPOINTS
+// ══════════════════════════════════════════════════════════════════════════════
+
 export type Usuario = {
   id: string;
   login: string;
   email: string;
   nome?: string;
   roles: UserRole[];
-  fornecedorId?: string | null;
+  empresaId?: string | null;
+  status: UserStatus;
   dataCadastro: string;
-  dataAtualizacao: string;
+  dataAtualizacao?: string;
 };
 
-export type CadastroPayload = { nome?: string; login: string; senha: string; email: string; fornecedorId?: string };
+// Payload para solicitar entrada em empresa (público)
+export type SolicitarEntradaPayload = {
+  nome?: string;
+  login: string;
+  senha: string;
+  email: string;
+  empresaId: string;
+};
+
+// Payload para criar usuário diretamente (GERENTE)
+export type CriarUsuarioPayload = {
+  nome?: string;
+  login: string;
+  senha: string;
+  email: string;
+};
+
 export type UpdateUsuarioPayload = { nome?: string; login?: string; email?: string; senha?: string };
 export type ErroCampo = { message: string; campo: string };
 export type ErroResposta = { status: number; message: string; erros: ErroCampo[] };
-
-// Payload para cadastro combinado (empresa + usuário)
-export type CadastroCompletoPayload = {
-  empresa: {
-    cnpj: string;
-    razaoSocial: string;
-    nomeFantasia?: string;
-    email: string;
-    telefone?: string;
-  };
-  usuario: {
-    nome?: string;
-    login: string;
-    email: string;
-    senha: string;
-  };
-};
-
-// Resposta do cadastro completo
-export type CadastroCompletoResponse = {
-  empresa: Fornecedor;
-  usuario: Usuario;
-  token: string;
-};
-
-// Cadastro público - cria usuário (pode ter fornecedorId para vincular a empresa existente)
-export async function apiCadastro(payload: CadastroPayload): Promise<Response> {
-  return fetch("/cadastro", {
-    method: "POST",
-    headers: { ...h, "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-}
-
-// Cadastro combinado: cria empresa + usuário (usuário será GERENTE da empresa)
-export async function apiCadastroComEmpresa(payload: CadastroCompletoPayload): Promise<Response> {
-  return fetch("/cadastro/empresa-usuario", {
-    method: "POST",
-    headers: { ...h, "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-}
-
-// Buscar empresa por CNPJ (para verificar se existe)
-export async function apiBuscarEmpresaPorCNPJ(cnpj: string): Promise<Fornecedor | null> {
-  const cnpjLimpo = cnpj.replace(/\D/g, "");
-  const res = await fetch(`/fornecedor/buscar?cnpj=${cnpjLimpo}`, {
-    method: "GET",
-    headers: h,
-  });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error("Erro ao buscar empresa");
-  return normalizeFornecedor(await res.json());
-}
 
 function normalizeUsuario(raw: Record<string, unknown>): Usuario {
   return {
@@ -135,10 +213,29 @@ function normalizeUsuario(raw: Record<string, unknown>): Usuario {
     email: String(raw.email ?? ""),
     nome: raw.nome ? String(raw.nome) : undefined,
     roles: Array.isArray(raw.roles) ? raw.roles.map(String) as UserRole[] : [],
-    fornecedorId: raw.fornecedorId ? String(raw.fornecedorId) : null,
+    empresaId: raw.empresaId ? String(raw.empresaId) : (raw.fornecedorId ? String(raw.fornecedorId) : null),
+    status: (raw.status as UserStatus) || "ATIVO",
     dataCadastro: String(raw.dataCadastro ?? raw.dataDeCadastro ?? ""),
-    dataAtualizacao: String(raw.dataAtualizacao ?? raw.dataDeAtualizacao ?? ""),
+    dataAtualizacao: raw.dataAtualizacao ? String(raw.dataAtualizacao) : undefined,
   };
+}
+
+// POST /cadastro/solicitar - Solicita entrada em empresa existente (público)
+export async function apiSolicitarEntrada(payload: SolicitarEntradaPayload): Promise<Response> {
+  return fetch("/cadastro/solicitar", {
+    method: "POST",
+    headers: { ...h, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+// POST /cadastro - Cria usuário diretamente na empresa (GERENTE only)
+export async function apiCriarUsuario(payload: CriarUsuarioPayload): Promise<Response> {
+  return fetchWithAuth("/cadastro", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
 // [GERENTE] Lista usuários da empresa paginado
@@ -189,12 +286,12 @@ export async function apiUpdateUsuarioRoles(id: string, roles: UserRole[]): Prom
   });
 }
 
-// [GERENTE] Vincula usuário à empresa (fornecedor)
-export async function apiVincularUsuarioEmpresa(usuarioId: string, fornecedorId: string): Promise<Response> {
+// [GERENTE] Vincula usuário à empresa
+export async function apiVincularUsuarioEmpresa(usuarioId: string, empresaId: string): Promise<Response> {
   return fetchWithAuth(`/cadastro/${usuarioId}/vincular-empresa`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ fornecedorId }),
+    body: JSON.stringify({ empresaId }),
   });
 }
 

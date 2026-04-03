@@ -143,7 +143,7 @@ export function ProfilePage() {
                 <Shield size={12} />
                 {badge.label}
               </span>
-              {user?.fornecedorId ? (
+              {user?.empresaId ? (
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-sm bg-[#10B981]/10 text-[#10B981]">
                   <Building2 size={12} />
                   Vinculado à empresa

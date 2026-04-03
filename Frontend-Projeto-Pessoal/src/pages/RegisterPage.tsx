@@ -9,8 +9,8 @@ import {
   type UsuarioData 
 } from "../components/ui/RegisterWizard";
 import { 
-  apiCadastroComEmpresa, 
-  apiCadastro, 
+  apiRegistrarEmpresa,
+  apiSolicitarEntrada,
   apiBuscarEmpresaPorCNPJ,
   type ErroResposta 
 } from "../api/client";
@@ -30,21 +30,21 @@ function SuccessScreen({ isNewCompany }: { isNewCompany: boolean }) {
       </div>
       
       <h2 className="text-2xl font-display font-bold text-[#F5F5F5] mb-2">
-        Cadastro realizado!
+        {isNewCompany ? "Empresa criada com sucesso!" : "Solicitação enviada!"}
       </h2>
       
       <p className="text-[#9CA3AF] mb-6">
         {isNewCompany 
-          ? "Sua empresa e conta foram criadas com sucesso. Você já pode acessar o sistema."
-          : "Sua solicitação foi enviada. Aguarde a aprovação do gerente da empresa."
+          ? "Sua empresa e conta foram criadas. Você já pode acessar o painel administrativo."
+          : "Sua solicitação foi enviada para o gerente da empresa. Aguarde a aprovação para acessar o sistema."
         }
       </p>
 
       <button
-        onClick={() => navigate("/login", { state: { fromRegister: true } })}
+        onClick={() => navigate(isNewCompany ? "/admin" : "/aguardando-empresa")}
         className="btn btn-primary"
       >
-        Fazer login
+        {isNewCompany ? "Ir para o Painel" : "Acompanhar Solicitação"}
       </button>
     </motion.div>
   );
@@ -77,20 +77,17 @@ function RegisterContent() {
   }) => {
     if (data.isNewCompany) {
       // Fluxo: Nova empresa + usuário (será GERENTE)
-      const res = await apiCadastroComEmpresa({
-        empresa: {
-          cnpj: data.empresa.cnpj.replace(/\D/g, ""),
-          razaoSocial: data.empresa.razaoSocial,
-          nomeFantasia: data.empresa.nomeFantasia,
-          email: data.empresa.email,
-          telefone: data.empresa.telefone?.replace(/\D/g, ""),
-        },
-        usuario: {
-          nome: data.usuario.nome,
-          login: data.usuario.login,
-          email: data.usuario.email,
-          senha: data.usuario.senha,
-        },
+      // POST /api/empresa/registrar
+      const res = await apiRegistrarEmpresa({
+        cnpj: data.empresa.cnpj.replace(/\D/g, ""),
+        razaoSocial: data.empresa.razaoSocial,
+        nomeFantasia: data.empresa.nomeFantasia,
+        email: data.empresa.email,
+        telefone: data.empresa.telefone?.replace(/\D/g, ""),
+        nomeUsuario: data.usuario.nome,
+        loginUsuario: data.usuario.login,
+        emailUsuario: data.usuario.email,
+        senhaUsuario: data.usuario.senha,
       });
 
       if (!res.ok) {
@@ -99,24 +96,29 @@ function RegisterContent() {
           const msg = body.erros?.map(e => e.message).join(", ") || body.message;
           throw new Error(msg || "Dados inválidos");
         } else if (res.status === 409) {
-          throw new Error("Empresa, usuário ou e-mail já cadastrado");
+          throw new Error("CNPJ, usuário ou e-mail já cadastrado");
         }
         throw new Error("Erro ao criar cadastro. Tente novamente.");
       }
 
-      // Salva token se retornado
+      // Salva token - usuário já está autenticado como GERENTE
       const result = await res.json();
       if (result.token) {
         localStorage.setItem("jwt_token", result.token);
       }
     } else {
-      // Fluxo: Entrar em empresa existente (ficará pendente)
-      const res = await apiCadastro({
+      // Fluxo: Entrar em empresa existente (status PENDENTE)
+      // POST /cadastro/solicitar
+      if (!data.empresa.id) {
+        throw new Error("Empresa não selecionada");
+      }
+
+      const res = await apiSolicitarEntrada({
         nome: data.usuario.nome,
         login: data.usuario.login,
         email: data.usuario.email,
         senha: data.usuario.senha,
-        fornecedorId: data.empresa.id, // Vincula à empresa existente
+        empresaId: data.empresa.id,
       });
 
       if (!res.ok) {
@@ -127,7 +129,13 @@ function RegisterContent() {
         } else if (res.status === 409) {
           throw new Error("Usuário ou e-mail já cadastrado");
         }
-        throw new Error("Erro ao criar cadastro. Tente novamente.");
+        throw new Error("Erro ao enviar solicitação. Tente novamente.");
+      }
+
+      // Salva token se retornado (para acessar página de aguardando)
+      const result = await res.json();
+      if (result.token) {
+        localStorage.setItem("jwt_token", result.token);
       }
     }
   };

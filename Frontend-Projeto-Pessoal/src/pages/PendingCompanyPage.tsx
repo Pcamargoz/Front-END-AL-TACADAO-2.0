@@ -1,11 +1,13 @@
 import { useNavigate } from "react-router-dom";
-import { Building2, Clock, LogOut, RefreshCw, CheckCircle2, UserCheck } from "lucide-react";
+import { Building2, Clock, LogOut, RefreshCw, CheckCircle2, UserCheck, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "../auth/AuthContext";
+import { useState } from "react";
 
 export function PendingCompanyPage() {
   const navigate = useNavigate();
-  const { user, logout, refresh, hasCompany } = useAuth();
+  const { user, logout, refresh, hasCompany, empresaNome } = useAuth();
+  const [checking, setChecking] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -13,12 +15,21 @@ export function PendingCompanyPage() {
   };
 
   const handleRefresh = async () => {
-    await refresh();
-    // Se após refresh tiver empresa aprovada, redireciona para dashboard
-    if (hasCompany) {
-      navigate("/dashboard", { replace: true });
+    setChecking(true);
+    try {
+      await refresh();
+      // Se após refresh tiver empresa aprovada, redireciona para dashboard
+      // (o useEffect no ProtectedRoute fará isso automaticamente)
+    } finally {
+      setChecking(false);
     }
   };
+
+  // Se já tem empresa, redireciona
+  if (hasCompany) {
+    navigate("/dashboard", { replace: true });
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-[#090B10] flex items-center justify-center px-4">
@@ -40,8 +51,10 @@ export function PendingCompanyPage() {
           </h1>
           
           <p className="text-[#9CA3AF] mb-6">
-            Olá{user?.nome ? `, ${user.nome}` : ""}! Sua solicitação de acesso foi enviada 
-            e está aguardando aprovação do gerente da empresa.
+            Olá{user?.nome ? `, ${user.nome}` : ""}! Sua solicitação de acesso 
+            {empresaNome && (
+              <> para a empresa <span className="text-[#00E5FF] font-medium">{empresaNome}</span></>
+            )} foi enviada e está aguardando aprovação do gerente.
           </p>
 
           {/* Status Steps */}
@@ -64,8 +77,8 @@ export function PendingCompanyPage() {
                   <CheckCircle2 size={14} className="text-[#00FF87]" />
                 </div>
                 <div>
-                  <p className="text-sm text-[#F5F5F5] font-medium">Empresa vinculada</p>
-                  <p className="text-xs text-[#4B5563]">Solicitação enviada para aprovação</p>
+                  <p className="text-sm text-[#F5F5F5] font-medium">Solicitação enviada</p>
+                  <p className="text-xs text-[#4B5563]">Pedido de acesso enviado para a empresa</p>
                 </div>
               </div>
 
@@ -92,6 +105,12 @@ export function PendingCompanyPage() {
               <span>E-mail:</span>
               <span className="text-[#F5F5F5]">{user?.email}</span>
             </div>
+            {empresaNome && (
+              <div className="flex items-center justify-between text-[#4B5563] mt-1">
+                <span>Empresa:</span>
+                <span className="text-[#00E5FF]">{empresaNome}</span>
+              </div>
+            )}
           </div>
 
           {/* Help text */}
@@ -99,7 +118,7 @@ export function PendingCompanyPage() {
             <div className="flex items-start gap-2">
               <Building2 size={16} className="text-[#00E5FF] mt-0.5 flex-shrink-0" />
               <p className="text-xs text-[#00E5FF] text-left">
-                Entre em contato com o gerente da sua empresa para acelerar o processo de aprovação.
+                Entre em contato com o gerente da empresa para acelerar o processo de aprovação.
               </p>
             </div>
           </div>
@@ -108,9 +127,14 @@ export function PendingCompanyPage() {
           <div className="flex gap-3">
             <button
               onClick={handleRefresh}
+              disabled={checking}
               className="btn btn-secondary flex-1"
             >
-              <RefreshCw size={16} />
+              {checking ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <RefreshCw size={16} />
+              )}
               Verificar status
             </button>
             <button

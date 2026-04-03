@@ -84,7 +84,7 @@ function RecentActivity({ items }: { items: RecentActivityItem[] }) {
 }
 
 export function DashboardPage() {
-  const { user, isManager, hasCompany } = useAuth();
+  const { user, isManager, hasCompany, empresaNome } = useAuth();
 
   const { data: suppliers = [] } = useQuery({ queryKey: ["fornecedores"], queryFn: apiListFornecedores });
   const { data: productsData } = useQuery({ queryKey: ["estoque"], queryFn: () => apiListEstoque() });
@@ -107,10 +107,10 @@ export function DashboardPage() {
 
   // Mock metrics
   const totalRevenue = products.reduce((acc, p) => acc + getMockPrice(p.id), 0);
-  const activeUsers = users.filter((u) => u.roles?.includes("USER") || u.roles?.includes("GERENTE")).length;
+  const activeUsers = users.filter((u) => u.status === "ATIVO" || (u.empresaId && u.status !== "PENDENTE")).length;
   
-  // Usuários sem empresa
-  const pendingUsers = users.filter((u) => !u.fornecedorId).length;
+  // Usuários pendentes de aprovação
+  const pendingUsers = users.filter((u) => u.status === "PENDENTE" || !u.empresaId).length;
   
   // Top products (by mock price)
   const topProducts = [...products]
@@ -130,6 +130,23 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {/* Empresa Info Header */}
+      {empresaNome && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 p-4 rounded-sm bg-[#00FF87]/5 border border-[#00FF87]/20"
+        >
+          <div className="w-10 h-10 rounded-sm bg-[#00FF87]/10 flex items-center justify-center">
+            <Building2 size={20} className="text-[#00FF87]" />
+          </div>
+          <div>
+            <p className="text-xs text-[#4B5563] uppercase tracking-wider">Empresa</p>
+            <p className="text-lg font-display font-bold text-[#F5F5F5]">{empresaNome}</p>
+          </div>
+        </motion.div>
+      )}
+
       {/* Aviso: Usuário sem empresa */}
       {!hasCompany && (
         <motion.div
@@ -170,17 +187,17 @@ export function DashboardPage() {
             <Users size={24} className="text-[#00E5FF] flex-shrink-0" />
             <div>
               <h4 className="text-sm font-medium text-[#00E5FF]">
-                {pendingUsers} usuário{pendingUsers !== 1 ? "s" : ""} aguardando vinculação
+                {pendingUsers} solicitação{pendingUsers !== 1 ? "ões" : ""} de acesso pendente{pendingUsers !== 1 ? "s" : ""}
               </h4>
               <p className="text-xs text-[#9CA3AF] mt-1 mb-3">
-                Existem usuários cadastrados que ainda não foram vinculados a uma empresa.
-                Vincule-os para que possam acessar o sistema completo.
+                Existem usuários aguardando aprovação para entrar na sua empresa.
+                Revise e aprove as solicitações.
               </p>
               <Link
                 to="/admin/usuarios"
                 className="inline-flex items-center gap-2 text-xs font-medium text-[#00E5FF] hover:text-[#67E8F9] transition-colors"
               >
-                Gerenciar usuários
+                Gerenciar solicitações
                 <ArrowRight size={12} />
               </Link>
             </div>
