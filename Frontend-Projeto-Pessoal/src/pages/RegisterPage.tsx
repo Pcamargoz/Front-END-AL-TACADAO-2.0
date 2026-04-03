@@ -52,7 +52,6 @@ function SuccessScreen({ isNewCompany }: { isNewCompany: boolean }) {
 
 // Conteúdo principal do cadastro
 function RegisterContent() {
-  const navigate = useNavigate();
   const { step, isNewCompany, canGoBack, prevStep, error } = useRegister();
 
   // Handler para buscar empresa por CNPJ
