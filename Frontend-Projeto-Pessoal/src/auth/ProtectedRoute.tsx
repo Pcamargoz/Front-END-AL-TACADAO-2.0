@@ -1,23 +1,22 @@
 import { Navigate, useLocation, Outlet } from "react-router-dom";
-import { useAuth, type UserRole } from "./AuthContext";
+import { useAuth } from "./AuthContext";
+import { useFornecedor } from "../context/FornecedorContext";
 import { LoadingScreen } from "../components/ui/Spinner";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
-  requiredRole?: UserRole;
-  requireCompany?: boolean;
-  allowPending?: boolean;
   redirectTo?: string;
 }
 
-export function ProtectedRoute({ 
-  children, 
-  requiredRole,
-  requireCompany = false,
-  allowPending = false,
-  redirectTo = "/login" 
+/**
+ * Protege rotas que exigem JWT de usuario (login).
+ * Redireciona para /login se nao autenticado.
+ */
+export function ProtectedRoute({
+  children,
+  redirectTo = "/login",
 }: ProtectedRouteProps) {
-  const { loading, isAuthenticated, isManager, hasCompany, isPendingApproval, empresaId } = useAuth();
+  const { loading, isAuthenticated } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -28,23 +27,32 @@ export function ProtectedRoute({
     return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
-  // Se requer role específica (ex: GERENTE para admin)
-  if (requiredRole === "GERENTE" && !isManager) {
-    return <Navigate to="/dashboard" replace />;
+  return children ? <>{children}</> : <Outlet />;
+}
+
+/**
+ * Protege rotas que exigem JWT + Fornecedor Token.
+ * Redireciona para /empresas se nao tiver fornecedor token.
+ */
+export function ProtectedFornecedorRoute({
+  children,
+}: {
+  children?: React.ReactNode;
+}) {
+  const { loading, isAuthenticated } = useAuth();
+  const { isInsideFornecedor } = useFornecedor();
+  const location = useLocation();
+
+  if (loading) {
+    return <LoadingScreen message="Verificando autenticação..." />;
   }
 
-  // Se usuário está pendente de aprovação e a rota não permite pendentes
-  // Redireciona para página de aguardando aprovação
-  if (isPendingApproval && !allowPending) {
-    // Permite acesso à página de aguardando aprovação
-    if (location.pathname !== "/aguardando-empresa") {
-      return <Navigate to="/aguardando-empresa" replace />;
-    }
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Se requer empresa vinculada (para criar produtos, etc.)
-  if (requireCompany && !hasCompany && !empresaId) {
-    return <Navigate to="/aguardando-empresa" replace />;
+  if (!isInsideFornecedor) {
+    return <Navigate to="/empresas" replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;
@@ -55,21 +63,15 @@ interface GuestRouteProps {
   redirectTo?: string;
 }
 
-export function GuestRoute({ children, redirectTo = "/dashboard" }: GuestRouteProps) {
-  const { isAuthenticated, loading, isManager, isPendingApproval } = useAuth();
+export function GuestRoute({ children, redirectTo = "/empresas" }: GuestRouteProps) {
+  const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return <LoadingScreen message="Carregando..." />;
   }
 
   if (isAuthenticated) {
-    // Se está pendente, vai para página de aguardando
-    if (isPendingApproval) {
-      return <Navigate to="/aguardando-empresa" replace />;
-    }
-    // Gerente vai para admin, usuário comum vai para dashboard
-    const dest = isManager ? "/admin" : redirectTo;
-    return <Navigate to={dest} replace />;
+    return <Navigate to={redirectTo} replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;

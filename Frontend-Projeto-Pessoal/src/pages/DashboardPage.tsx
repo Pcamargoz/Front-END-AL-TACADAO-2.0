@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { Truck, Package, Users, TrendingUp, ArrowRight, DollarSign, ArrowUpRight, ArrowDownRight, Activity, Clock, ShoppingBag, Dumbbell, AlertTriangle, Building2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Truck, Package, TrendingUp, ArrowRight, DollarSign, ArrowUpRight, ArrowDownRight, Activity, Clock, ShoppingBag, Dumbbell, Building2 } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
 import { Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
-import { apiListFornecedores, apiListEstoque, apiListUsuarios, type Produto, type Usuario } from "../api/client";
+import { apiListEstoque, type Produto } from "../api/client";
 import { BRAND_META, formatCurrency, getMockPrice } from "../lib/utils";
 import { useAuth } from "../auth/AuthContext";
+import { useFornecedor } from "../context/FornecedorContext";
 import { motion } from "framer-motion";
 
 interface StatCardProps {
@@ -84,14 +85,13 @@ function RecentActivity({ items }: { items: RecentActivityItem[] }) {
 }
 
 export function DashboardPage() {
-  const { user, isManager, hasCompany, empresaNome } = useAuth();
+  const { user } = useAuth();
+  const { nome: fornecedorNome, isGerente } = useFornecedor();
+  const { id } = useParams();
 
-  const { data: suppliers = [] } = useQuery({ queryKey: ["fornecedores"], queryFn: apiListFornecedores });
   const { data: productsData } = useQuery({ queryKey: ["estoque"], queryFn: () => apiListEstoque() });
-  const { data: usersData } = useQuery({ queryKey: ["usuarios"], queryFn: () => apiListUsuarios(), enabled: isManager });
   
   const products: Produto[] = productsData?.content ?? [];
-  const users: Usuario[] = usersData?.content ?? [];
 
   const brandCount: Record<string, number> = {};
   products.forEach((p) => { if (p.marca) brandCount[p.marca] = (brandCount[p.marca] || 0) + 1; });
@@ -107,10 +107,6 @@ export function DashboardPage() {
 
   // Mock metrics
   const totalRevenue = products.reduce((acc, p) => acc + getMockPrice(p.id), 0);
-  const activeUsers = users.filter((u) => u.status === "ATIVO" || (u.empresaId && u.status !== "PENDENTE")).length;
-  
-  // Usuários pendentes de aprovação
-  const pendingUsers = users.filter((u) => u.status === "PENDENTE" || !u.empresaId).length;
   
   // Top products (by mock price)
   const topProducts = [...products]
@@ -120,18 +116,18 @@ export function DashboardPage() {
   // Mock recent activity
   const recentActivity: RecentActivityItem[] = [
     { id: "1", type: "product", title: "Novo produto cadastrado: Whey Protein", timestamp: "Há 2 horas", icon: <Package size={14} /> },
-    { id: "2", type: "user", title: "Novo funcionário adicionado", timestamp: "Há 4 horas", icon: <Users size={14} /> },
+    { id: "2", type: "product", title: "Estoque atualizado: Creatina", timestamp: "Há 4 horas", icon: <Package size={14} /> },
     { id: "3", type: "order", title: "Pedido #1234 finalizado", timestamp: "Há 6 horas", icon: <ShoppingBag size={14} /> },
-    { id: "4", type: "product", title: "Estoque atualizado: Creatina", timestamp: "Há 8 horas", icon: <Package size={14} /> },
+    { id: "4", type: "product", title: "Novo produto: BCAA", timestamp: "Há 8 horas", icon: <Package size={14} /> },
   ];
 
   const hour     = new Date().getHours();
   const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Empresa Info Header */}
-      {empresaNome && (
+      {fornecedorNome && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -142,65 +138,18 @@ export function DashboardPage() {
           </div>
           <div>
             <p className="text-xs text-[#4B5563] uppercase tracking-wider">Empresa</p>
-            <p className="text-lg font-display font-bold text-[#F5F5F5]">{empresaNome}</p>
+            <p className="text-lg font-display font-bold text-[#F5F5F5]">{fornecedorNome}</p>
           </div>
-        </motion.div>
-      )}
-
-      {/* Aviso: Usuário sem empresa */}
-      {!hasCompany && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-sm bg-[#F59E0B]/10 border border-[#F59E0B]/20"
-        >
-          <div className="flex items-start gap-3">
-            <AlertTriangle size={24} className="text-[#F59E0B] flex-shrink-0" />
-            <div>
-              <h4 className="text-sm font-medium text-[#F59E0B]">Você ainda não está vinculado a uma empresa</h4>
-              <p className="text-xs text-[#9CA3AF] mt-1 mb-3">
-                Para criar e gerenciar produtos no estoque, você precisa ser vinculado a uma empresa por um gerente.
-                Enquanto isso, você pode visualizar informações gerais do sistema.
-              </p>
-              <Link
-                to="/aguardando-empresa"
-                className="inline-flex items-center gap-2 text-xs font-medium text-[#F59E0B] hover:text-[#FBBF24] transition-colors"
-              >
-                <Building2 size={14} />
-                Ver status de vinculação
-                <ArrowRight size={12} />
-              </Link>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Aviso para Gerente: usuários pendentes */}
-      {isManager && pendingUsers > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="p-4 rounded-sm bg-[#00E5FF]/10 border border-[#00E5FF]/20"
-        >
-          <div className="flex items-start gap-3">
-            <Users size={24} className="text-[#00E5FF] flex-shrink-0" />
-            <div>
-              <h4 className="text-sm font-medium text-[#00E5FF]">
-                {pendingUsers} solicitação{pendingUsers !== 1 ? "ões" : ""} de acesso pendente{pendingUsers !== 1 ? "s" : ""}
-              </h4>
-              <p className="text-xs text-[#9CA3AF] mt-1 mb-3">
-                Existem usuários aguardando aprovação para entrar na sua empresa.
-                Revise e aprove as solicitações.
-              </p>
-              <Link
-                to="/admin/usuarios"
-                className="inline-flex items-center gap-2 text-xs font-medium text-[#00E5FF] hover:text-[#67E8F9] transition-colors"
-              >
-                Gerenciar solicitações
-                <ArrowRight size={12} />
-              </Link>
-            </div>
+          <div className="ml-auto">
+            <span
+              className="text-xs font-medium px-2 py-1 rounded-sm"
+              style={{ 
+                background: isGerente ? "rgba(0,255,135,0.15)" : "rgba(0,229,255,0.15)",
+                color: isGerente ? "#00FF87" : "#00E5FF"
+              }}
+            >
+              {isGerente ? "GERENTE" : "FUNCIONÁRIO"}
+            </span>
           </div>
         </motion.div>
       )}
@@ -213,30 +162,23 @@ export function DashboardPage() {
       >
         <div>
           <h1 className="text-2xl font-display font-bold text-[#F5F5F5]">
-            {greeting}, {user?.nome || "Gerente"}! 👋
+            {greeting}, {user?.nome || user?.login}! 👋
           </h1>
           <p className="text-sm text-[#9CA3AF]">
             Aqui está o resumo do seu negócio hoje
           </p>
         </div>
         <div className="flex gap-3">
-          {hasCompany && (
-            <Link to="/admin/produtos" className="btn btn-secondary">
-              <Package size={16} /> Novo Produto
-            </Link>
-          )}
-          {isManager && (
-            <Link to="/admin/usuarios" className="btn btn-primary">
-              <Users size={16} /> Gerenciar Equipe
-            </Link>
-          )}
+          <Link to={`/empresas/${id}/painel/estoque`} className="btn btn-primary">
+            <Package size={16} /> Ver Estoque
+          </Link>
         </div>
       </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard
-          title="Receita Total"
+          title="Receita Estimada"
           value={formatCurrency(totalRevenue)}
           change={12.5}
           icon={<DollarSign size={24} />}
@@ -250,15 +192,8 @@ export function DashboardPage() {
           color="#00E5FF"
         />
         <StatCard
-          title="Usuários Ativos"
-          value={activeUsers}
-          change={-2.4}
-          icon={<Users size={24} />}
-          color="#F59E0B"
-        />
-        <StatCard
-          title="Fornecedores"
-          value={suppliers.length}
+          title="Marcas"
+          value={brandData.length}
           change={5.1}
           icon={<TrendingUp size={24} />}
           color="#A855F7"
@@ -341,7 +276,7 @@ export function DashboardPage() {
               <Package size={18} className="text-[#00E5FF]" />
               Produtos em Destaque
             </h3>
-            <Link to="/admin/produtos" className="text-xs text-[#00FF87] hover:text-[#00E5FF] transition-colors flex items-center gap-1">
+            <Link to={`/empresas/${id}/painel/estoque`} className="text-xs text-[#00FF87] hover:text-[#00E5FF] transition-colors flex items-center gap-1">
               Ver todos <ArrowRight size={12} />
             </Link>
           </div>
@@ -387,54 +322,12 @@ export function DashboardPage() {
         </motion.div>
       </div>
 
-      {/* Recent Suppliers */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25, duration: 0.35 }}
-        className="card p-6"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="font-medium text-[#F5F5F5] flex items-center gap-2">
-            <Truck size={18} className="text-[#F59E0B]" />
-            Fornecedores Recentes
-          </h3>
-          <Link to="/admin/fornecedores" className="text-xs text-[#00FF87] hover:text-[#00E5FF] transition-colors flex items-center gap-1">
-            Ver todos <ArrowRight size={12} />
-          </Link>
-        </div>
-
-        {suppliers.length === 0 ? (
-          <div className="text-center py-8">
-            <Truck size={40} className="mx-auto text-[#4B5563] mb-3" />
-            <p className="text-sm text-[#9CA3AF]">Nenhum fornecedor cadastrado</p>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {suppliers.slice(0, 6).map((f) => (
-              <div key={f.id} className="flex items-center gap-3 p-3 rounded-sm bg-[#0A0C10] hover:bg-[#1A1D24]/50 transition-colors">
-                <div className="w-10 h-10 rounded-sm flex items-center justify-center text-sm font-bold bg-[#F59E0B]/10 text-[#F59E0B]">
-                  {(f.nomeFantasia || f.razaoSocial).charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-[#F5F5F5] truncate font-medium">
-                    {f.nomeFantasia || f.razaoSocial}
-                  </p>
-                  <p className="text-xs text-[#4B5563] truncate">{f.email}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </motion.div>
-
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {[
-          { icon: <Package size={20} />, label: "Adicionar Produto", to: "/admin/produtos", color: "#00FF87" },
-          { icon: <Users size={20} />, label: "Gerenciar Equipe", to: "/admin/usuarios", color: "#00E5FF" },
-          { icon: <ShoppingBag size={20} />, label: "Ver Pedidos", to: "/admin", color: "#F59E0B" },
-          { icon: <Activity size={20} />, label: "Relatórios", to: "/admin", color: "#A855F7" },
+          { icon: <Package size={20} />, label: "Ver Estoque", to: `/empresas/${id}/painel/estoque`, color: "#00FF87" },
+          { icon: <ShoppingBag size={20} />, label: "Meu Perfil", to: `/empresas/${id}/painel/perfil`, color: "#F59E0B" },
+          { icon: <Activity size={20} />, label: "Voltar às Empresas", to: "/empresas", color: "#A855F7" },
         ].map((action, i) => (
           <Link
             key={i}

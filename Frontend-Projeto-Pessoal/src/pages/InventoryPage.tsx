@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Search, Pencil, Trash2, Package, LayoutGrid, List, Scale, Dumbbell, AlertTriangle } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Package, LayoutGrid, List, Scale, Dumbbell } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -19,7 +19,7 @@ import {
 import { Modal } from "../components/ui/Modal";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { BRAND_META, ALL_BRANDS, getMockPrice, formatCurrency } from "../lib/utils";
-import { useAuth } from "../auth/AuthContext";
+import { useFornecedor } from "../context/FornecedorContext";
 
 const schema = z.object({
   descricao:    z.string().min(2, "Descrição é obrigatória"),
@@ -197,8 +197,7 @@ function ProductCard({
 }
 
 export function InventoryPage() {
-  const { isManager, hasCompany } = useAuth();
-  const canEdit = true; // Criador ou GERENTE podem editar
+  const { isGerente } = useFornecedor();
 
   const qc = useQueryClient();
   const [search,     setSearch]     = useState("");
@@ -279,24 +278,6 @@ export function InventoryPage() {
 
   return (
     <div className="space-y-6">
-      {/* Aviso para usuário sem empresa */}
-      {!hasCompany && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-sm bg-[#F59E0B]/10 border border-[#F59E0B]/20 flex items-start gap-3"
-        >
-          <AlertTriangle size={20} className="text-[#F59E0B] flex-shrink-0 mt-0.5" />
-          <div>
-            <h4 className="text-sm font-medium text-[#F59E0B]">Acesso Limitado</h4>
-            <p className="text-xs text-[#9CA3AF] mt-1">
-              Você ainda não está vinculado a uma empresa. Você pode visualizar os produtos, mas não pode criar novos.
-              Aguarde um gerente vincular você à empresa ou entre em contato com a administração.
-            </p>
-          </div>
-        </motion.div>
-      )}
-
       {error && (
         <div className="p-3 rounded-sm bg-[#EF4444]/10 border border-[#EF4444]/20 flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-[#EF4444]" />
@@ -325,12 +306,10 @@ export function InventoryPage() {
           >
             <List size={16} />
           </button>
-          {hasCompany && (
-            <button onClick={() => setModalOpen(true)} className="btn btn-primary ml-2">
-              <Plus size={16} />
-              <span className="hidden sm:inline">Novo Produto</span>
-            </button>
-          )}
+          <button onClick={() => setModalOpen(true)} className="btn btn-primary ml-2">
+            <Plus size={16} />
+            <span className="hidden sm:inline">Novo Produto</span>
+          </button>
         </div>
       </motion.div>
 
@@ -393,7 +372,7 @@ export function InventoryPage() {
           <p className="text-[#9CA3AF] mb-4">
             {search || brandFilter ? "Nenhum produto encontrado" : "Estoque vazio"}
           </p>
-          {!search && !brandFilter && hasCompany && (
+          {!search && !brandFilter && (
             <button onClick={() => setModalOpen(true)} className="btn btn-primary">
               <Plus size={16} /> Adicionar produto
             </button>
@@ -406,10 +385,10 @@ export function InventoryPage() {
               <ProductCard
                 key={p.id}
                 product={p}
-                onEdit={() => canEdit && setEditing(p)}
+                onEdit={() => setEditing(p)}
                 onDelete={() => setDeleting(p)}
-                canEdit={canEdit}
-                canDelete={isManager}
+                canEdit={true}
+                canDelete={isGerente}
               />
             ))}
           </AnimatePresence>
@@ -429,7 +408,7 @@ export function InventoryPage() {
                   <th className="px-6 py-4 hidden md:table-cell">Peso</th>
                   <th className="px-6 py-4 hidden lg:table-cell">Preço</th>
                   <th className="px-6 py-4 hidden xl:table-cell">Fornecedor</th>
-                  {(canEdit || isManager) && <th className="px-6 py-4 w-24" />}
+                  <th className="px-6 py-4 w-24" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1A1D24]">
@@ -493,22 +472,18 @@ export function InventoryPage() {
                             <span className="text-[#4B5563]">—</span>
                           )}
                         </td>
-                        {(canEdit || isManager) && (
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-1 justify-end">
-                              {canEdit && (
-                                <button onClick={() => setEditing(p)} className="btn btn-ghost btn-icon btn-sm hover:text-[#00FF87]">
-                                  <Pencil size={14} />
-                                </button>
-                              )}
-                              {isManager && (
-                                <button onClick={() => setDeleting(p)} className="btn btn-ghost btn-icon btn-sm hover:text-[#EF4444]">
-                                  <Trash2 size={14} />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        )}
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-1 justify-end">
+                            <button onClick={() => setEditing(p)} className="btn btn-ghost btn-icon btn-sm hover:text-[#00FF87]">
+                              <Pencil size={14} />
+                            </button>
+                            {isGerente && (
+                              <button onClick={() => setDeleting(p)} className="btn btn-ghost btn-icon btn-sm hover:text-[#EF4444]">
+                                <Trash2 size={14} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
                       </motion.tr>
                     );
                   })}
@@ -519,25 +494,21 @@ export function InventoryPage() {
         </motion.div>
       )}
 
-      {hasCompany && (
-        <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Novo Produto">
-          <ProductForm onSubmit={(v) => createMut.mutate(toPayload(v))} loading={createMut.isPending} isNew />
-        </Modal>
-      )}
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Novo Produto">
+        <ProductForm onSubmit={(v) => createMut.mutate(toPayload(v))} loading={createMut.isPending} isNew />
+      </Modal>
 
-      {canEdit && hasCompany && (
-        <Modal open={!!editing} onClose={() => setEditing(null)} title="Editar Produto">
-          {editing && (
-            <ProductForm
-              defaultValues={editingDefaults}
-              onSubmit={(v) => updateMut.mutate({ id: editing.id, payload: toPayload(v) })}
-              loading={updateMut.isPending}
-            />
-          )}
-        </Modal>
-      )}
+      <Modal open={!!editing} onClose={() => setEditing(null)} title="Editar Produto">
+        {editing && (
+          <ProductForm
+            defaultValues={editingDefaults}
+            onSubmit={(v) => updateMut.mutate({ id: editing.id, payload: toPayload(v) })}
+            loading={updateMut.isPending}
+          />
+        )}
+      </Modal>
 
-      {isManager && (
+      {isGerente && (
         <ConfirmDialog
           open={!!deleting}
           onClose={() => setDeleting(null)}

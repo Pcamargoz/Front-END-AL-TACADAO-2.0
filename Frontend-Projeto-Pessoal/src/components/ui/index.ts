@@ -27,14 +27,3 @@ export { ConfirmDialog } from "./ConfirmDialog";
 export { AnimatedCounter } from "./AnimatedCounter";
 
 export { Spinner, LoadingScreen, LoadingOverlay } from "./Spinner";
-
-// Register Wizard components
-export { 
-  RegisterProvider, 
-  RegisterWizard, 
-  useRegister,
-  type RegisterType,
-  type RegisterStep,
-  type EmpresaData,
-  type UsuarioData
-} from "./RegisterWizard";

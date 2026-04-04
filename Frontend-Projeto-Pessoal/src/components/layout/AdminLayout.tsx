@@ -1,23 +1,31 @@
 import { useState } from "react";
-import { Outlet, NavLink, useNavigate, Link } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, useParams, Link } from "react-router-dom";
 import {
   LayoutDashboard,
   Package,
-  Users,
   ChevronRight,
   LogOut,
   User,
   Store,
+  Building2,
+  DoorOpen,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../auth/AuthContext";
+import { useFornecedor } from "../../context/FornecedorContext";
 import { useIsMobile } from "../../hooks/useIsMobile";
 
-const NAV_ITEMS = [
-  { to: "/admin", icon: LayoutDashboard, label: "Dashboard", exact: true },
-  { to: "/admin/usuarios", icon: Users, label: "Usuários" },
-  { to: "/admin/produtos", icon: Package, label: "Produtos" },
-];
+function useNavItems() {
+  const { id } = useParams();
+  const fornecedorId = id;
+  const base = `/empresas/${fornecedorId}/painel`;
+
+  return [
+    { to: base, icon: LayoutDashboard, label: "Dashboard", exact: true },
+    { to: `${base}/estoque`, icon: Package, label: "Estoque" },
+    { to: `${base}/perfil`, icon: User, label: "Perfil" },
+  ];
+}
 
 interface SidebarProps {
   expanded: boolean;
@@ -27,18 +35,26 @@ interface SidebarProps {
 
 function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
   const { user, logout } = useAuth();
+  const { nome: fornecedorNome, role, sairFornecedor } = useFornecedor();
   const navigate = useNavigate();
+  const navItems = useNavItems();
 
   const handleLogout = async () => {
+    sairFornecedor();
     await logout();
     navigate("/login");
+  };
+
+  const handleSairEmpresa = () => {
+    sairFornecedor();
+    navigate("/empresas");
   };
 
   // Mobile: bottom navigation
   if (isMobile) {
     return (
       <nav className="bottom-nav">
-        {NAV_ITEMS.map(({ to, icon: Icon, label, exact }) => (
+        {navItems.map(({ to, icon: Icon, label, exact }) => (
           <NavLink
             key={to}
             to={to}
@@ -53,10 +69,10 @@ function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
             )}
           </NavLink>
         ))}
-        <Link to="/" className="bottom-nav-item">
-          <Store size={20} />
-          <span>Loja</span>
-        </Link>
+        <button onClick={handleSairEmpresa} className="bottom-nav-item">
+          <DoorOpen size={20} className="text-[#F59E0B]/60" />
+          <span className="text-[#F59E0B]/60 text-[10px]">Sair Empresa</span>
+        </button>
         <button onClick={handleLogout} className="bottom-nav-item">
           <LogOut size={20} className="text-[#EF4444]/60" />
           <span className="text-[#EF4444]/60">Sair</span>
@@ -100,9 +116,43 @@ function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
         </AnimatePresence>
       </div>
 
+      {/* Fornecedor Info */}
+      {fornecedorNome && (
+        <div
+          className="px-3 py-3 overflow-hidden"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+        >
+          <div className="flex items-center gap-2">
+            <div
+              className="flex-shrink-0 w-7 h-7 rounded-sm flex items-center justify-center"
+              style={{ background: "rgba(0,255,135,0.15)", border: "1px solid rgba(0,255,135,0.25)" }}
+            >
+              <Building2 size={12} className="text-[#00FF87]" />
+            </div>
+            <AnimatePresence>
+              {expanded && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="overflow-hidden min-w-0"
+                >
+                  <p className="truncate text-xs font-medium text-[#F5F5F5]">
+                    {fornecedorNome}
+                  </p>
+                  <p className="truncate text-[10px] text-[#00FF87] tracking-wider uppercase">
+                    {role}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      )}
+
       {/* Nav */}
       <nav className="flex-1 px-2 py-4 flex flex-col gap-1 overflow-hidden">
-        {NAV_ITEMS.map(({ to, icon: Icon, label, exact }) => (
+        {navItems.map(({ to, icon: Icon, label, exact }) => (
           <NavLink
             key={to}
             to={to}
@@ -140,10 +190,7 @@ function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
         <div className="divider my-2" />
 
         {/* Link para Loja */}
-        <Link
-          to="/"
-          className="sidebar-item"
-        >
+        <Link to="/" className="sidebar-item">
           <Store size={18} className="flex-shrink-0" />
           <AnimatePresence>
             {expanded && (
@@ -184,13 +231,30 @@ function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
                 <p className="truncate text-sm font-medium text-[#9CA3AF]">
                   {user?.nome || user?.login}
                 </p>
-                <p className="truncate text-[10px] text-[#00FF87] tracking-wider uppercase">
-                  Gerente
+                <p className="truncate text-[10px] text-[#4B5563] tracking-wider uppercase">
+                  {user?.roles?.[0] ?? "USUARIO"}
                 </p>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
+
+        {/* Sair da Empresa */}
+        <button onClick={handleSairEmpresa} className="sidebar-item w-full text-left">
+          <DoorOpen size={16} className="flex-shrink-0 text-[#F59E0B]/60" />
+          <AnimatePresence>
+            {expanded && (
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="whitespace-nowrap text-sm text-[#F59E0B]/60"
+              >
+                Sair da Empresa
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </button>
 
         {/* Logout */}
         <button onClick={handleLogout} className="sidebar-item w-full text-left">

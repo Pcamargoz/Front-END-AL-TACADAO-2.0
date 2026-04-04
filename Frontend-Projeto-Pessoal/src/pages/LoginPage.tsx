@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "../auth/AuthContext";
 
 export function LoginPage() {
-  const { user, loading, login, isManager, isPendingApproval, hasCompany } = useAuth();
+  const { user, loading, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -19,34 +19,19 @@ export function LoginPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      // Redirect based on status and role
-      if (isPendingApproval || !hasCompany) {
-        // Usuário pendente de aprovação
-        navigate("/aguardando-empresa", { replace: true });
-      } else if (isManager) {
-        // Gerente vai para painel admin
-        navigate("/admin", { replace: true });
-      } else {
-        // Usuário comum vai para dashboard/produtos
-        navigate("/produtos", { replace: true });
-      }
+      navigate("/empresas", { replace: true });
     }
-  }, [user, loading, navigate, isManager, isPendingApproval, hasCompany]);
+  }, [user, loading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSubmitting(true);
-    
+
     const result = await login(loginVal, password);
-    
+
     if (!result.ok) {
-      // Se a mensagem indica que está aguardando aprovação
-      if (result.message.toLowerCase().includes("aguardando")) {
-        navigate("/aguardando-empresa", { replace: true });
-      } else {
-        setError(result.message);
-      }
+      setError(result.message);
     }
     // Se ok, o useEffect fará o redirect
     setSubmitting(false);

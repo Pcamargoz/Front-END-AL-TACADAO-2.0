@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Search, ShoppingCart, User, Menu, X, LogOut, LayoutDashboard } from "lucide-react";
+import { Search, ShoppingCart, User, Menu, X, LogOut, Building2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../auth/AuthContext";
 import { useCart } from "../../hooks/useCart";
 
 export function Navbar() {
-  const { user, isAuthenticated, isManager, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const { totalItems } = useCart();
   const navigate = useNavigate();
   
@@ -138,16 +138,14 @@ export function Navbar() {
                         </span>
                       </div>
                       <div className="p-1">
-                        {isManager && (
-                          <Link
-                            to="/admin"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="flex items-center gap-3 px-3 py-2 text-sm text-[#9CA3AF] hover:text-[#F5F5F5] hover:bg-[#1A1D24] rounded-sm transition-colors"
-                          >
-                            <LayoutDashboard size={16} />
-                            Painel Admin
-                          </Link>
-                        )}
+                        <Link
+                          to="/empresas"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-3 py-2 text-sm text-[#9CA3AF] hover:text-[#F5F5F5] hover:bg-[#1A1D24] rounded-sm transition-colors"
+                        >
+                          <Building2 size={16} />
+                          Minhas Empresas
+                        </Link>
                         <button
                           onClick={handleLogout}
                           className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[#EF4444] hover:bg-[#EF4444]/10 rounded-sm transition-colors"
@@ -237,16 +235,14 @@ export function Navbar() {
               <div className="divider" />
               {isAuthenticated ? (
                 <>
-                  {isManager && (
-                    <Link
-                      to="/admin"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="py-3 px-4 rounded-sm text-lg font-medium text-[#9CA3AF] hover:bg-[#1A1D24] flex items-center gap-3"
-                    >
-                      <LayoutDashboard size={20} />
-                      Painel Admin
-                    </Link>
-                  )}
+                  <Link
+                    to="/empresas"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="py-3 px-4 rounded-sm text-lg font-medium text-[#9CA3AF] hover:bg-[#1A1D24] flex items-center gap-3"
+                  >
+                    <Building2 size={20} />
+                    Minhas Empresas
+                  </Link>
                   <button
                     onClick={() => {
                       handleLogout();

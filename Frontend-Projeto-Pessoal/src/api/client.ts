@@ -7,53 +7,42 @@ function authHeaders(): Record<string, string> {
   return { ...h };
 }
 
+// Helper para pegar o fornecedor token do sessionStorage
+function fornecedorHeaders(): Record<string, string> {
+  const fToken = sessionStorage.getItem("fornecedor_token");
+  if (fToken) return { "X-Fornecedor-Token": fToken };
+  return {};
+}
+
 // Interceptor global para 401 - limpa token e redireciona
 async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
   const res = await fetch(url, {
     ...options,
-    headers: { ...authHeaders(), ...options.headers },
+    headers: { ...authHeaders(), ...fornecedorHeaders(), ...options.headers },
   });
   if (res.status === 401) {
     localStorage.removeItem("jwt_token");
+    sessionStorage.removeItem("fornecedor_token");
+    sessionStorage.removeItem("fornecedor_data");
     window.location.href = "/login";
   }
   return res;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// TYPES - EMPRESA
-// ══════════════════════════════════════════════════════════════════════════════
-
-export type Empresa = {
-  id: string;
-  cnpj: string;
-  razaoSocial: string;
-  nomeFantasia?: string;
-  email: string;
-  telefone?: string;
-  ativo?: boolean;
-  dataCadastro?: string;
-  dataAtualizacao?: string;
-};
-
-export type EmpresaPayload = Omit<Empresa, "id" | "dataCadastro">;
-
-export type UserRole = "USER" | "GERENTE";
-export type UserStatus = "ATIVO" | "PENDENTE" | "INATIVO";
-
-// ══════════════════════════════════════════════════════════════════════════════
 // TYPES - AUTH
 // ══════════════════════════════════════════════════════════════════════════════
 
-// Resposta do /api/auth/me - inclui empresaId
+export type UserRole = "USUARIO" | "ADMIN";
+export type UserStatus = "ATIVO" | "PENDENTE" | "INATIVO";
+
+// Resposta do /api/auth/me
 export type MeResponse = {
-  id: string;
+  userId: string;
   nome?: string;
   login: string;
   email: string;
   roles: UserRole[];
-  empresaId?: string | null;
-  empresaNome?: string;
   status?: UserStatus;
 };
 
@@ -64,15 +53,13 @@ export type LoginResponse = {
   login: string;
   email: string;
   roles: UserRole[];
-  empresaId?: string | null;
-  empresaNome?: string;
-  status?: UserStatus;
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
 // AUTH ENDPOINTS
 // ══════════════════════════════════════════════════════════════════════════════
 
+// POST /api/auth/login
 export async function apiLogin(login: string, password: string): Promise<Response> {
   return fetch("/api/auth/login", {
     method: "POST",
@@ -81,6 +68,7 @@ export async function apiLogin(login: string, password: string): Promise<Respons
   });
 }
 
+// GET /api/auth/me
 export async function apiMe(): Promise<MeResponse | null> {
   const token = localStorage.getItem("jwt_token");
   if (!token) return null;
@@ -95,214 +83,41 @@ export async function apiMe(): Promise<MeResponse | null> {
 
 export async function apiLogout(): Promise<void> {
   localStorage.removeItem("jwt_token");
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// EMPRESA ENDPOINTS
-// ══════════════════════════════════════════════════════════════════════════════
-
-// Payload para registrar empresa + gerente
-export type RegistrarEmpresaPayload = {
-  cnpj: string;
-  razaoSocial: string;
-  nomeFantasia?: string;
-  email: string;
-  telefone?: string;
-  nomeUsuario?: string;
-  loginUsuario: string;
-  senhaUsuario: string;
-  emailUsuario: string;
-};
-
-// Resposta do registro de empresa
-export type RegistrarEmpresaResponse = {
-  empresa: Empresa;
-  usuario: Usuario;
-  token: string;
-};
-
-// POST /api/empresa/registrar - Cria empresa + primeiro gerente (público)
-export async function apiRegistrarEmpresa(payload: RegistrarEmpresaPayload): Promise<Response> {
-  return fetch("/api/empresa/registrar", {
-    method: "POST",
-    headers: { ...h, "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-}
-
-// GET /api/empresa/buscar?cnpj={cnpj} - Busca empresa por CNPJ (público)
-export async function apiBuscarEmpresaPorCNPJ(cnpj: string): Promise<Empresa | null> {
-  const cnpjLimpo = cnpj.replace(/\D/g, "");
-  const res = await fetch(`/api/empresa/buscar?cnpj=${cnpjLimpo}`, {
-    method: "GET",
-    headers: h,
-  });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error("Erro ao buscar empresa");
-  return normalizeEmpresa(await res.json());
-}
-
-// GET /api/empresa/minha - Dados da empresa do usuário logado
-export async function apiMinhaEmpresa(): Promise<Empresa | null> {
-  const res = await fetchWithAuth("/api/empresa/minha");
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error("Erro ao buscar empresa");
-  return normalizeEmpresa(await res.json());
-}
-
-// PUT /api/empresa/{id} - Atualiza dados da empresa (GERENTE)
-export async function apiUpdateEmpresa(id: string, payload: EmpresaPayload): Promise<Response> {
-  return fetchWithAuth(`/api/empresa/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-}
-
-function normalizeEmpresa(raw: Record<string, unknown>): Empresa {
-  return {
-    id: String(raw.id ?? ""),
-    cnpj: String(raw.cnpj ?? ""),
-    razaoSocial: String(raw.razaosocial ?? raw.razaoSocial ?? ""),
-    nomeFantasia: raw.nomeFantasia ? String(raw.nomeFantasia) : undefined,
-    email: String(raw.email ?? ""),
-    telefone: raw.telefone ? String(raw.telefone) : undefined,
-    ativo: raw.ativo != null ? Boolean(raw.ativo) : undefined,
-    dataCadastro: raw.dataCadastro ? String(raw.dataCadastro) : undefined,
-    dataAtualizacao: raw.dataAtualizacao ? String(raw.dataAtualizacao) : undefined,
-  };
+  sessionStorage.removeItem("fornecedor_token");
+  sessionStorage.removeItem("fornecedor_data");
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
 // USUÁRIO TYPES & ENDPOINTS
 // ══════════════════════════════════════════════════════════════════════════════
 
-export type Usuario = {
+// Payload para auto-registro (simples)
+export type SolicitarCadastroPayload = {
+  nome: string;
+  login: string;
+  senha: string;
+  email: string;
+};
+
+// Resposta do registro
+export type CadastroResponse = {
   id: string;
+  nome: string;
   login: string;
   email: string;
-  nome?: string;
   roles: UserRole[];
-  empresaId?: string | null;
   status: UserStatus;
-  dataCadastro: string;
-  dataAtualizacao?: string;
 };
 
-// Payload para solicitar entrada em empresa (público)
-export type SolicitarEntradaPayload = {
-  nome?: string;
-  login: string;
-  senha: string;
-  email: string;
-  empresaId: string;
-};
-
-// Payload para criar usuário diretamente (GERENTE)
-export type CriarUsuarioPayload = {
-  nome?: string;
-  login: string;
-  senha: string;
-  email: string;
-};
-
-export type UpdateUsuarioPayload = { nome?: string; login?: string; email?: string; senha?: string };
 export type ErroCampo = { message: string; campo: string };
-export type ErroResposta = { status: number; message: string; erros: ErroCampo[] };
+export type ErroResposta = { status: number; message: string; erros?: ErroCampo[] };
 
-function normalizeUsuario(raw: Record<string, unknown>): Usuario {
-  return {
-    id: String(raw.id ?? ""),
-    login: String(raw.login ?? ""),
-    email: String(raw.email ?? ""),
-    nome: raw.nome ? String(raw.nome) : undefined,
-    roles: Array.isArray(raw.roles) ? raw.roles.map(String) as UserRole[] : [],
-    empresaId: raw.empresaId ? String(raw.empresaId) : (raw.fornecedorId ? String(raw.fornecedorId) : null),
-    status: (raw.status as UserStatus) || "ATIVO",
-    dataCadastro: String(raw.dataCadastro ?? raw.dataDeCadastro ?? ""),
-    dataAtualizacao: raw.dataAtualizacao ? String(raw.dataAtualizacao) : undefined,
-  };
-}
-
-// POST /cadastro/solicitar - Solicita entrada em empresa existente (público)
-export async function apiSolicitarEntrada(payload: SolicitarEntradaPayload): Promise<Response> {
+// POST /cadastro/solicitar - Auto-registro de usuario (público)
+export async function apiSolicitarCadastro(payload: SolicitarCadastroPayload): Promise<Response> {
   return fetch("/cadastro/solicitar", {
     method: "POST",
     headers: { ...h, "Content-Type": "application/json" },
     body: JSON.stringify(payload),
-  });
-}
-
-// POST /cadastro - Cria usuário diretamente na empresa (GERENTE only)
-export async function apiCriarUsuario(payload: CriarUsuarioPayload): Promise<Response> {
-  return fetchWithAuth("/cadastro", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-}
-
-// [GERENTE] Lista usuários da empresa paginado
-export async function apiListUsuarios(params?: { pagina?: number; tamanhaPagina?: number }): Promise<{ content: Usuario[]; totalElements: number; totalPages: number }> {
-  const p = params ?? {};
-  const query = new URLSearchParams({
-    pagina: String(p.pagina ?? 0),
-    "tamanha-pagina": String(p.tamanhaPagina ?? 1000),
-  });
-  const res = await fetchWithAuth(`/cadastro?${query}`);
-  if (!res.ok) throw new Error("Erro ao listar usuários");
-  const data = await res.json();
-  const items: Record<string, unknown>[] = Array.isArray(data) ? data : (data.content ?? []);
-  return {
-    content: items.map(normalizeUsuario),
-    totalElements: data.totalElements ?? items.length,
-    totalPages: data.totalPages ?? 1,
-  };
-}
-
-// Busca usuário por ID
-export async function apiGetUsuario(id: string): Promise<Usuario> {
-  const res = await fetchWithAuth(`/cadastro/${id}`);
-  if (!res.ok) throw new Error("Erro ao buscar usuário");
-  return normalizeUsuario(await res.json());
-}
-
-// Atualiza perfil do usuário
-export async function apiUpdateUsuario(id: string, payload: UpdateUsuarioPayload): Promise<Response> {
-  return fetchWithAuth(`/cadastro/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-}
-
-// [GERENTE] Remove usuário
-export async function apiDeleteUsuario(id: string): Promise<Response> {
-  return fetchWithAuth(`/cadastro/${id}`, { method: "DELETE" });
-}
-
-// [GERENTE] Altera roles do usuário — API espera array puro: ["GERENTE", "USER"]
-export async function apiUpdateUsuarioRoles(id: string, roles: UserRole[]): Promise<Response> {
-  return fetchWithAuth(`/cadastro/${id}/roles`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(roles),
-  });
-}
-
-// [GERENTE] Aprova usuário pendente na empresa
-export async function apiAprovarUsuario(usuarioId: string): Promise<Response> {
-  return fetchWithAuth(`/cadastro/${usuarioId}/aprovar`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-  });
-}
-
-// [GERENTE] Rejeita usuário pendente
-export async function apiRejeitarUsuario(usuarioId: string): Promise<Response> {
-  return fetchWithAuth(`/cadastro/${usuarioId}/rejeitar`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
   });
 }
 
@@ -316,10 +131,20 @@ export type Fornecedor = {
   telefone?: string;
   dataDeCadastro?: string;
 };
-export type FornecedorPayload = Omit<Fornecedor, "id" | "dataDeCadastro">;
+
+export type FornecedorPayload = Omit<Fornecedor, "id" | "dataDeCadastro"> & {
+  senhaAcesso?: string;
+};
+
+export type FornecedorRole = "GERENTE" | "FUNCIONARIO";
+
+export type ValidarAcessoResponse = {
+  fornecedorToken: string;
+  fornecedorNome: string;
+  role: FornecedorRole;
+};
 
 // A API retorna Page<ResultadoPesquisaFornecedor> com campo "razaosocial" (minúsculo).
-// Normalizamos para razaoSocial para manter consistência no frontend.
 function normalizeFornecedor(raw: Record<string, unknown>): Fornecedor {
   return {
     id: raw.id as string,
@@ -332,6 +157,7 @@ function normalizeFornecedor(raw: Record<string, unknown>): Fornecedor {
   };
 }
 
+// GET /fornecedor - qualquer usuario logado
 export async function apiListFornecedores(): Promise<Fornecedor[]> {
   const res = await fetchWithAuth("/fornecedor?tamanha-pagina=1000");
   if (!res.ok) throw new Error(`Erro ${res.status} ao listar fornecedores`);
@@ -347,7 +173,7 @@ export async function apiGetFornecedor(id: string): Promise<Fornecedor> {
   return normalizeFornecedor(await res.json());
 }
 
-// Qualquer usuário autenticado pode criar fornecedor (empresa)
+// POST /fornecedor - cria fornecedor (inclui senhaAcesso)
 export async function apiCreateFornecedor(payload: FornecedorPayload): Promise<Response> {
   return fetchWithAuth("/fornecedor", {
     method: "POST",
@@ -356,7 +182,16 @@ export async function apiCreateFornecedor(payload: FornecedorPayload): Promise<R
   });
 }
 
-// [GERENTE] Atualiza fornecedor
+// POST /fornecedor/{id}/validar-acesso - valida senha e retorna fornecedor token
+export async function apiValidarAcessoFornecedor(id: string, senha: string): Promise<Response> {
+  return fetchWithAuth(`/fornecedor/${id}/validar-acesso`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ senha }),
+  });
+}
+
+// PUT /fornecedor/{id} - requer X-Fornecedor-Token com GERENTE
 export async function apiUpdateFornecedor(id: string, payload: FornecedorPayload): Promise<Response> {
   return fetchWithAuth(`/fornecedor/${id}`, {
     method: "PUT",
@@ -365,16 +200,7 @@ export async function apiUpdateFornecedor(id: string, payload: FornecedorPayload
   });
 }
 
-// [GERENTE] Vincula fornecedor existente por CNPJ
-export async function apiVincularFornecedorCNPJ(id: string, cnpj: string): Promise<Response> {
-  return fetchWithAuth(`/fornecedor/${id}/vincular`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cnpj }),
-  });
-}
-
-// [GERENTE] Remove fornecedor
+// DELETE /fornecedor/{id} - requer X-Fornecedor-Token com GERENTE
 export async function apiDeleteFornecedor(id: string): Promise<Response> {
   return fetchWithAuth(`/fornecedor/${id}`, { method: "DELETE" });
 }
@@ -395,7 +221,7 @@ export type ProdutoPayload = {
   sabor?: string;
   medida?: number;
   marca: string;
-  fornecedorId: string;
+  fornecedorId?: string;
 };
 
 // Enum de marcas válidas conforme API backend
@@ -428,7 +254,7 @@ function normalizeProduto(raw: Record<string, unknown>): Produto {
   };
 }
 
-// Lista produtos da empresa (usuário deve ter fornecedorId)
+// Lista produtos (requer X-Fornecedor-Token)
 export async function apiListEstoque(params?: { pagina?: number; tamanhaPagina?: number; descricao?: string; medida?: number; marca?: string }): Promise<{ content: Produto[]; totalElements: number; totalPages: number }> {
   const p = params ?? {};
   const query = new URLSearchParams({
@@ -438,7 +264,7 @@ export async function apiListEstoque(params?: { pagina?: number; tamanhaPagina?:
   if (p.descricao) query.set("descricao", p.descricao);
   if (p.medida != null) query.set("medida", String(p.medida));
   if (p.marca) query.set("marca", p.marca);
-  
+
   const res = await fetchWithAuth(`/api/estoque?${query}`);
   if (!res.ok) throw new Error(`Erro ${res.status} ao listar produtos`);
   const data = await res.json();
@@ -457,7 +283,7 @@ export async function apiGetProduto(id: string): Promise<Produto> {
   return normalizeProduto(await res.json());
 }
 
-// Cria produto (usuário deve ter fornecedorId no token)
+// Cria produto (requer X-Fornecedor-Token)
 export async function apiCreateProduto(payload: ProdutoPayload): Promise<Response> {
   return fetchWithAuth("/api/estoque", {
     method: "POST",
@@ -466,7 +292,7 @@ export async function apiCreateProduto(payload: ProdutoPayload): Promise<Respons
   });
 }
 
-// Atualiza produto (criador ou GERENTE)
+// Atualiza produto (requer X-Fornecedor-Token + GERENTE)
 export async function apiUpdateProduto(id: string, payload: ProdutoPayload): Promise<Response> {
   return fetchWithAuth(`/api/estoque/${id}`, {
     method: "PUT",
@@ -475,7 +301,7 @@ export async function apiUpdateProduto(id: string, payload: ProdutoPayload): Pro
   });
 }
 
-// Remove produto (criador ou GERENTE)
+// Remove produto (requer X-Fornecedor-Token + GERENTE)
 export async function apiDeleteProduto(id: string): Promise<Response> {
   return fetchWithAuth(`/api/estoque/${id}`, { method: "DELETE" });
 }
