@@ -16,10 +16,14 @@ import { apiListEstoque, type Produto } from "../api/client";
 import { BRAND_META, ALL_BRANDS, getMockPrice, formatCurrency } from "../lib/utils";
 import { useCart } from "../hooks/useCart";
 
+function getProductPrice(product: Produto): number {
+  return product.preco ?? getMockPrice(product.id);
+}
+
 function ProductCard({ product, view }: { product: Produto; view: "grid" | "list" }) {
   const { addItem, isInCart } = useCart();
   const meta = product.marca ? BRAND_META[product.marca] : null;
-  const price = getMockPrice(product.id);
+  const price = getProductPrice(product);
   const inCart = isInCart(product.id);
 
   if (view === "list") {
@@ -159,9 +163,9 @@ export function ProductsPage() {
     result.sort((a, b) => {
       switch (sortBy) {
         case "preco-asc":
-          return getMockPrice(a.id) - getMockPrice(b.id);
+          return getProductPrice(a) - getProductPrice(b);
         case "preco-desc":
-          return getMockPrice(b.id) - getMockPrice(a.id);
+          return getProductPrice(b) - getProductPrice(a);
         case "nome":
         default:
           return a.descricao.localeCompare(b.descricao);

@@ -84,6 +84,10 @@ function RecentActivity({ items }: { items: RecentActivityItem[] }) {
   );
 }
 
+function getProductPrice(product: Produto): number {
+  return product.preco ?? getMockPrice(product.id);
+}
+
 export function DashboardPage() {
   const { user } = useAuth();
   const { nome: fornecedorNome, isGerente } = useFornecedor();
@@ -105,12 +109,12 @@ export function DashboardPage() {
     .sort((a, b) => b.value - a.value)
     .slice(0, 8);
 
-  // Mock metrics
-  const totalRevenue = products.reduce((acc, p) => acc + getMockPrice(p.id), 0);
+  // Receita baseada no preço cadastrado (fallback para dados legados)
+  const totalRevenue = products.reduce((acc, p) => acc + getProductPrice(p), 0);
   
-  // Top products (by mock price)
+  // Top products (by current price)
   const topProducts = [...products]
-    .sort((a, b) => getMockPrice(b.id) - getMockPrice(a.id))
+    .sort((a, b) => getProductPrice(b) - getProductPrice(a))
     .slice(0, 5);
 
   // Mock recent activity
@@ -304,7 +308,7 @@ export function DashboardPage() {
                         {meta?.label ?? p.marca ?? "Sem marca"}
                       </p>
                     </div>
-                    <span className="price text-sm">{formatCurrency(getMockPrice(p.id))}</span>
+                    <span className="price text-sm">{formatCurrency(getProductPrice(p))}</span>
                   </div>
                 );
               })}

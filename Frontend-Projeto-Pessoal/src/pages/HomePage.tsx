@@ -17,10 +17,14 @@ import { apiListEstoque, type Produto } from "../api/client";
 import { BRAND_META, getMockPrice, formatCurrency, CATEGORIES } from "../lib/utils";
 import { useCart } from "../hooks/useCart";
 
+function getProductPrice(product: Produto): number {
+  return product.preco ?? getMockPrice(product.id);
+}
+
 function FeaturedProductCard({ product }: { product: Produto }) {
   const { addItem, isInCart } = useCart();
   const meta = product.marca ? BRAND_META[product.marca] : null;
-  const price = getMockPrice(product.id);
+  const price = getProductPrice(product);
 
   return (
     <motion.div

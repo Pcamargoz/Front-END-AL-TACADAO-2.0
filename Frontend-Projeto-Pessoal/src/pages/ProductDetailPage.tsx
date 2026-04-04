@@ -18,6 +18,10 @@ import { apiListEstoque, type Produto } from "../api/client";
 import { BRAND_META, getMockPrice, formatCurrency } from "../lib/utils";
 import { useCart } from "../hooks/useCart";
 
+function getProductPrice(product: Produto): number {
+  return product.preco ?? getMockPrice(product.id);
+}
+
 // Mock data for product details
 const MOCK_FLAVORS = ["Chocolate", "Baunilha", "Morango", "Cookies & Cream", "Cappuccino"];
 const MOCK_SIZES = ["450g", "900g", "1.8kg"];
@@ -55,7 +59,7 @@ export function ProductDetailPage() {
   const product = products.find((p) => p.id === id);
   const inCart = isInCart(id || "");
   const cartQuantity = getItemQuantity(id || "");
-  const price = id ? getMockPrice(id) : 0;
+  const price = product ? getProductPrice(product) : 0;
   const meta = product?.marca ? BRAND_META[product.marca] : null;
 
   // Produtos relacionados (mesma marca ou aleatórios)
@@ -318,7 +322,7 @@ export function ProductDetailPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {relatedProducts.map((p) => {
                 const pMeta = p.marca ? BRAND_META[p.marca] : null;
-                const pPrice = getMockPrice(p.id);
+                const pPrice = getProductPrice(p);
                 return (
                   <Link
                     key={p.id}

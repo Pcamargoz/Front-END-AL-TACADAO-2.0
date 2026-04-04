@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Search, Pencil, Trash2, Package, LayoutGrid, List, Scale, Dumbbell } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Package, LayoutGrid, List, Scale, Dumbbell, DollarSign, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -18,17 +18,33 @@ import {
 } from "../api/client";
 import { Modal } from "../components/ui/Modal";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
-import { BRAND_META, ALL_BRANDS, getMockPrice, formatCurrency } from "../lib/utils";
+import { BRAND_META, ALL_BRANDS, formatCurrency } from "../lib/utils";
 import { useFornecedor } from "../context/FornecedorContext";
 
 const schema = z.object({
   descricao:    z.string().min(2, "Descrição é obrigatória"),
   sabor:        z.string().optional(),
   medida:       z.string().optional(),
+  preco:        z.string().min(1, "Preço é obrigatório").refine((value) => {
+    const parsed = Number(value.replace(",", "."));
+    return Number.isFinite(parsed) && parsed > 0;
+  }, "Preço deve ser maior que zero"),
   marca:        z.string().min(1, "Selecione uma marca"),
   fornecedorId: z.string().min(1, "Selecione um fornecedor"),
 });
 type FormValues = z.infer<typeof schema>;
+
+function getCreatorLabel(product: Produto): string {
+  const nome = product.usuarioCadastro?.nome?.trim();
+  const login = product.usuarioCadastro?.login?.trim();
+
+  if (nome && login && nome.toLowerCase() !== login.toLowerCase()) {
+    return `${nome} (@${login})`;
+  }
+  if (nome) return nome;
+  if (login) return `@${login}`;
+  return "Não informado";
+}
 
 function ProductForm({
   defaultValues,
@@ -63,7 +79,7 @@ function ProductForm({
         {errors.descricao && <span className="text-xs text-[#EF4444] mt-1 block">{errors.descricao.message}</span>}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
           <label className="input-label mb-2 block">Sabor</label>
           <input
@@ -78,6 +94,21 @@ function ProductForm({
             <Scale size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
             <input {...register("medida")} type="number" step="0.01" placeholder="1.5" className="input-field pl-10" />
           </div>
+        </div>
+        <div>
+          <label className="input-label mb-2 block">Preço (R$) *</label>
+          <div className="relative">
+            <DollarSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+            <input
+              {...register("preco")}
+              type="number"
+              step="0.01"
+              min="0.01"
+              placeholder="129.90"
+              className={`input-field pl-10 ${errors.preco ? "border-[#EF4444]" : ""}`}
+            />
+          </div>
+          {errors.preco && <span className="text-xs text-[#EF4444] mt-1 block">{errors.preco.message}</span>}
         </div>
       </div>
 
@@ -132,7 +163,7 @@ function ProductCard({
   product: Produto; onEdit: () => void; onDelete: () => void; canEdit: boolean; canDelete: boolean;
 }) {
   const meta = product.marca ? BRAND_META[product.marca] : null;
-  const price = getMockPrice(product.id);
+  const registeredBy = getCreatorLabel(product);
   
   return (
     <motion.div
@@ -171,14 +202,23 @@ function ProductCard({
         </p>
       </div>
 
-      <div className="flex items-center justify-between mb-3">
-        <span className="price">{formatCurrency(price)}</span>
+      <div className="flex items-center justify-between mb-2">
+        {product.preco != null ? (
+          <span className="price">{formatCurrency(product.preco)}</span>
+        ) : (
+          <span className="text-xs text-[#4B5563]">Sem preço cadastrado</span>
+        )}
         {product.fornecedor && (
           <span className="text-xs text-[#4B5563] truncate max-w-[120px]">
             {product.fornecedor.nomeFantasia || product.fornecedor.razaoSocial}
           </span>
         )}
       </div>
+
+      <p className="text-xs text-[#4B5563] flex items-center gap-1 mb-3">
+        <UserRound size={11} />
+        <span className="truncate">Cadastrado por: <span className="text-[#9CA3AF]">{registeredBy}</span></span>
+      </p>
 
       <div className="flex items-center gap-2 pt-3 border-t border-[#1A1D24]">
         {canEdit && (
@@ -255,6 +295,7 @@ export function InventoryPage() {
     descricao: v.descricao,
     sabor: v.sabor,
     medida: v.medida ? Number(v.medida) : undefined,
+    preco: Number(v.preco.replace(",", ".")),
     marca: v.marca,
     fornecedorId: v.fornecedorId,
   });
@@ -272,6 +313,7 @@ export function InventoryPage() {
     descricao:    editing.descricao,
     sabor:        editing.sabor ?? "",
     medida:       editing.medida?.toString(),
+    preco:        editing.preco?.toString() ?? "",
     marca:        editing.marca ?? "",
     fornecedorId: editing.fornecedor?.id ?? "",
   } : undefined;
@@ -415,7 +457,7 @@ export function InventoryPage() {
                 <AnimatePresence>
                   {filtered.map((p, i) => {
                     const meta = p.marca ? BRAND_META[p.marca] : null;
-                    const price = getMockPrice(p.id);
+                    const registeredBy = getCreatorLabel(p);
                     return (
                       <motion.tr
                         key={p.id}
@@ -438,6 +480,10 @@ export function InventoryPage() {
                               {meta && (
                                 <span className="text-xs sm:hidden" style={{ color: meta.color }}>{meta.label}</span>
                               )}
+                              <span className="text-xs text-[#4B5563] flex items-center gap-1 mt-0.5">
+                                <UserRound size={11} />
+                                <span className="text-[#9CA3AF] truncate max-w-[180px]">{registeredBy}</span>
+                              </span>
                             </div>
                           </div>
                         </td>
@@ -461,7 +507,11 @@ export function InventoryPage() {
                           )}
                         </td>
                         <td className="px-6 py-4 hidden lg:table-cell">
-                          <span className="price text-sm">{formatCurrency(price)}</span>
+                          {p.preco != null ? (
+                            <span className="price text-sm">{formatCurrency(p.preco)}</span>
+                          ) : (
+                            <span className="text-sm text-[#4B5563]">Sem preço</span>
+                          )}
                         </td>
                         <td className="px-6 py-4 hidden xl:table-cell">
                           {p.fornecedor ? (

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Plus, Building2, Lock, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
+import { Search, Plus, Building2, Lock, Eye, EyeOff, ArrowRight, Loader2, House } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiListFornecedores, apiValidarAcessoFornecedor, type Fornecedor, type ValidarAcessoResponse } from "../api/client";
@@ -99,9 +99,14 @@ export function EmpresasPage() {
               Selecione uma empresa para acessar o painel de administração
             </p>
           </div>
-          <Link to="/empresas/cadastrar" className="btn btn-primary">
-            <Plus size={18} /> <span>Nova Empresa</span>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link to="/" className="btn btn-secondary">
+              <House size={16} /> <span>Menu inicial</span>
+            </Link>
+            <Link to="/empresas/cadastrar" className="btn btn-primary">
+              <Plus size={18} /> <span>Nova Empresa</span>
+            </Link>
+          </div>
         </motion.div>
 
         {/* Search */}

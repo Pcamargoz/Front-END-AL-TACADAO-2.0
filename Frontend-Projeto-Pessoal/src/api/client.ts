@@ -211,15 +211,24 @@ export type Produto = {
   descricao: string;
   sabor?: string;
   medida?: number;
+  preco?: number;
   marca?: string;
   fornecedor?: Fornecedor;
+  usuarioCadastro?: ProdutoUsuarioCadastro;
   dataDeCadastro?: string;
+};
+
+export type ProdutoUsuarioCadastro = {
+  id?: string;
+  nome?: string;
+  login?: string;
 };
 
 export type ProdutoPayload = {
   descricao: string;
   sabor?: string;
   medida?: number;
+  preco: number;
   marca: string;
   fornecedorId?: string;
 };
@@ -241,15 +250,58 @@ export const MARCAS_VALIDAS = [
 ] as const;
 export type MarcaValida = typeof MARCAS_VALIDAS[number];
 
+function toOptionalString(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function toOptionalNumber(value: unknown): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string") return undefined;
+
+  const normalized = value.replace(",", ".").trim();
+  if (!normalized) return undefined;
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function normalizeProdutoUsuarioCadastro(raw: unknown): ProdutoUsuarioCadastro | undefined {
+  if (!raw) return undefined;
+
+  if (typeof raw === "string") {
+    return { login: raw };
+  }
+
+  if (typeof raw !== "object") return undefined;
+
+  const data = raw as Record<string, unknown>;
+  const usuario = {
+    id: toOptionalString(data.id ?? data.userId),
+    nome: toOptionalString(data.nome ?? data.name),
+    login: toOptionalString(data.login ?? data.username ?? data.usuario),
+  };
+
+  if (!usuario.id && !usuario.nome && !usuario.login) return undefined;
+  return usuario;
+}
+
 // ResultadoPesquisaProduto retorna "Descricao" (D maiúsculo) — normalizamos.
 function normalizeProduto(raw: Record<string, unknown>): Produto {
+  const usuarioCadastro = normalizeProdutoUsuarioCadastro(
+    raw.usuarioCadastro ?? raw.cadastradoPor ?? raw.usuarioCriacao ?? raw.createdBy,
+  );
+
   return {
     id: raw.id as string,
     descricao: (raw.Descricao ?? raw.descricao) as string,
     sabor: raw.sabor as string | undefined,
     medida: raw.medida as number | undefined,
+    preco: toOptionalNumber(raw.preco ?? raw.precoUnitario ?? raw.valor),
     marca: raw.marca as string | undefined,
     fornecedor: raw.fornecedor ? normalizeFornecedor(raw.fornecedor as Record<string, unknown>) : undefined,
+    usuarioCadastro,
     dataDeCadastro: raw.dataDeCadastro as string | undefined,
   };
 }
