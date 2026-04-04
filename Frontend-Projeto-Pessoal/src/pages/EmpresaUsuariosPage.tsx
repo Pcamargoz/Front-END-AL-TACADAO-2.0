@@ -24,7 +24,7 @@ const schema = z.object({
   login: z.string().min(3, "Login deve ter pelo menos 3 caracteres"),
   email: z.string().email("Email invalido"),
   senha: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
-  role:  z.enum(["FUNCIONARIO", "ESTAGIARIO"], { required_error: "Selecione um cargo" }),
+  role:  z.enum(["FUNCIONARIO", "ESTAGIARIO"], { message: "Selecione um cargo" }),
 });
 type FormValues = z.infer<typeof schema>;
 
