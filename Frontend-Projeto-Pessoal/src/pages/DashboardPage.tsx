@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Truck, Package, TrendingUp, ArrowRight, DollarSign, ArrowUpRight, ArrowDownRight, Activity, Clock, ShoppingBag, Dumbbell, Building2 } from "lucide-react";
+import { Package, TrendingUp, ArrowRight, DollarSign, ArrowUpRight, ArrowDownRight, Activity, Clock, ShoppingBag, Dumbbell, Building2 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
 import { apiListEstoque, type Produto } from "../api/client";
