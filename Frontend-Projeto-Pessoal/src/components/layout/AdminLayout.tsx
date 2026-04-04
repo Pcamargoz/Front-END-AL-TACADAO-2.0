@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate, useParams, Link } from "react-router-dom"
 import {
   LayoutDashboard,
   Package,
+  Users,
   ChevronRight,
   LogOut,
   User,
@@ -23,6 +24,7 @@ function useNavItems() {
   return [
     { to: base, icon: LayoutDashboard, label: "Dashboard", exact: true },
     { to: `${base}/estoque`, icon: Package, label: "Estoque" },
+    { to: `${base}/usuarios`, icon: Users, label: "Usuários" },
     { to: `${base}/perfil`, icon: User, label: "Perfil" },
   ];
 }

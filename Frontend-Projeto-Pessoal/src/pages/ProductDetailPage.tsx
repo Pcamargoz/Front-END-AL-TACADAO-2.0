@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -22,10 +22,6 @@ function getProductPrice(product: Produto): number {
   return product.preco ?? getMockPrice(product.id);
 }
 
-// Mock data for product details
-const MOCK_FLAVORS = ["Chocolate", "Baunilha", "Morango", "Cookies & Cream", "Cappuccino"];
-const MOCK_SIZES = ["450g", "900g", "1.8kg"];
-
 interface NutritionInfo {
   label: string;
   value: string;
@@ -47,8 +43,6 @@ export function ProductDetailPage() {
   const { addItem, isInCart, getItemQuantity } = useCart();
   
   const [quantity, setQuantity] = useState(1);
-  const [selectedFlavor, setSelectedFlavor] = useState(MOCK_FLAVORS[0]);
-  const [selectedSize, setSelectedSize] = useState(MOCK_SIZES[1]);
 
   const { data: productsData, isLoading } = useQuery({
     queryKey: ["estoque"],
@@ -57,6 +51,24 @@ export function ProductDetailPage() {
   const products: Produto[] = productsData?.content ?? [];
 
   const product = products.find((p) => p.id === id);
+
+  const realFlavors = useMemo(() => {
+    if (!product) return [];
+    const sameBrand = products.filter((p) => p.marca === product.marca);
+    const flavors = [...new Set(sameBrand.map((p) => p.sabor).filter(Boolean))] as string[];
+    return flavors.length > 0 ? flavors : product.sabor ? [product.sabor] : [];
+  }, [products, product]);
+
+  const realSizes = useMemo(() => {
+    if (!product) return [];
+    const sameBrand = products.filter((p) => p.marca === product.marca);
+    const sizes = [...new Set(sameBrand.map((p) => p.medida).filter((m) => m != null))] as number[];
+    const formatted = sizes.sort((a, b) => a - b).map((s) => `${s}g`);
+    return formatted.length > 0 ? formatted : product.medida != null ? [`${product.medida}g`] : [];
+  }, [products, product]);
+
+  const [selectedFlavor, setSelectedFlavor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
   const inCart = isInCart(id || "");
   const cartQuantity = getItemQuantity(id || "");
   const price = product ? getProductPrice(product) : 0;
@@ -203,45 +215,62 @@ export function ProductDetailPage() {
               <p className="price text-3xl">{formatCurrency(price)}</p>
             </div>
 
-            {/* Flavor Selection */}
-            <div>
-              <label className="input-label mb-3 block">Sabor</label>
-              <div className="flex flex-wrap gap-2">
-                {MOCK_FLAVORS.map((flavor) => (
-                  <button
-                    key={flavor}
-                    onClick={() => setSelectedFlavor(flavor)}
-                    className={`px-4 py-2 rounded-sm text-sm font-medium transition-all ${
-                      selectedFlavor === flavor
-                        ? "bg-[#00FF87] text-[#090B10]"
-                        : "bg-[#1A1D24] text-[#9CA3AF] hover:bg-[#252830] hover:text-[#F5F5F5]"
-                    }`}
-                  >
-                    {flavor}
-                  </button>
-                ))}
+            {/* Fornecedor */}
+            {product.fornecedor && (
+              <div className="flex items-center gap-2 p-3 bg-[#1A1D24] rounded-sm">
+                <Package size={16} className="text-[#00E5FF] flex-shrink-0" />
+                <div>
+                  <p className="text-xs text-[#4B5563]">Fornecedor</p>
+                  <p className="text-sm text-[#F5F5F5]">
+                    {product.fornecedor.nomeFantasia || product.fornecedor.razaoSocial}
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Flavor Selection */}
+            {realFlavors.length > 0 && (
+              <div>
+                <label className="input-label mb-3 block">Sabor</label>
+                <div className="flex flex-wrap gap-2">
+                  {realFlavors.map((flavor) => (
+                    <button
+                      key={flavor}
+                      onClick={() => setSelectedFlavor(flavor)}
+                      className={`px-4 py-2 rounded-sm text-sm font-medium transition-all ${
+                        (selectedFlavor || realFlavors[0]) === flavor
+                          ? "bg-[#00FF87] text-[#090B10]"
+                          : "bg-[#1A1D24] text-[#9CA3AF] hover:bg-[#252830] hover:text-[#F5F5F5]"
+                      }`}
+                    >
+                      {flavor}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Size Selection */}
-            <div>
-              <label className="input-label mb-3 block">Tamanho</label>
-              <div className="flex gap-2">
-                {MOCK_SIZES.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`px-6 py-3 rounded-sm text-sm font-mono font-medium transition-all border-2 ${
-                      selectedSize === size
-                        ? "border-[#00FF87] bg-[#00FF87]/10 text-[#00FF87]"
-                        : "border-[#1A1D24] bg-[#111318] text-[#9CA3AF] hover:border-[#4B5563]"
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+            {realSizes.length > 0 && (
+              <div>
+                <label className="input-label mb-3 block">Tamanho</label>
+                <div className="flex gap-2">
+                  {realSizes.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`px-6 py-3 rounded-sm text-sm font-mono font-medium transition-all border-2 ${
+                        (selectedSize || realSizes[0]) === size
+                          ? "border-[#00FF87] bg-[#00FF87]/10 text-[#00FF87]"
+                          : "border-[#1A1D24] bg-[#111318] text-[#9CA3AF] hover:border-[#4B5563]"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Quantity & Add to Cart */}
             <div className="flex items-center gap-4">

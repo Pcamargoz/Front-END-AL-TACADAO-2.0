@@ -24,6 +24,7 @@ import { EmpresaCadastrarPage } from "./pages/EmpresaCadastrarPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { InventoryPage } from "./pages/InventoryPage";
+import { EmpresaUsuariosPage } from "./pages/EmpresaUsuariosPage";
 
 export default function App() {
   return (
@@ -56,6 +57,7 @@ export default function App() {
               <Route element={<AdminLayout />}>
                 <Route path="/empresas/:id/painel" element={<DashboardPage />} />
                 <Route path="/empresas/:id/painel/estoque" element={<InventoryPage />} />
+                <Route path="/empresas/:id/painel/usuarios" element={<EmpresaUsuariosPage />} />
                 <Route path="/empresas/:id/painel/perfil" element={<ProfilePage />} />
               </Route>
             </Route>

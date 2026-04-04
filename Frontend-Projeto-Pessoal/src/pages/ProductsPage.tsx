@@ -58,6 +58,14 @@ function ProductCard({ product, view }: { product: Produto; view: "grid" | "list
           {product.medida && (
             <p className="text-xs text-[#4B5563] font-mono">{product.medida}g</p>
           )}
+          {product.sabor && (
+            <p className="text-xs text-[#9CA3AF]">{product.sabor}</p>
+          )}
+          {product.fornecedor && (
+            <p className="text-xs text-[#4B5563] truncate">
+              {product.fornecedor.nomeFantasia || product.fornecedor.razaoSocial}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-4">
           <span className="price text-lg whitespace-nowrap">{formatCurrency(price)}</span>
@@ -108,8 +116,17 @@ function ProductCard({ product, view }: { product: Produto; view: "grid" | "list
           </h3>
         </Link>
         {product.medida && (
-          <p className="text-xs text-[#4B5563] font-mono mb-3">{product.medida}g</p>
+          <p className="text-xs text-[#4B5563] font-mono mb-1">{product.medida}g</p>
         )}
+        {product.sabor && (
+          <p className="text-xs text-[#9CA3AF] mb-1">{product.sabor}</p>
+        )}
+        {product.fornecedor && (
+          <p className="text-xs text-[#4B5563] mb-3 truncate">
+            {product.fornecedor.nomeFantasia || product.fornecedor.razaoSocial}
+          </p>
+        )}
+        {!product.sabor && !product.fornecedor && !product.medida && <div className="mb-3" />}
         <div className="flex items-center justify-between">
           <span className="price">{formatCurrency(price)}</span>
           <button

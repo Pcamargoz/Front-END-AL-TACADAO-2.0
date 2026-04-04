@@ -20,6 +20,7 @@ import { Modal } from "../components/ui/Modal";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { BRAND_META, ALL_BRANDS, formatCurrency } from "../lib/utils";
 import { useFornecedor } from "../context/FornecedorContext";
+import { useAuth } from "../auth/AuthContext";
 
 const schema = z.object({
   descricao:    z.string().min(2, "Descrição é obrigatória"),
@@ -61,6 +62,7 @@ function ProductForm({
     resolver: zodResolver(schema),
     defaultValues,
   });
+  const { user } = useAuth();
 
   const { data: suppliers = [] } = useQuery({
     queryKey: ["fornecedores"],
@@ -69,6 +71,14 @@ function ProductForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {user && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-sm bg-[#1A1D24]/60 border border-[#1A1D24]">
+          <UserRound size={14} className="text-[#4B5563] flex-shrink-0" />
+          <span className="text-xs text-[#4B5563]">
+            Cadastrando como: <span className="text-[#9CA3AF]">{user.nome ?? user.login} (@{user.login})</span>
+          </span>
+        </div>
+      )}
       <div>
         <label className="input-label mb-2 block">Descrição do produto *</label>
         <input
@@ -265,6 +275,9 @@ export function InventoryPage() {
         toast.error(body?.message ?? "Falha ao criar produto");
       }
     },
+    onError: (err: any) => {
+      toast.error(err?.message ?? "Erro de conexão ao criar produto. Tente novamente.");
+    },
   });
 
   const updateMut = useMutation({
@@ -280,6 +293,9 @@ export function InventoryPage() {
         toast.error(body?.message ?? "Falha ao atualizar produto");
       }
     },
+    onError: (err: any) => {
+      toast.error(err?.message ?? "Erro de conexão ao atualizar produto. Tente novamente.");
+    },
   });
 
   const deleteMut = useMutation({
@@ -288,6 +304,9 @@ export function InventoryPage() {
       toast.success("Produto removido com sucesso");
       await qc.invalidateQueries({ queryKey: ["estoque"] });
       setDeleting(null);
+    },
+    onError: (err: any) => {
+      toast.error(err?.message ?? "Erro de conexão ao remover produto. Tente novamente.");
     },
   });
 

@@ -357,3 +357,68 @@ export async function apiUpdateProduto(id: string, payload: ProdutoPayload): Pro
 export async function apiDeleteProduto(id: string): Promise<Response> {
   return fetchWithAuth(`/api/estoque/${id}`, { method: "DELETE" });
 }
+
+// ── Usuários da Empresa ────────────────────────────────────────────────
+export type FornecedorUsuario = {
+  id: string;
+  usuarioId: string;
+  role: string;
+  nomeUsuario?: string;
+  loginUsuario?: string;
+  dataCadastro?: string;
+};
+
+export type CriarUsuarioEmpresaPayload = {
+  nome: string;
+  login: string;
+  senha: string;
+  email: string;
+  role: string;
+};
+
+// GET /fornecedor/{id}/usuarios - listar usuários da empresa
+export async function apiListUsuariosEmpresa(fornecedorId: string): Promise<FornecedorUsuario[]> {
+  const res = await fetchWithAuth(`/fornecedor/${fornecedorId}/usuarios`);
+  if (!res.ok) throw new Error(`Erro ${res.status} ao listar usuários`);
+  return res.json();
+}
+
+// POST /cadastro/solicitar + POST /fornecedor/{id}/usuarios - criar usuário e associar
+export async function apiCriarUsuarioNaEmpresa(fornecedorId: string, payload: CriarUsuarioEmpresaPayload): Promise<Response> {
+  // 1. Criar o usuário no MS-3
+  const regRes = await fetch("/cadastro/solicitar", {
+    method: "POST",
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify({
+      nome: payload.nome,
+      login: payload.login,
+      senha: payload.senha,
+      email: payload.email,
+    }),
+  });
+  if (!regRes.ok) return regRes;
+  const { usuarioId } = await regRes.json();
+
+  // 2. Associar ao fornecedor com a role
+  return fetchWithAuth(`/fornecedor/${fornecedorId}/usuarios`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ usuarioId, role: payload.role }),
+  });
+}
+
+// PUT /fornecedor/{id}/usuarios/{usuarioId} - atualizar role
+export async function apiUpdateUsuarioEmpresa(fornecedorId: string, usuarioId: string, role: string): Promise<Response> {
+  return fetchWithAuth(`/fornecedor/${fornecedorId}/usuarios/${usuarioId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ usuarioId, role }),
+  });
+}
+
+// DELETE /fornecedor/{id}/usuarios/{usuarioId} - remover da empresa
+export async function apiRemoveUsuarioEmpresa(fornecedorId: string, usuarioId: string): Promise<Response> {
+  return fetchWithAuth(`/fornecedor/${fornecedorId}/usuarios/${usuarioId}`, {
+    method: "DELETE",
+  });
+}
