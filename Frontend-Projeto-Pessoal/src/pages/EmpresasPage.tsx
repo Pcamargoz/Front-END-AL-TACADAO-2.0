@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Plus, Building2, Lock, Eye, EyeOff, ArrowRight, Loader2, House } from "lucide-react";
+import { Search, Plus, Building2, Lock, Eye, EyeOff, ArrowRight, Loader2, House, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { apiListFornecedores, apiValidarAcessoFornecedor, type Fornecedor, type ValidarAcessoResponse } from "../api/client";
+import { apiListFornecedores, apiValidarAcessoFornecedor, apiDeleteFornecedor, type Fornecedor, type ValidarAcessoResponse } from "../api/client";
 import { Modal } from "../components/ui/Modal";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { useFornecedor } from "../context/FornecedorContext";
 import { useAuth } from "../auth/AuthContext";
 
@@ -13,6 +14,8 @@ export function EmpresasPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { entrarFornecedor } = useFornecedor();
+  const queryClient = useQueryClient();
+  const isAdmin = user?.roles?.includes("ADMIN") ?? false;
 
   const [search, setSearch] = useState("");
   const [selectedFornecedor, setSelectedFornecedor] = useState<Fornecedor | null>(null);
@@ -20,6 +23,21 @@ export function EmpresasPage() {
   const [showSenha, setShowSenha] = useState(false);
   const [validating, setValidating] = useState(false);
   const [gateError, setGateError] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Fornecedor | null>(null);
+
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => apiDeleteFornecedor(id).then((res) => {
+      if (!res.ok) throw new Error("Erro ao excluir empresa");
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["fornecedores"] });
+      toast.success("Empresa excluída com sucesso");
+      setDeleteTarget(null);
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Erro ao excluir empresa");
+    },
+  });
 
   const { data: fornecedores = [], isLoading, error } = useQuery<Fornecedor[], Error>({
     queryKey: ["fornecedores"],
@@ -197,11 +215,22 @@ export function EmpresasPage() {
                     )}
                   </div>
 
-                  <button className="btn btn-secondary w-full group-hover:border-[#00FF87]/40 group-hover:text-[#00FF87]">
-                    <Lock size={14} />
-                    <span>Acessar</span>
-                    <ArrowRight size={14} className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </button>
+                  <div className="flex gap-2">
+                    <button className="btn btn-secondary flex-1 group-hover:border-[#00FF87]/40 group-hover:text-[#00FF87]">
+                      <Lock size={14} />
+                      <span>Acessar</span>
+                      <ArrowRight size={14} className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                    {isAdmin && (
+                      <button
+                        className="btn btn-secondary px-3 hover:border-[#EF4444]/40 hover:text-[#EF4444] transition-colors"
+                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(f); }}
+                        title="Excluir empresa"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -293,6 +322,17 @@ export function EmpresasPage() {
           </button>
         </form>
       </Modal>
+
+      {/* Delete Confirm (ADMIN only) */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => deleteTarget && deleteMut.mutate(deleteTarget.id)}
+        title={`Excluir ${deleteTarget?.nomeFantasia || deleteTarget?.razaoSocial || "empresa"}?`}
+        description="Todos os dados desta empresa serão removidos permanentemente. Esta ação não pode ser desfeita."
+        confirmText="Excluir Empresa"
+        loading={deleteMut.isPending}
+      />
     </div>
   );
 }
