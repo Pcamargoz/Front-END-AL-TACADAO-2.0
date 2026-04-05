@@ -237,7 +237,7 @@ export function HomePage() {
             {/* Subtitle */}
             <p className="hero-subtitle">
               A maior variedade de suplementos para sua loja. 
-              PreÁos competitivos, entrega r·pida e qualidade garantida.
+              Pre√ßos competitivos, entrega r√°pida e qualidade garantida.
             </p>
 
             {/* CTAs */}
@@ -347,14 +347,14 @@ export function HomePage() {
             className="text-center mb-14"
           >
             <span className="text-eyebrow mb-3 block">Por que escolher</span>
-            <h2 className="text-headline">AL-TACAD√O</h2>
+            <h2 className="text-headline">AL-TACAD√ÉO</h2>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 max-w-4xl mx-auto">
             <BenefitItem
               icon={<Truck size={24} />}
               title="Entrega Expressa"
-              description="Receba seus produtos em atÈ 24h para a regi„o metropolitana. Frete gr·tis acima de R$ 500."
+              description="Receba seus produtos em at√© 24h para a regi√£o metropolitana. Frete gr√°tis acima de R$ 500."
             />
             <BenefitItem
               icon={<Shield size={24} />}
@@ -363,8 +363,8 @@ export function HomePage() {
             />
             <BenefitItem
               icon={<CreditCard size={24} />}
-              title="CondiÁıes Especiais"
-              description="PreÁos exclusivos para revendedores. Parcelamento em atÈ 12x."
+              title="Condi√ß√µes Especiais"
+              description="Pre√ßos exclusivos para revendedores. Parcelamento em at√© 12x."
             />
             <BenefitItem
               icon={<Zap size={24} />}
@@ -390,17 +390,17 @@ export function HomePage() {
             <h2 className="text-headline mb-4">
               Pronto para
               <br />
-              <span className="text-accent">comeÁar?</span>
+              <span className="text-accent">come√ßar?</span>
             </h2>
             <p className="text-body-lg text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
-              Cadastre-se agora e tenha acesso aos melhores preÁos do mercado.
+              Cadastre-se agora e tenha acesso aos melhores pre√ßos do mercado.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/cadastro" className="btn btn-primary btn-lg">
-                Criar Conta Gr·tis
+                Criar Conta Gr√°tis
               </Link>
               <Link to="/produtos" className="btn btn-ghost">
-                Explorar Cat·logo <ArrowRight size={16} />
+                Explorar Cat√°logo <ArrowRight size={16} />
               </Link>
             </div>
           </motion.div>
