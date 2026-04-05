@@ -30,13 +30,13 @@ type FormValues = z.infer<typeof schema>;
 
 // ── Role badges ────────────────────────────────────────────────────────
 const ROLE_META: Record<string, { label: string; bg: string; color: string }> = {
-  GERENTE:      { label: "Gerente",      bg: "rgba(0,255,135,0.12)", color: "#00FF87" },
-  FUNCIONARIO:  { label: "Funcionario",  bg: "rgba(0,229,255,0.12)", color: "#00E5FF" },
-  ESTAGIARIO:   { label: "Estagiario",   bg: "rgba(232,160,32,0.12)", color: "#E8A020" },
+  GERENTE:      { label: "Gerente",      bg: "var(--color-accent-subtle)", color: "var(--color-accent)" },
+  FUNCIONARIO:  { label: "Funcionario",  bg: "var(--color-accent-blue-subtle)", color: "var(--color-accent-blue)" },
+  ESTAGIARIO:   { label: "Estagiario",   bg: "var(--color-accent-gold-subtle)", color: "var(--color-accent-gold)" },
 };
 
 function getRoleMeta(role: string) {
-  return ROLE_META[role] ?? { label: role, bg: "rgba(75,85,99,0.15)", color: "#9CA3AF" };
+  return ROLE_META[role] ?? { label: role, bg: "var(--color-bg-tertiary)", color: "var(--color-text-tertiary)" };
 }
 
 // ── Formulario de novo usuario ─────────────────────────────────────────
@@ -59,9 +59,9 @@ function UsuarioForm({
         <input
           {...register("nome")}
           placeholder="Ex: Joao Silva"
-          className={`input-field ${errors.nome ? "border-[#EF4444]" : ""}`}
+          className={`input-field ${errors.nome ? "border-error" : ""}`}
         />
-        {errors.nome && <span className="text-xs text-[#EF4444] mt-1 block">{errors.nome.message}</span>}
+        {errors.nome && <span className="text-xs text-error mt-1 block">{errors.nome.message}</span>}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -70,9 +70,9 @@ function UsuarioForm({
           <input
             {...register("login")}
             placeholder="Ex: joao.silva"
-            className={`input-field ${errors.login ? "border-[#EF4444]" : ""}`}
+            className={`input-field ${errors.login ? "border-error" : ""}`}
           />
-          {errors.login && <span className="text-xs text-[#EF4444] mt-1 block">{errors.login.message}</span>}
+          {errors.login && <span className="text-xs text-error mt-1 block">{errors.login.message}</span>}
         </div>
         <div>
           <label className="input-label mb-2 block">Email *</label>
@@ -80,9 +80,9 @@ function UsuarioForm({
             {...register("email")}
             type="email"
             placeholder="Ex: joao@empresa.com"
-            className={`input-field ${errors.email ? "border-[#EF4444]" : ""}`}
+            className={`input-field ${errors.email ? "border-error" : ""}`}
           />
-          {errors.email && <span className="text-xs text-[#EF4444] mt-1 block">{errors.email.message}</span>}
+          {errors.email && <span className="text-xs text-error mt-1 block">{errors.email.message}</span>}
         </div>
       </div>
 
@@ -93,28 +93,28 @@ function UsuarioForm({
             {...register("senha")}
             type="password"
             placeholder="Minimo 6 caracteres"
-            className={`input-field ${errors.senha ? "border-[#EF4444]" : ""}`}
+            className={`input-field ${errors.senha ? "border-error" : ""}`}
           />
-          {errors.senha && <span className="text-xs text-[#EF4444] mt-1 block">{errors.senha.message}</span>}
+          {errors.senha && <span className="text-xs text-error mt-1 block">{errors.senha.message}</span>}
         </div>
         <div>
           <label className="input-label mb-2 block">Cargo *</label>
           <select
             {...register("role")}
-            className={`input-field ${errors.role ? "border-[#EF4444]" : ""}`}
+            className={`input-field ${errors.role ? "border-error" : ""}`}
           >
             <option value="FUNCIONARIO">Funcionario</option>
             <option value="ESTAGIARIO">Estagiario</option>
           </select>
-          {errors.role && <span className="text-xs text-[#EF4444] mt-1 block">{errors.role.message}</span>}
+          {errors.role && <span className="text-xs text-error mt-1 block">{errors.role.message}</span>}
         </div>
       </div>
 
-      <div className="pt-4 border-t border-[#1A1D24]" />
+      <div className="pt-4 border-t border-divider" />
       <button type="submit" className="btn btn-primary w-full" disabled={loading}>
         {loading ? (
           <span className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded-full border-2 border-[#090B10]/30 border-t-[#090B10] animate-spin" />
+            <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
             Criando usuario...
           </span>
         ) : (
@@ -147,7 +147,7 @@ function UsuarioCard({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.92 }}
       transition={{ duration: 0.2 }}
-      className="card p-4 hover:border-[#00FF87]/25 transition-all group"
+      className="card p-4 hover:border-accent/25 transition-all group"
     >
       <div className="flex items-start justify-between gap-2 mb-3">
         <span
@@ -157,7 +157,7 @@ function UsuarioCard({
           {meta.label}
         </span>
         {usuario.dataCadastro && (
-          <span className="text-xs text-[#4B5563] font-mono">
+          <span className="text-xs text-quaternary font-mono">
             {new Date(usuario.dataCadastro).toLocaleDateString("pt-BR")}
           </span>
         )}
@@ -171,22 +171,22 @@ function UsuarioCard({
           <Shield size={18} style={{ color: meta.color }} />
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-medium text-[#F5F5F5] truncate">
+          <p className="text-sm font-medium text-primary truncate">
             {usuario.nomeUsuario || "Sem nome"}
           </p>
           {usuario.loginUsuario && (
-            <p className="text-xs text-[#9CA3AF] font-mono truncate">
+            <p className="text-xs text-tertiary font-mono truncate">
               @{usuario.loginUsuario}
             </p>
           )}
         </div>
       </div>
 
-      <div className="flex items-center gap-2 pt-3 border-t border-[#1A1D24]">
-        <button onClick={onEditRole} className="btn btn-ghost btn-sm flex-1 hover:text-[#00FF87]">
+      <div className="flex items-center gap-2 pt-3 border-t border-divider">
+        <button onClick={onEditRole} className="btn btn-ghost btn-sm flex-1 hover:text-accent">
           <Pencil size={12} /> Editar cargo
         </button>
-        <button onClick={onDelete} className="btn btn-ghost btn-sm flex-1 hover:text-[#EF4444]">
+        <button onClick={onDelete} className="btn btn-ghost btn-sm flex-1 hover:text-error">
           <Trash2 size={12} /> Remover
         </button>
       </div>
@@ -265,9 +265,9 @@ export function EmpresaUsuariosPage() {
   if (!isGerente) {
     return (
       <div className="card text-center py-16">
-        <Shield size={48} className="mx-auto text-[#4B5563] mb-4" />
-        <h2 className="text-lg font-semibold text-[#F5F5F5] mb-2">Acesso restrito</h2>
-        <p className="text-sm text-[#9CA3AF]">
+        <Shield size={48} className="mx-auto text-quaternary mb-4" />
+        <h2 className="text-lg font-semibold text-primary mb-2">Acesso restrito</h2>
+        <p className="text-sm text-tertiary">
           Apenas gerentes podem gerenciar usuarios
         </p>
       </div>
@@ -278,9 +278,9 @@ export function EmpresaUsuariosPage() {
     <div className="space-y-6">
       {/* Error banner */}
       {error && (
-        <div className="p-3 rounded-sm bg-[#EF4444]/10 border border-[#EF4444]/20 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#EF4444]" />
-          <span className="text-sm text-[#EF4444]">Falha ao carregar usuarios: {String(error)}</span>
+        <div className="p-3 rounded-sm bg-error-bg border border-error/20 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-error" />
+          <span className="text-sm text-error">Falha ao carregar usuarios: {String(error)}</span>
         </div>
       )}
 
@@ -291,11 +291,11 @@ export function EmpresaUsuariosPage() {
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
-          <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#00E5FF] mb-1 block">
+          <span className="text-xs font-bold tracking-[0.2em] uppercase text-accent-blue mb-1 block">
             Equipe
           </span>
-          <h1 className="text-2xl font-display font-bold text-[#F5F5F5]">Usuarios</h1>
-          <p className="text-sm text-[#9CA3AF]">
+          <h1 className="text-2xl font-display font-bold text-primary">Usuarios</h1>
+          <p className="text-sm text-tertiary">
             {usuarios.length} usuario{usuarios.length !== 1 ? "s" : ""} na empresa
           </p>
         </div>
@@ -316,8 +316,8 @@ export function EmpresaUsuariosPage() {
         </div>
       ) : usuarios.length === 0 ? (
         <div className="card text-center py-12">
-          <Users size={48} className="mx-auto text-[#4B5563] mb-3" />
-          <p className="text-[#9CA3AF] mb-4">Nenhum usuario na empresa</p>
+          <Users size={48} className="mx-auto text-quaternary mb-3" />
+          <p className="text-tertiary mb-4">Nenhum usuario na empresa</p>
           <button onClick={() => setModalOpen(true)} className="btn btn-primary">
             <UserPlus size={16} /> Adicionar usuario
           </button>
@@ -352,10 +352,10 @@ export function EmpresaUsuariosPage() {
       <Modal open={!!editingUser} onClose={() => setEditingUser(null)} title="Editar Cargo" size="sm">
         {editingUser && (
           <div className="space-y-4">
-            <div className="flex items-center gap-3 px-3 py-2 rounded-sm bg-[#1A1D24]/60 border border-[#1A1D24]">
-              <Shield size={14} className="text-[#4B5563] flex-shrink-0" />
-              <span className="text-xs text-[#4B5563]">
-                Alterando cargo de: <span className="text-[#9CA3AF]">{editingUser.nomeUsuario ?? editingUser.loginUsuario ?? "Usuario"}</span>
+            <div className="flex items-center gap-3 px-3 py-2 rounded-sm bg-surface-tertiary/60 border border-divider">
+              <Shield size={14} className="text-quaternary flex-shrink-0" />
+              <span className="text-xs text-quaternary">
+                Alterando cargo de: <span className="text-tertiary">{editingUser.nomeUsuario ?? editingUser.loginUsuario ?? "Usuario"}</span>
               </span>
             </div>
             <div>
@@ -369,7 +369,7 @@ export function EmpresaUsuariosPage() {
                 <option value="ESTAGIARIO">Estagiario</option>
               </select>
             </div>
-            <div className="pt-4 border-t border-[#1A1D24]" />
+            <div className="pt-4 border-t border-divider" />
             <button
               onClick={() => updateRoleMut.mutate({ usuarioId: editingUser.usuarioId, role: editRole })}
               className="btn btn-primary w-full"
@@ -377,7 +377,7 @@ export function EmpresaUsuariosPage() {
             >
               {updateRoleMut.isPending ? (
                 <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full border-2 border-[#090B10]/30 border-t-[#090B10] animate-spin" />
+                  <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
                   Salvando...
                 </span>
               ) : (

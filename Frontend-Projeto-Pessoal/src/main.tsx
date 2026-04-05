@@ -24,11 +24,11 @@ createRoot(document.getElementById("root")!).render(
           position="bottom-right"
           toastOptions={{
             style: {
-              background: "#111318",
-              border: "1px solid rgba(0,255,135,0.15)",
-              color: "#F5F5F5",
+              background: "var(--color-bg-elevated)",
+              border: "1px solid var(--color-accent-subtle)",
+              color: "var(--color-text-primary)",
               fontSize: "14px",
-              borderRadius: "2px",
+              borderRadius: "var(--radius-lg)",
             },
           }}
         />

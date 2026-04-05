@@ -11,34 +11,34 @@ interface BadgeProps {
 export function Badge({ children, variant = "default", className, dot }: BadgeProps) {
   const variantStyles = {
     default: {
-      background: "rgba(255,255,255,0.08)",
-      color: "#9CA3AF",
-      border: "1px solid rgba(255,255,255,0.1)",
+      background: "var(--color-bg-tertiary)",
+      color: "var(--color-text-secondary)",
+      border: "1px solid var(--color-border)",
     },
     neon: {
-      background: "rgba(0,255,135,0.12)",
-      color: "#00FF87",
-      border: "1px solid rgba(0,255,135,0.25)",
+      background: "var(--color-accent-subtle)",
+      color: "var(--color-accent)",
+      border: "1px solid var(--color-accent)",
     },
     cyan: {
-      background: "rgba(0,229,255,0.12)",
-      color: "#00E5FF",
-      border: "1px solid rgba(0,229,255,0.25)",
+      background: "var(--color-accent-blue-subtle)",
+      color: "var(--color-accent-blue)",
+      border: "1px solid var(--color-accent-blue)",
     },
     danger: {
-      background: "rgba(239,68,68,0.12)",
-      color: "#EF4444",
-      border: "1px solid rgba(239,68,68,0.25)",
+      background: "var(--color-error-bg)",
+      color: "var(--color-error)",
+      border: "1px solid var(--color-error)",
     },
     success: {
-      background: "rgba(16,185,129,0.12)",
-      color: "#10B981",
-      border: "1px solid rgba(16,185,129,0.25)",
+      background: "var(--color-success-bg)",
+      color: "var(--color-success)",
+      border: "1px solid var(--color-success)",
     },
     warning: {
-      background: "rgba(245,158,11,0.12)",
-      color: "#F59E0B",
-      border: "1px solid rgba(245,158,11,0.25)",
+      background: "var(--color-warning-bg)",
+      color: "var(--color-warning)",
+      border: "1px solid var(--color-warning)",
     },
   };
 

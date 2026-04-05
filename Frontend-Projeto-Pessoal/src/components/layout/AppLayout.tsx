@@ -23,12 +23,12 @@ export function AppLayout() {
           <div
             className="w-10 h-10 rounded-full border-2 mx-auto mb-4"
             style={{
-              borderColor: "rgba(232,160,32,0.2)",
-              borderTopColor: "#E8A020",
+              borderColor: "var(--color-accent-gold-subtle)",
+              borderTopColor: "var(--color-accent-gold)",
               animation: "spin 0.7s linear infinite",
             }}
           />
-          <p className="text-sm" style={{ color: "#3C3C44" }}>Loading...</p>
+          <p className="text-sm text-secondary">Loading...</p>
         </div>
       </div>
     );
@@ -45,10 +45,10 @@ export function AppLayout() {
       <motion.main
         className="relative min-h-screen"
         animate={{
-          paddingLeft: isMobile ? 0 : (expanded ? 220 : 60),
-          paddingBottom: isMobile ? 60 : 0,
+          paddingLeft: isMobile ? 0 : (expanded ? 240 : 72),
+          paddingBottom: isMobile ? 68 : 0,
         }}
-        transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
       >
         <Outlet />
       </motion.main>

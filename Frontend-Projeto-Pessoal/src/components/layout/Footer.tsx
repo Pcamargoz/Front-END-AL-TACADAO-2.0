@@ -5,22 +5,20 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#0A0C10] border-t border-[#1A1D24]">
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <footer className="bg-surface-tertiary border-t border-border">
+      <div className="container-apple-wide py-16 lg:py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link to="/" className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-sm flex items-center justify-center bg-[#00FF87]">
-                <span className="font-display text-xl text-[#090B10] tracking-wide">AT</span>
+            <Link to="/" className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-accent">
+                <span className="text-lg font-semibold text-white tracking-tight">AT</span>
               </div>
-              <div>
-                <span className="font-display text-xl tracking-wide text-[#F5F5F5]">
-                  AL-TACADÃO
-                </span>
-              </div>
+              <span className="text-lg font-semibold text-primary tracking-tight">
+                AL-TACADÃO
+              </span>
             </Link>
-            <p className="text-sm text-[#9CA3AF] mb-4 max-w-xs">
+            <p className="text-body-sm text-secondary mb-6 max-w-xs">
               Sua distribuidora B2B de suplementos premium. Qualidade e preços competitivos para sua loja.
             </p>
             <div className="flex items-center gap-3">
@@ -28,7 +26,7 @@ export function Footer() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-sm bg-[#1A1D24] flex items-center justify-center text-[#9CA3AF] hover:text-[#00FF87] hover:bg-[#00FF87]/10 transition-colors"
+                className="w-10 h-10 rounded-xl bg-surface-secondary flex items-center justify-center text-tertiary hover:text-accent hover:bg-accent/10 transition-all duration-200"
                 aria-label="Instagram"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -41,7 +39,7 @@ export function Footer() {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-sm bg-[#1A1D24] flex items-center justify-center text-[#9CA3AF] hover:text-[#00E5FF] hover:bg-[#00E5FF]/10 transition-colors"
+                className="w-10 h-10 rounded-xl bg-surface-secondary flex items-center justify-center text-tertiary hover:text-accent hover:bg-accent/10 transition-all duration-200"
                 aria-label="Facebook"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -52,7 +50,7 @@ export function Footer() {
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-sm bg-[#1A1D24] flex items-center justify-center text-[#9CA3AF] hover:text-[#00FF87] hover:bg-[#00FF87]/10 transition-colors"
+                className="w-10 h-10 rounded-xl bg-surface-secondary flex items-center justify-center text-tertiary hover:text-accent hover:bg-accent/10 transition-all duration-200"
                 aria-label="Twitter"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -64,10 +62,10 @@ export function Footer() {
 
           {/* Links */}
           <div>
-            <h4 className="text-sm font-bold text-[#F5F5F5] uppercase tracking-wider mb-4">
+            <h4 className="text-caption font-semibold text-primary uppercase tracking-wider mb-5">
               Navegação
             </h4>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {[
                 { to: "/", label: "Início" },
                 { to: "/produtos", label: "Produtos" },
@@ -77,7 +75,7 @@ export function Footer() {
                 <li key={to}>
                   <Link
                     to={to}
-                    className="text-sm text-[#9CA3AF] hover:text-[#00FF87] transition-colors"
+                    className="text-body-sm text-secondary hover:text-accent transition-colors"
                   >
                     {label}
                   </Link>
@@ -88,10 +86,10 @@ export function Footer() {
 
           {/* Conta */}
           <div>
-            <h4 className="text-sm font-bold text-[#F5F5F5] uppercase tracking-wider mb-4">
+            <h4 className="text-caption font-semibold text-primary uppercase tracking-wider mb-5">
               Minha Conta
             </h4>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {[
                 { to: "/login", label: "Entrar" },
                 { to: "/cadastro", label: "Cadastrar" },
@@ -101,7 +99,7 @@ export function Footer() {
                 <li key={to}>
                   <Link
                     to={to}
-                    className="text-sm text-[#9CA3AF] hover:text-[#00FF87] transition-colors"
+                    className="text-body-sm text-secondary hover:text-accent transition-colors"
                   >
                     {label}
                   </Link>
@@ -112,30 +110,30 @@ export function Footer() {
 
           {/* Contato */}
           <div>
-            <h4 className="text-sm font-bold text-[#F5F5F5] uppercase tracking-wider mb-4">
+            <h4 className="text-caption font-semibold text-primary uppercase tracking-wider mb-5">
               Contato
             </h4>
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               <li className="flex items-start gap-3">
-                <MapPin size={16} className="text-[#00FF87] mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-[#9CA3AF]">
+                <MapPin size={16} className="text-accent mt-0.5 flex-shrink-0" />
+                <span className="text-body-sm text-secondary">
                   Av. Paulista, 1000 - São Paulo, SP
                 </span>
               </li>
               <li className="flex items-center gap-3">
-                <Phone size={16} className="text-[#00FF87] flex-shrink-0" />
+                <Phone size={16} className="text-accent flex-shrink-0" />
                 <a
                   href="tel:+5511999999999"
-                  className="text-sm text-[#9CA3AF] hover:text-[#00FF87] transition-colors"
+                  className="text-body-sm text-secondary hover:text-accent transition-colors"
                 >
                   (11) 99999-9999
                 </a>
               </li>
               <li className="flex items-center gap-3">
-                <Mail size={16} className="text-[#00FF87] flex-shrink-0" />
+                <Mail size={16} className="text-accent flex-shrink-0" />
                 <a
                   href="mailto:contato@altacadao.com.br"
-                  className="text-sm text-[#9CA3AF] hover:text-[#00FF87] transition-colors"
+                  className="text-body-sm text-secondary hover:text-accent transition-colors"
                 >
                   contato@altacadao.com.br
                 </a>
@@ -145,15 +143,15 @@ export function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="mt-12 pt-8 border-t border-[#1A1D24] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-[#4B5563]">
+        <div className="mt-16 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-caption text-tertiary">
             © {currentYear} AL-TACADÃO. Todos os direitos reservados.
           </p>
-          <div className="flex items-center gap-4">
-            <Link to="/termos" className="text-xs text-[#4B5563] hover:text-[#9CA3AF] transition-colors">
+          <div className="flex items-center gap-6">
+            <Link to="/termos" className="text-caption text-tertiary hover:text-secondary transition-colors">
               Termos de Uso
             </Link>
-            <Link to="/privacidade" className="text-xs text-[#4B5563] hover:text-[#9CA3AF] transition-colors">
+            <Link to="/privacidade" className="text-caption text-tertiary hover:text-secondary transition-colors">
               Política de Privacidade
             </Link>
           </div>

@@ -100,7 +100,7 @@ export function DashboardPage() {
     .map(([brand, count]) => ({
       name:  BRAND_META[brand]?.label ?? brand,
       value: count,
-      color: BRAND_META[brand]?.color ?? "#6e6e73",
+      color: BRAND_META[brand]?.color ?? "var(--color-text-quaternary)",
     }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 8);
@@ -236,7 +236,7 @@ export function DashboardPage() {
                       borderRadius: "12px",
                       color: "var(--text-primary)",
                       fontSize: "13px",
-                      boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                      boxShadow: "var(--shadow-md)",
                     }}
                     formatter={(v) => [`${v} produto(s)`, ""]}
                   />

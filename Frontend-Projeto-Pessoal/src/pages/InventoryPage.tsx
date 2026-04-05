@@ -72,10 +72,10 @@ function ProductForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {user && (
-        <div className="flex items-center gap-2 px-3 py-2 rounded-sm bg-[#1A1D24]/60 border border-[#1A1D24]">
-          <UserRound size={14} className="text-[#4B5563] flex-shrink-0" />
-          <span className="text-xs text-[#4B5563]">
-            Cadastrando como: <span className="text-[#9CA3AF]">{user.nome ?? user.login} (@{user.login})</span>
+        <div className="flex items-center gap-2 px-3 py-2 rounded-sm bg-surface-tertiary/60 border border-divider">
+          <UserRound size={14} className="text-quaternary flex-shrink-0" />
+          <span className="text-xs text-quaternary">
+            Cadastrando como: <span className="text-tertiary">{user.nome ?? user.login} (@{user.login})</span>
           </span>
         </div>
       )}
@@ -84,9 +84,9 @@ function ProductForm({
         <input
           {...register("descricao")}
           placeholder="Ex: Whey Protein Isolado 900g"
-          className={`input-field ${errors.descricao ? "border-[#EF4444]" : ""}`}
+          className={`input-field ${errors.descricao ? "border-error" : ""}`}
         />
-        {errors.descricao && <span className="text-xs text-[#EF4444] mt-1 block">{errors.descricao.message}</span>}
+        {errors.descricao && <span className="text-xs text-error mt-1 block">{errors.descricao.message}</span>}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -101,31 +101,31 @@ function ProductForm({
         <div>
           <label className="input-label mb-2 block">Medida (ex: 1.5, 2.0)</label>
           <div className="relative">
-            <Scale size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+            <Scale size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-quaternary" />
             <input {...register("medida")} type="number" step="0.01" placeholder="1.5" className="input-field pl-10" />
           </div>
         </div>
         <div>
           <label className="input-label mb-2 block">Preço (R$) *</label>
           <div className="relative">
-            <DollarSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+            <DollarSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-quaternary" />
             <input
               {...register("preco")}
               type="number"
               step="0.01"
               min="0.01"
               placeholder="129.90"
-              className={`input-field pl-10 ${errors.preco ? "border-[#EF4444]" : ""}`}
+              className={`input-field pl-10 ${errors.preco ? "border-error" : ""}`}
             />
           </div>
-          {errors.preco && <span className="text-xs text-[#EF4444] mt-1 block">{errors.preco.message}</span>}
+          {errors.preco && <span className="text-xs text-error mt-1 block">{errors.preco.message}</span>}
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="input-label mb-2 block">Marca *</label>
-          <select {...register("marca")} className={`input-field ${errors.marca ? "border-[#EF4444]" : ""}`}>
+          <select {...register("marca")} className={`input-field ${errors.marca ? "border-error" : ""}`}>
             <option value="">Selecione a marca</option>
             {ALL_BRANDS.map((b) => (
               <option key={b} value={b}>{BRAND_META[b]?.label ?? b}</option>
@@ -135,11 +135,11 @@ function ProductForm({
               <option key={b} value={b}>{b}</option>
             ))}
           </select>
-          {errors.marca && <span className="text-xs text-[#EF4444] mt-1 block">{errors.marca.message}</span>}
+          {errors.marca && <span className="text-xs text-error mt-1 block">{errors.marca.message}</span>}
         </div>
         <div>
           <label className="input-label mb-2 block">Fornecedor do Produto *</label>
-          <select {...register("fornecedorId")} className={`input-field ${errors.fornecedorId ? "border-[#EF4444]" : ""}`}>
+          <select {...register("fornecedorId")} className={`input-field ${errors.fornecedorId ? "border-error" : ""}`}>
             <option value="">Selecione o fornecedor</option>
             {suppliers.map((f) => (
               <option key={f.id} value={f.id}>
@@ -147,16 +147,16 @@ function ProductForm({
               </option>
             ))}
           </select>
-          {errors.fornecedorId && <span className="text-xs text-[#EF4444] mt-1 block">{errors.fornecedorId.message}</span>}
-          <p className="text-xs text-[#4B5563] mt-1">De quem o produto é comprado</p>
+          {errors.fornecedorId && <span className="text-xs text-error mt-1 block">{errors.fornecedorId.message}</span>}
+          <p className="text-xs text-quaternary mt-1">De quem o produto é comprado</p>
         </div>
       </div>
 
-      <div className="pt-4 border-t border-[#1A1D24]" />
+      <div className="pt-4 border-t border-divider" />
       <button type="submit" className="btn btn-primary w-full" disabled={loading}>
         {loading ? (
           <span className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded-full border-2 border-[#090B10]/30 border-t-[#090B10] animate-spin" />
+            <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
             Salvando...
           </span>
         ) : (
@@ -182,7 +182,7 @@ function ProductCard({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.92 }}
       transition={{ duration: 0.2 }}
-      className="card p-4 hover:border-[#00FF87]/25 transition-all group"
+      className="card p-4 hover:border-accent/25 transition-all group"
     >
       <div className="flex items-start justify-between gap-2 mb-3">
         {meta && (
@@ -194,7 +194,7 @@ function ProductCard({
           </span>
         )}
         {product.medida != null && (
-          <span className="text-xs text-[#4B5563] font-mono">
+          <span className="text-xs text-quaternary font-mono">
             {product.medida}g
           </span>
         )}
@@ -203,11 +203,11 @@ function ProductCard({
       <div className="flex items-center gap-3 mb-3">
         <div 
           className="w-10 h-10 rounded-sm flex items-center justify-center flex-shrink-0"
-          style={{ background: meta?.bg ?? "#1A1D24" }}
+          style={{ background: meta?.bg ?? "var(--color-bg-tertiary)" }}
         >
-          <Dumbbell size={18} style={{ color: meta?.color ?? "#4B5563" }} />
+          <Dumbbell size={18} style={{ color: meta?.color ?? "var(--color-text-quaternary)" }} />
         </div>
-        <p className="text-sm font-medium text-[#F5F5F5] line-clamp-2">
+        <p className="text-sm font-medium text-primary line-clamp-2">
           {product.descricao}
         </p>
       </div>
@@ -216,28 +216,28 @@ function ProductCard({
         {product.preco != null ? (
           <span className="price">{formatCurrency(product.preco)}</span>
         ) : (
-          <span className="text-xs text-[#4B5563]">Sem preço cadastrado</span>
+          <span className="text-xs text-quaternary">Sem preço cadastrado</span>
         )}
         {product.fornecedor && (
-          <span className="text-xs text-[#4B5563] truncate max-w-[120px]">
+          <span className="text-xs text-quaternary truncate max-w-[120px]">
             {product.fornecedor.nomeFantasia || product.fornecedor.razaoSocial}
           </span>
         )}
       </div>
 
-      <p className="text-xs text-[#4B5563] flex items-center gap-1 mb-3">
+      <p className="text-xs text-quaternary flex items-center gap-1 mb-3">
         <UserRound size={11} />
-        <span className="truncate">Cadastrado por: <span className="text-[#9CA3AF]">{registeredBy}</span></span>
+        <span className="truncate">Cadastrado por: <span className="text-tertiary">{registeredBy}</span></span>
       </p>
 
-      <div className="flex items-center gap-2 pt-3 border-t border-[#1A1D24]">
+      <div className="flex items-center gap-2 pt-3 border-t border-divider">
         {canEdit && (
-          <button onClick={onEdit} className="btn btn-ghost btn-sm flex-1 hover:text-[#00FF87]">
+          <button onClick={onEdit} className="btn btn-ghost btn-sm flex-1 hover:text-accent">
             <Pencil size={12} /> Editar
           </button>
         )}
         {canDelete && (
-          <button onClick={onDelete} className="btn btn-ghost btn-sm flex-1 hover:text-[#EF4444]">
+          <button onClick={onDelete} className="btn btn-ghost btn-sm flex-1 hover:text-error">
             <Trash2 size={12} /> Remover
           </button>
         )}
