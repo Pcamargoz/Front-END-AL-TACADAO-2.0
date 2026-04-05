@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useRef } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
 import { Search, Plus, Building2, Lock, Eye, EyeOff, ArrowRight, Loader2, House, Trash2 } from "lucide-react";
@@ -17,20 +17,13 @@ export function EmpresasPage() {
   const queryClient = useQueryClient();
   const isAdmin = user?.roles?.includes("ADMIN") ?? false;
 
-  // CORREÇÃO 1: Referencias para campos críticos
-  const searchRef = useRef<HTMLInputElement>(null);
-  const passwordRef = useRef<HTMLInputElement>(null);
-
-  // CORREÇÃO 2: Estados consolidados para evitar re-renders
-  const [uiState, setUiState] = useState(() => ({
-    search: "",
-    selectedFornecedor: null as Fornecedor | null,
-    senha: "",
-    showSenha: false,
-    validating: false,
-    gateError: "",
-    deleteTarget: null as Fornecedor | null
-  }));
+  const [search, setSearch] = useState("");
+  const [selectedFornecedor, setSelectedFornecedor] = useState<Fornecedor | null>(null);
+  const [senha, setSenha] = useState("");
+  const [showSenha, setShowSenha] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [gateError, setGateError] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Fornecedor | null>(null);
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => apiDeleteFornecedor(id).then((res) => {
@@ -39,7 +32,7 @@ export function EmpresasPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["fornecedores"] });
       toast.success("Empresa excluída com sucesso");
-      setUiState(prev => ({ ...prev, deleteTarget: null }));
+      setDeleteTarget(null);
     },
     onError: (err: Error) => {
       toast.error(err.message || "Erro ao excluir empresa");
@@ -51,84 +44,8 @@ export function EmpresasPage() {
     queryFn: apiListFornecedores,
   });
 
-  // CORREÇÃO 3: Handlers memoizados
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setUiState(prev => ({ ...prev, search: e.target.value }));
-  }, []);
-
-  const handleSenhaChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setUiState(prev => ({ ...prev, senha: e.target.value }));
-  }, []);
-
-  const toggleShowSenha = useCallback(() => {
-    setUiState(prev => ({ ...prev, showSenha: !prev.showSenha }));
-  }, []);
-
-  const openGate = useCallback((f: Fornecedor) => {
-    setUiState(prev => ({
-      ...prev,
-      selectedFornecedor: f,
-      senha: "",
-      gateError: "",
-      showSenha: false
-    }));
-    
-    // CORREÇÃO 4: Foco programático com delay para garantir renderização
-    setTimeout(() => {
-      if (passwordRef.current) {
-        passwordRef.current.focus();
-      }
-    }, 150);
-  }, []);
-
-  const closeGate = useCallback(() => {
-    setUiState(prev => ({
-      ...prev,
-      selectedFornecedor: null,
-      senha: "",
-      gateError: ""
-    }));
-  }, []);
-
-  const handleValidar = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!uiState.selectedFornecedor || !uiState.senha.trim() || uiState.validating) return;
-
-    setUiState(prev => ({ ...prev, validating: true, gateError: "" }));
-
-    try {
-      const res = await apiValidarAcessoFornecedor(uiState.selectedFornecedor.id, uiState.senha);
-      if (res.ok) {
-        const data = (await res.json()) as ValidarAcessoResponse;
-        entrarFornecedor({
-          fornecedorToken: data.fornecedorToken,
-          fornecedorId: uiState.selectedFornecedor.id,
-          role: data.role,
-          nome: data.fornecedorNome,
-        });
-        toast.success(`Bem-vindo ao painel de ${data.fornecedorNome}!`);
-        navigate(`/empresas/${uiState.selectedFornecedor.id}/painel`);
-      } else {
-        const body = await res.json().catch(() => null);
-        setUiState(prev => ({ 
-          ...prev, 
-          gateError: body?.message || "Senha inválida",
-          validating: false 
-        }));
-      }
-    } catch {
-      setUiState(prev => ({ 
-        ...prev, 
-        gateError: "Erro ao validar acesso. Tente novamente.",
-        validating: false 
-      }));
-    }
-  }, [uiState.selectedFornecedor, uiState.senha, uiState.validating, entrarFornecedor, navigate]);
-
-  // CORREÇÃO 5: Filtro otimizado
   const filtered = fornecedores.filter((f) => {
-    if (!uiState.search) return true;
-    const q = uiState.search.toLowerCase();
+    const q = search.toLowerCase();
     return (
       f.razaoSocial.toLowerCase().includes(q) ||
       (f.nomeFantasia ?? "").toLowerCase().includes(q) ||
@@ -136,6 +53,49 @@ export function EmpresasPage() {
       f.cnpj.includes(q)
     );
   });
+
+  const openGate = (f: Fornecedor) => {
+    setSelectedFornecedor(f);
+    setSenha("");
+    setGateError("");
+    setShowSenha(false);
+  };
+
+  const closeGate = () => {
+    setSelectedFornecedor(null);
+    setSenha("");
+    setGateError("");
+  };
+
+  const handleValidar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedFornecedor || !senha.trim()) return;
+
+    setValidating(true);
+    setGateError("");
+
+    try {
+      const res = await apiValidarAcessoFornecedor(selectedFornecedor.id, senha);
+      if (res.ok) {
+        const data = (await res.json()) as ValidarAcessoResponse;
+        entrarFornecedor({
+          fornecedorToken: data.fornecedorToken,
+          fornecedorId: selectedFornecedor.id,
+          role: data.role,
+          nome: data.fornecedorNome,
+        });
+        toast.success(`Bem-vindo ao painel de ${data.fornecedorNome}!`);
+        navigate(`/empresas/${selectedFornecedor.id}/painel`);
+      } else {
+        const body = await res.json().catch(() => null);
+        setGateError(body?.message || "Senha inválida");
+      }
+    } catch {
+      setGateError("Erro ao validar acesso. Tente novamente.");
+    } finally {
+      setValidating(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-surface">
@@ -169,7 +129,7 @@ export function EmpresasPage() {
           </div>
         </motion.div>
 
-        {/* CORREÇÃO 6: Search com referência estável */}
+        {/* Search */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -178,12 +138,10 @@ export function EmpresasPage() {
         >
           <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary" />
           <input
-            ref={searchRef}
             className="input-field pl-11 w-full"
             placeholder="Buscar por nome, CNPJ ou e-mail..."
-            value={uiState.search}
-            onChange={handleSearchChange}
-            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </motion.div>
 
@@ -200,7 +158,7 @@ export function EmpresasPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[...Array(6)].map((_, i) => (
               <div 
-                key={`skeleton-${i}`}
+                key={i} 
                 className="h-48 skeleton rounded-2xl" 
                 style={{ animationDelay: `${i * 0.1}s` }} 
               />
@@ -216,12 +174,12 @@ export function EmpresasPage() {
               <Building2 size={36} className="text-tertiary" />
             </div>
             <h3 className="text-title-sm text-primary mb-2">
-              {uiState.search ? "Nenhuma empresa encontrada" : "Nenhuma empresa cadastrada"}
+              {search ? "Nenhuma empresa encontrada" : "Nenhuma empresa cadastrada"}
             </h3>
             <p className="text-body-sm text-secondary mb-6">
-              {uiState.search ? "Tente ajustar sua busca" : "Comece cadastrando sua primeira empresa"}
+              {search ? "Tente ajustar sua busca" : "Comece cadastrando sua primeira empresa"}
             </p>
-            {!uiState.search && (
+            {!search && (
               <Link to="/empresas/cadastrar" className="btn btn-primary">
                 <Plus size={18} />
                 Cadastrar Empresa
@@ -277,10 +235,7 @@ export function EmpresasPage() {
                     {isAdmin && (
                       <button
                         className="btn btn-secondary px-3 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30 transition-all"
-                        onClick={(e) => { 
-                          e.stopPropagation(); 
-                          setUiState(prev => ({ ...prev, deleteTarget: f })); 
-                        }}
+                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(f); }}
                         title="Excluir empresa"
                       >
                         <Trash2 size={16} />
@@ -298,23 +253,23 @@ export function EmpresasPage() {
         </p>
       </div>
 
-      {/* CORREÇÃO 7: Gate Modal com foco protegido */}
+      {/* Gate Modal */}
       <Modal
-        open={!!uiState.selectedFornecedor}
+        open={!!selectedFornecedor}
         onClose={closeGate}
-        title={`Acessar ${uiState.selectedFornecedor?.nomeFantasia || uiState.selectedFornecedor?.razaoSocial || "Empresa"}`}
+        title={`Acessar ${selectedFornecedor?.nomeFantasia || selectedFornecedor?.razaoSocial || "Empresa"}`}
         size="sm"
       >
-        <form onSubmit={handleValidar} className="space-y-5" noValidate>
+        <form onSubmit={handleValidar} className="space-y-5">
           <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-secondary">
             <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-lg font-semibold text-accent flex-shrink-0">
-              {(uiState.selectedFornecedor?.nomeFantasia || uiState.selectedFornecedor?.razaoSocial || "E").charAt(0).toUpperCase()}
+              {(selectedFornecedor?.nomeFantasia || selectedFornecedor?.razaoSocial || "E").charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
               <p className="text-body font-medium text-primary truncate">
-                {uiState.selectedFornecedor?.nomeFantasia || uiState.selectedFornecedor?.razaoSocial}
+                {selectedFornecedor?.nomeFantasia || selectedFornecedor?.razaoSocial}
               </p>
-              <p className="text-caption text-tertiary truncate">{uiState.selectedFornecedor?.cnpj}</p>
+              <p className="text-caption text-tertiary truncate">{selectedFornecedor?.cnpj}</p>
             </div>
           </div>
 
@@ -322,50 +277,45 @@ export function EmpresasPage() {
             Digite a senha de acesso para entrar no painel desta empresa.
           </p>
 
-          {uiState.gateError && (
+          {gateError && (
             <motion.div
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
               className="p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30"
             >
-              <p className="text-body-sm text-red-600 dark:text-red-400">{uiState.gateError}</p>
+              <p className="text-body-sm text-red-600 dark:text-red-400">{gateError}</p>
             </motion.div>
           )}
 
-          {/* CORREÇÃO 8: Input de senha com foco garantido */}
           <div className="input-group">
             <label className="input-label">Senha de acesso</label>
             <div className="relative">
               <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary" />
               <input
-                ref={passwordRef}
-                type={uiState.showSenha ? "text" : "password"}
+                type={showSenha ? "text" : "password"}
                 className="input-field pl-11 pr-11"
                 placeholder="Digite a senha..."
-                value={uiState.senha}
-                onChange={handleSenhaChange}
-                autoComplete="off"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                autoFocus
                 required
-                disabled={uiState.validating}
               />
               <button
                 type="button"
-                onClick={toggleShowSenha}
-                disabled={uiState.validating}
+                onClick={() => setShowSenha((s) => !s)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-tertiary hover:text-secondary transition-colors"
-                tabIndex={-1}
               >
-                {uiState.showSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showSenha ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
           <button
             type="submit"
-            disabled={uiState.validating || !uiState.senha.trim()}
+            disabled={validating || !senha.trim()}
             className="btn btn-primary w-full"
           >
-            {uiState.validating ? (
+            {validating ? (
               <span className="flex items-center justify-center gap-2">
                 <Loader2 size={18} className="animate-spin" />
                 Validando...
@@ -382,10 +332,10 @@ export function EmpresasPage() {
 
       {/* Delete Confirm (ADMIN only) */}
       <ConfirmDialog
-        open={!!uiState.deleteTarget}
-        onClose={() => setUiState(prev => ({ ...prev, deleteTarget: null }))}
-        onConfirm={() => uiState.deleteTarget && deleteMut.mutate(uiState.deleteTarget.id)}
-        title={`Excluir ${uiState.deleteTarget?.nomeFantasia || uiState.deleteTarget?.razaoSocial || "empresa"}?`}
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => deleteTarget && deleteMut.mutate(deleteTarget.id)}
+        title={`Excluir ${deleteTarget?.nomeFantasia || deleteTarget?.razaoSocial || "empresa"}?`}
         description="Todos os dados desta empresa serão removidos permanentemente. Esta ação não pode ser desfeita."
         confirmText="Excluir Empresa"
         loading={deleteMut.isPending}

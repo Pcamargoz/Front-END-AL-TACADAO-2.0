@@ -122,7 +122,7 @@ export function DashboardPage() {
   const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
 
   return (
-    <div className="space-y-6 sm:space-y-8 p-4 sm:p-6 lg:p-8 safe-area-padding">
+    <div className="space-y-8 p-6 lg:p-8">
       {/* Empresa Info Header */}
       {fornecedorNome && (
         <motion.div
@@ -168,7 +168,7 @@ export function DashboardPage() {
       </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         <StatCard
           title="Receita Estimada"
           value={formatCurrency(totalRevenue)}
@@ -190,7 +190,7 @@ export function DashboardPage() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+      <div className="grid lg:grid-cols-3 gap-6">
         {/* Brand Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -325,7 +325,7 @@ export function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
           { icon: <Package size={22} />, label: "Ver Estoque", to: `/empresas/${id}/painel/estoque` },
           { icon: <ShoppingBag size={22} />, label: "Meu Perfil", to: `/empresas/${id}/painel/perfil` },
@@ -350,4 +350,3 @@ export function DashboardPage() {
     </div>
   );
 }
-

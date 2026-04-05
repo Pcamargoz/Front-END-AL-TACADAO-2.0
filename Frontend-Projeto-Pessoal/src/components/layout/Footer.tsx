@@ -1,17 +1,17 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { Mail, Phone, MapPin } from "lucide-react";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-surface-tertiary border-t border-border">
-      <div className="container-apple-wide py-16 lg:py-20">
+    <footer className="footer">
+      <div className="container py-16 lg:py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-accent">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--color-accent)]">
                 <span className="text-lg font-semibold text-white tracking-tight">AT</span>
               </div>
               <span className="text-lg font-semibold text-primary tracking-tight">
@@ -26,7 +26,7 @@ export function Footer() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-xl bg-surface-secondary flex items-center justify-center text-tertiary hover:text-accent hover:bg-accent/10 transition-all duration-200"
+                className="w-10 h-10 rounded-xl bg-[var(--color-bg-secondary)] flex items-center justify-center text-tertiary hover:text-accent hover:bg-[var(--color-accent-subtle)] transition-all duration-200"
                 aria-label="Instagram"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -39,7 +39,7 @@ export function Footer() {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-xl bg-surface-secondary flex items-center justify-center text-tertiary hover:text-accent hover:bg-accent/10 transition-all duration-200"
+                className="w-10 h-10 rounded-xl bg-[var(--color-bg-secondary)] flex items-center justify-center text-tertiary hover:text-accent hover:bg-[var(--color-accent-subtle)] transition-all duration-200"
                 aria-label="Facebook"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -50,7 +50,7 @@ export function Footer() {
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-xl bg-surface-secondary flex items-center justify-center text-tertiary hover:text-accent hover:bg-accent/10 transition-all duration-200"
+                className="w-10 h-10 rounded-xl bg-[var(--color-bg-secondary)] flex items-center justify-center text-tertiary hover:text-accent hover:bg-[var(--color-accent-subtle)] transition-all duration-200"
                 aria-label="Twitter"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

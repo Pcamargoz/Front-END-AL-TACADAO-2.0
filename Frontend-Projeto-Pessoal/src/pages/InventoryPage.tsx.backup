@@ -464,12 +464,12 @@ export function InventoryPage() {
             <table className="w-full">
               <thead>
                 <tr className="text-left text-xs text-[#4B5563] uppercase tracking-wider border-b border-[#1A1D24]">
-                  <th className="px-4 sm:px-6 py-3 sm:py-4 min-w-[200px]">Produto</th>
-                  <th className="px-4 sm:px-6 py-3 sm:py-4 hidden sm:table-cell min-w-[100px]">Marca</th>
-                  <th className="px-4 sm:px-6 py-3 sm:py-4 hidden md:table-cell min-w-[80px]">Peso</th>
+                  <th className="px-6 py-4">Produto</th>
+                  <th className="px-6 py-4 hidden sm:table-cell">Marca</th>
+                  <th className="px-6 py-4 hidden md:table-cell">Peso</th>
                   <th className="px-6 py-4 hidden lg:table-cell">Preço</th>
-                  <th className="px-4 sm:px-6 py-3 sm:py-4 hidden xl:table-cell min-w-[120px]">Fornecedor</th>
-                  <th className="px-4 sm:px-6 py-3 sm:py-4 w-20 sm:w-24 min-w-[80px]">A��es</th>
+                  <th className="px-6 py-4 hidden xl:table-cell">Fornecedor</th>
+                  <th className="px-6 py-4 w-24" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1A1D24]">
@@ -486,7 +486,7 @@ export function InventoryPage() {
                         transition={{ delay: i * 0.025 }}
                         className="hover:bg-[#1A1D24]/30 transition-colors"
                       >
-                        <td className="px-4 sm:px-6 py-3 sm:py-4">
+                        <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div 
                               className="w-9 h-9 rounded-sm flex items-center justify-center flex-shrink-0"
@@ -506,7 +506,7 @@ export function InventoryPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4 hidden sm:table-cell">
+                        <td className="px-6 py-4 hidden sm:table-cell">
                           {meta ? (
                             <span 
                               className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-sm"
@@ -518,21 +518,21 @@ export function InventoryPage() {
                             <span className="text-[#4B5563]">—</span>
                           )}
                         </td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4 hidden md:table-cell">
+                        <td className="px-6 py-4 hidden md:table-cell">
                           {p.medida != null ? (
                             <span className="text-sm text-[#9CA3AF] font-mono">{p.medida}g</span>
                           ) : (
                             <span className="text-[#4B5563]">—</span>
                           )}
                         </td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4 hidden lg:table-cell">
+                        <td className="px-6 py-4 hidden lg:table-cell">
                           {p.preco != null ? (
                             <span className="price text-sm">{formatCurrency(p.preco)}</span>
                           ) : (
                             <span className="text-sm text-[#4B5563]">Sem preço</span>
                           )}
                         </td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4 hidden xl:table-cell">
+                        <td className="px-6 py-4 hidden xl:table-cell">
                           {p.fornecedor ? (
                             <span className="text-sm text-[#9CA3AF]">
                               {p.fornecedor.nomeFantasia || p.fornecedor.razaoSocial}
@@ -541,7 +541,7 @@ export function InventoryPage() {
                             <span className="text-[#4B5563]">—</span>
                           )}
                         </td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4">
+                        <td className="px-6 py-4">
                           <div className="flex items-center gap-1 justify-end">
                             <button onClick={() => setEditing(p)} className="btn btn-ghost btn-icon btn-sm hover:text-[#00FF87]">
                               <Pencil size={14} />
@@ -589,5 +589,3 @@ export function InventoryPage() {
     </div>
   );
 }
-
-

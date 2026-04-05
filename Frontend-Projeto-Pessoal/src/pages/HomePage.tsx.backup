@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { 
@@ -22,10 +22,10 @@ function getProductPrice(product: Produto): number {
   return product.preco ?? getMockPrice(product.id);
 }
 
-/* -------------------------------------------------------------------------------
+/* ═══════════════════════════════════════════════════════════════════════════════
  * PRODUCT CARD - Apple Style
  * Clean, minimal, with subtle hover animation
- * -------------------------------------------------------------------------------
+ * ═══════════════════════════════════════════════════════════════════════════════
  */
 function FeaturedProductCard({ product }: { product: Produto }) {
   const { addItem, isInCart } = useCart();
@@ -83,9 +83,9 @@ function FeaturedProductCard({ product }: { product: Produto }) {
   );
 }
 
-/* -------------------------------------------------------------------------------
+/* ═══════════════════════════════════════════════════════════════════════════════
  * CATEGORY CARD - Apple Style
- * -------------------------------------------------------------------------------
+ * ═══════════════════════════════════════════════════════════════════════════════
  */
 function CategoryCard({ category }: { category: typeof CATEGORIES[number] }) {
   const icons: Record<string, React.ReactNode> = {
@@ -116,9 +116,9 @@ function CategoryCard({ category }: { category: typeof CATEGORIES[number] }) {
   );
 }
 
-/* -------------------------------------------------------------------------------
+/* ═══════════════════════════════════════════════════════════════════════════════
  * BENEFIT ITEM - Apple Style
- * -------------------------------------------------------------------------------
+ * ═══════════════════════════════════════════════════════════════════════════════
  */
 function BenefitItem({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
@@ -140,9 +140,9 @@ function BenefitItem({ icon, title, description }: { icon: React.ReactNode; titl
   );
 }
 
-/* -------------------------------------------------------------------------------
+/* ═══════════════════════════════════════════════════════════════════════════════
  * SCROLL INDICATOR - Apple Style
- * -------------------------------------------------------------------------------
+ * ═══════════════════════════════════════════════════════════════════════════════
  */
 function ScrollIndicator() {
   return (
@@ -164,9 +164,9 @@ function ScrollIndicator() {
   );
 }
 
-/* -------------------------------------------------------------------------------
+/* ═══════════════════════════════════════════════════════════════════════════════
  * STATS SECTION - Apple Style
- * -------------------------------------------------------------------------------
+ * ═══════════════════════════════════════════════════════════════════════════════
  */
 function StatsSection() {
   const stats = [
@@ -197,9 +197,9 @@ function StatsSection() {
   );
 }
 
-/* -------------------------------------------------------------------------------
+/* ═══════════════════════════════════════════════════════════════════════════════
  * HOME PAGE - Apple Style
- * -------------------------------------------------------------------------------
+ * ═══════════════════════════════════════════════════════════════════════════════
  */
 export function HomePage() {
   const { data: productsData } = useQuery({
@@ -212,9 +212,9 @@ export function HomePage() {
   return (
     <div className="page-wrapper">
       
-      {/* -----------------------------------------------------------------------
+      {/* ═══════════════════════════════════════════════════════════════════════
        * HERO SECTION
-       * ----------------------------------------------------------------------- */}
+       * ═══════════════════════════════════════════════════════════════════════ */}
       <section className="hero">
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
           <motion.div
@@ -237,7 +237,7 @@ export function HomePage() {
             {/* Subtitle */}
             <p className="hero-subtitle">
               A maior variedade de suplementos para sua loja. 
-              Pre�os competitivos, entrega r�pida e qualidade garantida.
+              Preços competitivos, entrega rápida e qualidade garantida.
             </p>
 
             {/* CTAs */}
@@ -260,9 +260,9 @@ export function HomePage() {
         <ScrollIndicator />
       </section>
 
-      {/* -----------------------------------------------------------------------
+      {/* ═══════════════════════════════════════════════════════════════════════
        * CATEGORIES SECTION
-       * ----------------------------------------------------------------------- */}
+       * ═══════════════════════════════════════════════════════════════════════ */}
       <section className="section bg-[var(--color-bg-secondary)]">
         <div className="container">
           <motion.div
@@ -276,7 +276,7 @@ export function HomePage() {
             <h2 className="text-headline">Categorias</h2>
           </motion.div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {CATEGORIES.slice(0, 8).map((cat) => (
               <CategoryCard key={cat.id} category={cat} />
             ))}
@@ -284,9 +284,9 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* -----------------------------------------------------------------------
+      {/* ═══════════════════════════════════════════════════════════════════════
        * FEATURED PRODUCTS SECTION
-       * ----------------------------------------------------------------------- */}
+       * ═══════════════════════════════════════════════════════════════════════ */}
       <section className="section">
         <div className="container container-wide">
           <motion.div
@@ -306,7 +306,7 @@ export function HomePage() {
           </motion.div>
 
           {featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
               {featuredProducts.map((product) => (
                 <FeaturedProductCard key={product.id} product={product} />
               ))}
@@ -334,9 +334,9 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* -----------------------------------------------------------------------
+      {/* ═══════════════════════════════════════════════════════════════════════
        * BENEFITS SECTION
-       * ----------------------------------------------------------------------- */}
+       * ═══════════════════════════════════════════════════════════════════════ */}
       <section className="section bg-[var(--color-bg-secondary)]">
         <div className="container">
           <motion.div
@@ -347,14 +347,14 @@ export function HomePage() {
             className="text-center mb-14"
           >
             <span className="text-eyebrow mb-3 block">Por que escolher</span>
-            <h2 className="text-headline">AL-TACAD�O</h2>
+            <h2 className="text-headline">AL-TACADÃO</h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-10 max-w-4xl mx-auto">
             <BenefitItem
               icon={<Truck size={24} />}
               title="Entrega Expressa"
-              description="Receba seus produtos em at� 24h para a regi�o metropolitana. Frete gr�tis acima de R$ 500."
+              description="Receba seus produtos em até 24h para a região metropolitana. Frete grátis acima de R$ 500."
             />
             <BenefitItem
               icon={<Shield size={24} />}
@@ -363,8 +363,8 @@ export function HomePage() {
             />
             <BenefitItem
               icon={<CreditCard size={24} />}
-              title="Condi��es Especiais"
-              description="Pre�os exclusivos para revendedores. Parcelamento em at� 12x."
+              title="Condições Especiais"
+              description="Preços exclusivos para revendedores. Parcelamento em até 12x."
             />
             <BenefitItem
               icon={<Zap size={24} />}
@@ -375,9 +375,9 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* -----------------------------------------------------------------------
+      {/* ═══════════════════════════════════════════════════════════════════════
        * CTA SECTION
-       * ----------------------------------------------------------------------- */}
+       * ═══════════════════════════════════════════════════════════════════════ */}
       <section className="section">
         <div className="container text-center">
           <motion.div
@@ -390,17 +390,17 @@ export function HomePage() {
             <h2 className="text-headline mb-4">
               Pronto para
               <br />
-              <span className="text-accent">come�ar?</span>
+              <span className="text-accent">começar?</span>
             </h2>
             <p className="text-body-lg text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
-              Cadastre-se agora e tenha acesso aos melhores pre�os do mercado.
+              Cadastre-se agora e tenha acesso aos melhores preços do mercado.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/cadastro" className="btn btn-primary btn-lg">
-                Criar Conta Gr�tis
+                Criar Conta Grátis
               </Link>
               <Link to="/produtos" className="btn btn-ghost">
-                Explorar Cat�logo <ArrowRight size={16} />
+                Explorar Catálogo <ArrowRight size={16} />
               </Link>
             </div>
           </motion.div>
@@ -409,4 +409,3 @@ export function HomePage() {
     </div>
   );
 }
-

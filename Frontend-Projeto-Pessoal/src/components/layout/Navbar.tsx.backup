@@ -1,11 +1,20 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Search, ShoppingBag, User, Menu, X, LogOut, Building2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../auth/AuthContext";
 import { useCart } from "../../hooks/useCart";
 
-/* Apple Style Navbar Component */
+/* ═══════════════════════════════════════════════════════════════════════════════
+ * NAVBAR - Apple Style
+ * 
+ * Features:
+ * - Sticky with glassmorphism blur
+ * - Minimal 48px height
+ * - Clean typography without underlines
+ * - Smooth transitions
+ * ═══════════════════════════════════════════════════════════════════════════════
+ */
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const { totalItems } = useCart();
@@ -32,7 +41,7 @@ export function Navbar() {
   };
 
   const navLinks = [
-    { to: "/", label: "Inicio", exact: true },
+    { to: "/", label: "Início", exact: true },
     { to: "/produtos", label: "Produtos" },
   ];
 
@@ -40,13 +49,13 @@ export function Navbar() {
     <>
       <header className="navbar">
         <div className="flex items-center gap-6 flex-1">
-          {/* Logo */}
+          {/* Logo - Clean and minimal */}
           <Link to="/" className="flex items-center gap-3 flex-shrink-0">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--color-accent)]">
               <span className="text-sm font-semibold text-white tracking-tight">AT</span>
             </div>
             <span className="hidden sm:block text-[17px] font-semibold text-[var(--color-text-primary)] tracking-tight">
-              AL-TACADAO
+              AL-TACADÃO
             </span>
           </Link>
 
@@ -106,7 +115,7 @@ export function Navbar() {
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="flex items-center gap-2 btn btn-ghost px-3"
-                aria-label="Menu do usuario"
+                aria-label="Menu do usuário"
               >
                 <div className="w-8 h-8 rounded-full bg-[var(--color-accent-subtle)] flex items-center justify-center">
                   <User size={16} className="text-[var(--color-accent)]" />

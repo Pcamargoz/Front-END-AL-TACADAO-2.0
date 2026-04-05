@@ -1,13 +1,12 @@
-import { Outlet } from "react-router-dom";
+﻿import { Outlet } from "react-router-dom";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 
 export function StoreLayout() {
   return (
-    <div className="min-h-screen flex flex-col bg-surface">
+    <div className="min-h-screen flex flex-col bg-[var(--color-bg-primary)]">
       <Navbar />
-      {/* pt-14 = 56px navbar height */}
-      <main className="flex-1 pt-14">
+      <main className="flex-1 pt-12">
         <Outlet />
       </main>
       <Footer />

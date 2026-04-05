@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ShoppingBag, 
@@ -20,18 +20,18 @@ export function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-surface py-20">
-        <div className="container-apple max-w-lg">
+      <div className="page-wrapper">
+        <div className="container max-w-lg py-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
             className="text-center"
           >
-            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-surface-secondary flex items-center justify-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-[var(--color-bg-secondary)] flex items-center justify-center">
               <ShoppingBag size={36} className="text-tertiary" />
             </div>
-            <h1 className="text-display-xs text-primary mb-3">
+            <h1 className="text-headline text-primary mb-3">
               Seu carrinho está vazio
             </h1>
             <p className="text-body text-secondary mb-8">
@@ -48,10 +48,10 @@ export function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="page-wrapper">
       {/* Header */}
-      <div className="bg-surface-secondary border-b border-border">
-        <div className="container-apple py-12">
+      <div className="bg-[var(--color-bg-secondary)] border-b border-border">
+        <div className="container py-12">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -61,7 +61,7 @@ export function CartPage() {
               Carrinho
             </span>
             <div className="flex items-center justify-between">
-              <h1 className="text-display-sm text-primary">Seu Pedido</h1>
+              <h1 className="text-headline text-primary">Seu Pedido</h1>
               <button
                 onClick={clearCart}
                 className="text-body-sm text-secondary hover:text-red-500 transition-colors flex items-center gap-1.5"
@@ -77,7 +77,7 @@ export function CartPage() {
         </div>
       </div>
 
-      <div className="container-apple py-8 lg:py-12">
+      <div className="container py-8 lg:py-12">
         <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
@@ -101,7 +101,7 @@ export function CartPage() {
                     {/* Product Image */}
                     <Link 
                       to={`/produtos/${item.product.id}`}
-                      className="w-24 h-24 rounded-xl flex-shrink-0 flex items-center justify-center bg-surface-secondary hover:bg-surface-tertiary transition-colors"
+                      className="w-24 h-24 rounded-xl flex-shrink-0 flex items-center justify-center bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
                     >
                       <Dumbbell size={32} className="text-tertiary" />
                     </Link>
@@ -129,7 +129,7 @@ export function CartPage() {
                         </div>
                         <button
                           onClick={() => removeItem(item.product.id)}
-                          className="text-tertiary hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-surface-secondary"
+                          className="text-tertiary hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-[var(--color-bg-secondary)]"
                           aria-label="Remover item"
                         >
                           <Trash2 size={18} />
@@ -138,7 +138,7 @@ export function CartPage() {
 
                       <div className="flex items-center justify-between mt-4">
                         {/* Quantity Control */}
-                        <div className="flex items-center bg-surface-secondary rounded-xl">
+                        <div className="flex items-center bg-[var(--color-bg-secondary)] rounded-xl">
                           <button
                             onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))}
                             className="w-10 h-10 flex items-center justify-center text-secondary hover:text-primary transition-colors"
@@ -185,7 +185,7 @@ export function CartPage() {
               transition={{ delay: 0.2, duration: 0.5 }}
               className="card p-6 sticky top-24"
             >
-              <h2 className="text-title-md text-primary mb-6">Resumo do Pedido</h2>
+              <h2 className="text-title text-primary mb-6">Resumo do Pedido</h2>
 
               {/* Coupon */}
               <div className="mb-6">
@@ -211,11 +211,11 @@ export function CartPage() {
                 </div>
                 <div className="flex justify-between text-body-sm">
                   <span className="text-secondary">Frete</span>
-                  <span className="text-green-600 dark:text-green-400 font-medium">Grátis</span>
+                  <span className="text-[var(--color-success)] font-medium">Grátis</span>
                 </div>
                 <div className="border-t border-border pt-4 flex justify-between">
                   <span className="text-body font-medium text-primary">Total</span>
-                  <span className="text-title-md text-accent font-semibold">{formatCurrency(totalPrice)}</span>
+                  <span className="text-title text-accent font-semibold">{formatCurrency(totalPrice)}</span>
                 </div>
               </div>
 
@@ -236,8 +236,8 @@ export function CartPage() {
               {/* Trust badges */}
               <div className="mt-6 pt-6 border-t border-border space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-950/30 flex items-center justify-center">
-                    <Truck size={18} className="text-green-600 dark:text-green-400" />
+                  <div className="w-10 h-10 rounded-xl bg-[var(--color-success-bg)] flex items-center justify-center">
+                    <Truck size={18} className="text-[var(--color-success)]" />
                   </div>
                   <div>
                     <p className="text-body-sm text-primary font-medium">Frete Grátis</p>
@@ -245,8 +245,8 @@ export function CartPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/30 flex items-center justify-center">
-                    <ShieldCheck size={18} className="text-blue-600 dark:text-blue-400" />
+                  <div className="w-10 h-10 rounded-xl bg-[var(--color-info-bg)] flex items-center justify-center">
+                    <ShieldCheck size={18} className="text-[var(--color-info)]" />
                   </div>
                   <div>
                     <p className="text-body-sm text-primary font-medium">Compra Segura</p>
