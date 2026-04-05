@@ -2,12 +2,19 @@ import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { cn } from "../../lib/utils";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost" | "danger" | "cyan";
+  variant?: "primary" | "secondary" | "ghost" | "danger";
   size?: "sm" | "md" | "lg" | "icon";
   loading?: boolean;
   children: ReactNode;
 }
 
+/**
+ * Button component following Apple-style design system
+ * - Primary: Accent color with white text
+ * - Secondary: Border only with transparent background
+ * - Ghost: No border, subtle hover
+ * - Danger: Red accent for destructive actions
+ */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", loading, children, disabled, ...props }, ref) => {
     const baseClasses = "btn";
@@ -17,7 +24,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       secondary: "btn-secondary",
       ghost: "btn-ghost",
       danger: "btn-danger",
-      cyan: "btn-cyan",
     };
 
     const sizeClasses = {
@@ -35,17 +41,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {loading ? (
-          <span className="flex items-center gap-2">
+          <span className="flex items-center justify-center gap-2">
             <span 
-              className="w-4 h-4 border-2 rounded-full animate-spin"
-              style={{ 
-                borderColor: variant === "primary" || variant === "cyan" 
-                  ? "rgba(9,11,16,0.3)" 
-                  : "rgba(255,255,255,0.2)",
-                borderTopColor: variant === "primary" || variant === "cyan" 
-                  ? "#090B10" 
-                  : "currentColor"
-              }}
+              className={cn(
+                "w-4 h-4 border-2 rounded-full animate-spin",
+                variant === "primary" 
+                  ? "border-white/30 border-t-white" 
+                  : "border-current/30 border-t-current"
+              )}
             />
             {typeof children === "string" ? children : "Carregando..."}
           </span>

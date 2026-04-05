@@ -55,30 +55,30 @@ function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
   // Mobile: bottom navigation
   if (isMobile) {
     return (
-      <nav className="bottom-nav">
-        {navItems.map(({ to, icon: Icon, label, exact }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={exact}
-            className={({ isActive }) => `bottom-nav-item ${isActive ? "active" : ""}`}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-xl border-t border-border">
+        <div className="flex items-center justify-around h-16 px-2">
+          {navItems.map(({ to, icon: Icon, label, exact }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={exact}
+              className={({ isActive }) => `
+                flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all
+                ${isActive ? "text-accent" : "text-tertiary hover:text-secondary"}
+              `}
+            >
+              <Icon size={20} />
+              <span className="text-[10px] font-medium">{label}</span>
+            </NavLink>
+          ))}
+          <button 
+            onClick={handleSairEmpresa} 
+            className="flex flex-col items-center justify-center gap-1 px-3 py-2 text-amber-500/70"
           >
-            {({ isActive }) => (
-              <>
-                <Icon size={20} style={isActive ? { color: "#00FF87" } : {}} />
-                <span>{label}</span>
-              </>
-            )}
-          </NavLink>
-        ))}
-        <button onClick={handleSairEmpresa} className="bottom-nav-item">
-          <DoorOpen size={20} className="text-[#F59E0B]/60" />
-          <span className="text-[#F59E0B]/60 text-[10px]">Sair Empresa</span>
-        </button>
-        <button onClick={handleLogout} className="bottom-nav-item">
-          <LogOut size={20} className="text-[#EF4444]/60" />
-          <span className="text-[#EF4444]/60">Sair</span>
-        </button>
+            <DoorOpen size={20} />
+            <span className="text-[10px] font-medium">Sair</span>
+          </button>
+        </div>
       </nav>
     );
   }
@@ -86,17 +86,14 @@ function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
   // Desktop: collapsible sidebar
   return (
     <motion.aside
-      className="sidebar"
-      animate={{ width: expanded ? 240 : 64 }}
-      transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+      className="fixed top-0 left-0 bottom-0 z-40 bg-surface border-r border-border flex flex-col"
+      animate={{ width: expanded ? 256 : 72 }}
+      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
     >
       {/* Logo */}
-      <div
-        className="flex items-center gap-3 px-4 py-5 overflow-hidden"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
-      >
-        <div className="flex-shrink-0 w-9 h-9 rounded-sm flex items-center justify-center bg-[#00FF87]">
-          <span className="font-display text-lg text-[#090B10] tracking-wide">AT</span>
+      <div className="flex items-center gap-3 px-4 py-5 border-b border-border overflow-hidden">
+        <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-accent flex items-center justify-center">
+          <span className="text-lg font-semibold text-white">AT</span>
         </div>
         <AnimatePresence>
           {expanded && (
@@ -104,13 +101,13 @@ function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -8 }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <span className="font-display text-lg text-[#F5F5F5] tracking-wide whitespace-nowrap">
+              <span className="text-title-sm text-primary whitespace-nowrap">
                 AL-TACADÃO
               </span>
-              <p className="text-[10px] text-[#4B5563] tracking-widest uppercase whitespace-nowrap">
+              <p className="text-caption text-tertiary tracking-wider uppercase whitespace-nowrap">
                 Painel Admin
               </p>
             </motion.div>
@@ -120,16 +117,10 @@ function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
 
       {/* Fornecedor Info */}
       {fornecedorNome && (
-        <div
-          className="px-3 py-3 overflow-hidden"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
-        >
-          <div className="flex items-center gap-2">
-            <div
-              className="flex-shrink-0 w-7 h-7 rounded-sm flex items-center justify-center"
-              style={{ background: "rgba(0,255,135,0.15)", border: "1px solid rgba(0,255,135,0.25)" }}
-            >
-              <Building2 size={12} className="text-[#00FF87]" />
+        <div className="px-3 py-4 border-b border-border overflow-hidden">
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
+              <Building2 size={16} className="text-accent" />
             </div>
             <AnimatePresence>
               {expanded && (
@@ -139,10 +130,10 @@ function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
                   exit={{ opacity: 0 }}
                   className="overflow-hidden min-w-0"
                 >
-                  <p className="truncate text-xs font-medium text-[#F5F5F5]">
+                  <p className="truncate text-body-sm font-medium text-primary">
                     {fornecedorNome}
                   </p>
-                  <p className="truncate text-[10px] text-[#00FF87] tracking-wider uppercase">
+                  <p className="truncate text-caption text-accent uppercase tracking-wider">
                     {role}
                   </p>
                 </motion.div>
@@ -153,54 +144,52 @@ function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
       )}
 
       {/* Nav */}
-      <nav className="flex-1 px-2 py-4 flex flex-col gap-1 overflow-hidden">
+      <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-hidden">
         {navItems.map(({ to, icon: Icon, label, exact }) => (
           <NavLink
             key={to}
             to={to}
             end={exact}
-            className={({ isActive }) => `sidebar-item ${isActive ? "active" : ""}`}
+            className={({ isActive }) => `
+              relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
+              ${isActive 
+                ? "bg-accent/10 text-accent" 
+                : "text-secondary hover:bg-surface-secondary hover:text-primary"
+              }
+            `}
           >
-            {({ isActive }) => (
-              <>
-                {isActive && (
-                  <motion.span
-                    layoutId="admin-sidebar-indicator"
-                    className="sidebar-indicator"
-                    transition={{ type: "spring", stiffness: 500, damping: 40 }}
-                  />
-                )}
-                <Icon size={18} className="flex-shrink-0" />
-                <AnimatePresence>
-                  {expanded && (
-                    <motion.span
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.12 }}
-                      className="whitespace-nowrap"
-                    >
-                      {label}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </>
-            )}
+            <Icon size={20} className="flex-shrink-0" />
+            <AnimatePresence>
+              {expanded && (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="text-body-sm font-medium whitespace-nowrap"
+                >
+                  {label}
+                </motion.span>
+              )}
+            </AnimatePresence>
           </NavLink>
         ))}
 
-        <div className="divider my-2" />
+        <div className="my-3 border-t border-border" />
 
         {/* Link para Loja */}
-        <Link to="/" className="sidebar-item">
-          <Store size={18} className="flex-shrink-0" />
+        <Link 
+          to="/" 
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-secondary hover:bg-surface-secondary hover:text-primary transition-all duration-200"
+        >
+          <Store size={20} className="flex-shrink-0" />
           <AnimatePresence>
             {expanded && (
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="whitespace-nowrap"
+                className="text-body-sm font-medium whitespace-nowrap"
               >
                 Ver Loja
               </motion.span>
@@ -210,17 +199,11 @@ function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
       </nav>
 
       {/* Bottom */}
-      <div
-        className="px-2 pb-4 pt-3 overflow-hidden"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
-      >
+      <div className="px-3 pb-4 pt-3 border-t border-border overflow-hidden">
         {/* User info */}
-        <div className="sidebar-item cursor-default select-none mb-2">
-          <div
-            className="flex-shrink-0 w-7 h-7 rounded-sm flex items-center justify-center"
-            style={{ background: "rgba(0,255,135,0.15)", border: "1px solid rgba(0,255,135,0.25)" }}
-          >
-            <User size={12} className="text-[#00FF87]" />
+        <div className="flex items-center gap-3 px-3 py-2.5 mb-2">
+          <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-surface-secondary flex items-center justify-center">
+            <User size={16} className="text-secondary" />
           </div>
           <AnimatePresence>
             {expanded && (
@@ -230,10 +213,10 @@ function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
                 exit={{ opacity: 0 }}
                 className="overflow-hidden min-w-0"
               >
-                <p className="truncate text-sm font-medium text-[#9CA3AF]">
+                <p className="truncate text-body-sm font-medium text-primary">
                   {user?.nome || user?.login}
                 </p>
-                <p className="truncate text-[10px] text-[#4B5563] tracking-wider uppercase">
+                <p className="truncate text-caption text-tertiary uppercase tracking-wider">
                   {user?.roles?.[0] ?? "USUARIO"}
                 </p>
               </motion.div>
@@ -242,15 +225,18 @@ function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
         </div>
 
         {/* Sair da Empresa */}
-        <button onClick={handleSairEmpresa} className="sidebar-item w-full text-left">
-          <DoorOpen size={16} className="flex-shrink-0 text-[#F59E0B]/60" />
+        <button 
+          onClick={handleSairEmpresa} 
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-amber-500/80 hover:bg-amber-500/10 transition-all duration-200"
+        >
+          <DoorOpen size={18} className="flex-shrink-0" />
           <AnimatePresence>
             {expanded && (
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="whitespace-nowrap text-sm text-[#F59E0B]/60"
+                className="text-body-sm font-medium whitespace-nowrap"
               >
                 Sair da Empresa
               </motion.span>
@@ -259,15 +245,18 @@ function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
         </button>
 
         {/* Logout */}
-        <button onClick={handleLogout} className="sidebar-item w-full text-left">
-          <LogOut size={16} className="flex-shrink-0 text-[#EF4444]/60" />
+        <button 
+          onClick={handleLogout} 
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-500/80 hover:bg-red-500/10 transition-all duration-200"
+        >
+          <LogOut size={18} className="flex-shrink-0" />
           <AnimatePresence>
             {expanded && (
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="whitespace-nowrap text-sm text-[#EF4444]/60"
+                className="text-body-sm font-medium whitespace-nowrap"
               >
                 Sair
               </motion.span>
@@ -276,9 +265,15 @@ function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
         </button>
 
         {/* Collapse toggle */}
-        <button onClick={onToggle} className="sidebar-item w-full text-left mt-1">
-          <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.28 }}>
-            <ChevronRight size={16} className="flex-shrink-0" />
+        <button 
+          onClick={onToggle} 
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-secondary hover:bg-surface-secondary hover:text-primary transition-all duration-200 mt-1"
+        >
+          <motion.div 
+            animate={{ rotate: expanded ? 180 : 0 }} 
+            transition={{ duration: 0.3 }}
+          >
+            <ChevronRight size={18} className="flex-shrink-0" />
           </motion.div>
           <AnimatePresence>
             {expanded && (
@@ -286,7 +281,7 @@ function AdminSidebar({ expanded, onToggle, isMobile }: SidebarProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="text-sm whitespace-nowrap"
+                className="text-body-sm font-medium whitespace-nowrap"
               >
                 Recolher
               </motion.span>
@@ -303,7 +298,7 @@ export function AdminLayout() {
   const isMobile = useIsMobile();
 
   return (
-    <div className="app-layout relative bg-[#090B10]">
+    <div className="min-h-screen bg-surface">
       <AdminSidebar
         expanded={expanded}
         onToggle={() => setExpanded((e) => !e)}
@@ -311,12 +306,12 @@ export function AdminLayout() {
       />
 
       <motion.main
-        className="relative min-h-screen"
+        className="min-h-screen"
         animate={{
-          paddingLeft: isMobile ? 0 : expanded ? 240 : 64,
-          paddingBottom: isMobile ? 64 : 0,
+          marginLeft: isMobile ? 0 : expanded ? 256 : 72,
+          paddingBottom: isMobile ? 80 : 0,
         }}
-        transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
       >
         <Outlet />
       </motion.main>

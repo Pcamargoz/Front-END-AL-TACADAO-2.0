@@ -4,13 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Search, 
-  Filter, 
+  Package, 
   X, 
   Dumbbell, 
   ShoppingBag,
   LayoutGrid,
   List,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Check
 } from "lucide-react";
 import { apiListEstoque, type Produto } from "../api/client";
 import { BRAND_META, ALL_BRANDS, getMockPrice, formatCurrency } from "../lib/utils";
@@ -30,111 +31,121 @@ function ProductCard({ product, view }: { product: Produto; view: "grid" | "list
     return (
       <motion.div
         layout
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 20 }}
-        className="card flex items-center gap-4 p-4 hover:border-[#00FF87]/25 transition-colors"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+        className="card p-4 flex items-center gap-5 group"
       >
-        <div 
-          className="w-20 h-20 rounded-sm flex items-center justify-center flex-shrink-0"
-          style={{ background: meta?.bg || "rgba(255,255,255,0.05)" }}
-        >
-          <Dumbbell size={28} style={{ color: meta?.color || "#4B5563" }} />
+        {/* Image placeholder */}
+        <div className="w-20 h-20 rounded-xl bg-surface-secondary flex items-center justify-center flex-shrink-0 group-hover:bg-surface-tertiary transition-colors">
+          <Dumbbell size={28} className="text-tertiary" />
         </div>
+
+        {/* Content */}
         <div className="flex-1 min-w-0">
           {meta && (
-            <span 
-              className="inline-block text-[10px] font-bold tracking-wider uppercase mb-1 px-2 py-0.5 rounded-sm"
-              style={{ background: meta.bg, color: meta.color }}
-            >
+            <span className="inline-block text-caption font-medium text-accent mb-1">
               {meta.label}
             </span>
           )}
           <Link to={`/produtos/${product.id}`}>
-            <h3 className="text-sm font-medium text-[#F5F5F5] hover:text-[#00FF87] transition-colors line-clamp-1">
+            <h3 className="text-body font-medium text-primary hover:text-accent transition-colors line-clamp-1">
               {product.descricao}
             </h3>
           </Link>
-          {product.medida && (
-            <p className="text-xs text-[#4B5563] font-mono">{product.medida}g</p>
-          )}
-          {product.sabor && (
-            <p className="text-xs text-[#9CA3AF]">{product.sabor}</p>
-          )}
-          {product.fornecedor && (
-            <p className="text-xs text-[#4B5563] truncate">
-              {product.fornecedor.nomeFantasia || product.fornecedor.razaoSocial}
-            </p>
-          )}
+          <div className="flex items-center gap-3 mt-1">
+            {product.medida && (
+              <span className="text-caption text-tertiary">{product.medida}g</span>
+            )}
+            {product.sabor && (
+              <span className="text-caption text-secondary">{product.sabor}</span>
+            )}
+          </div>
         </div>
+
+        {/* Price & Action */}
         <div className="flex items-center gap-4">
-          <span className="price text-lg whitespace-nowrap">{formatCurrency(price)}</span>
+          <span className="text-title-sm text-primary font-semibold whitespace-nowrap">
+            {formatCurrency(price)}
+          </span>
           <button
             onClick={() => addItem(product, 1, price)}
             disabled={inCart}
             className={`btn btn-sm ${inCart ? "btn-secondary" : "btn-primary"}`}
           >
-            {inCart ? "No carrinho" : "Adicionar"}
+            {inCart ? (
+              <>
+                <Check size={14} />
+                No carrinho
+              </>
+            ) : (
+              "Adicionar"
+            )}
           </button>
         </div>
       </motion.div>
     );
   }
 
+  // Grid view
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      className="product-card group"
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+      className="card overflow-hidden group"
     >
       <Link to={`/produtos/${product.id}`}>
-        <div className="aspect-square bg-gradient-to-br from-[#1A1D24] to-[#111318] flex items-center justify-center relative overflow-hidden">
-          <div 
-            className="w-20 h-20 rounded-sm flex items-center justify-center"
-            style={{ background: meta?.bg || "rgba(255,255,255,0.05)" }}
-          >
-            <Dumbbell size={36} style={{ color: meta?.color || "#4B5563" }} />
-          </div>
-          <div className="absolute inset-0 bg-[#00FF87]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="aspect-square bg-surface-secondary flex items-center justify-center relative overflow-hidden">
+          <Dumbbell size={48} className="text-tertiary group-hover:scale-110 transition-transform duration-500" />
+          {/* Hover overlay */}
+          <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
       </Link>
 
-      <div className="p-4">
+      <div className="p-5">
+        {/* Brand tag */}
         {meta && (
-          <span 
-            className="inline-block text-[10px] font-bold tracking-wider uppercase mb-2 px-2 py-0.5 rounded-sm"
-            style={{ background: meta.bg, color: meta.color }}
-          >
+          <span className="text-caption font-medium text-accent mb-2 block">
             {meta.label}
           </span>
         )}
+
+        {/* Title */}
         <Link to={`/produtos/${product.id}`}>
-          <h3 className="text-sm font-medium text-[#F5F5F5] hover:text-[#00FF87] transition-colors mb-1 line-clamp-2 min-h-[40px]">
+          <h3 className="text-body font-medium text-primary hover:text-accent transition-colors mb-1 line-clamp-2 min-h-[44px]">
             {product.descricao}
           </h3>
         </Link>
-        {product.medida && (
-          <p className="text-xs text-[#4B5563] font-mono mb-1">{product.medida}g</p>
-        )}
-        {product.sabor && (
-          <p className="text-xs text-[#9CA3AF] mb-1">{product.sabor}</p>
-        )}
-        {product.fornecedor && (
-          <p className="text-xs text-[#4B5563] mb-3 truncate">
-            {product.fornecedor.nomeFantasia || product.fornecedor.razaoSocial}
-          </p>
-        )}
-        {!product.sabor && !product.fornecedor && !product.medida && <div className="mb-3" />}
+
+        {/* Details */}
+        <div className="flex items-center gap-2 mb-4">
+          {product.medida && (
+            <span className="text-caption text-tertiary">{product.medida}g</span>
+          )}
+          {product.sabor && (
+            <>
+              {product.medida && <span className="text-tertiary">·</span>}
+              <span className="text-caption text-secondary">{product.sabor}</span>
+            </>
+          )}
+        </div>
+
+        {/* Price & Action */}
         <div className="flex items-center justify-between">
-          <span className="price">{formatCurrency(price)}</span>
+          <span className="text-title-sm text-primary font-semibold">
+            {formatCurrency(price)}
+          </span>
           <button
             onClick={() => addItem(product, 1, price)}
             disabled={inCart}
             className={`btn btn-sm btn-icon ${inCart ? "btn-secondary" : "btn-primary"}`}
+            aria-label={inCart ? "Já no carrinho" : "Adicionar ao carrinho"}
           >
-            {inCart ? "✓" : <ShoppingBag size={14} />}
+            {inCart ? <Check size={16} /> : <ShoppingBag size={16} />}
           </button>
         </div>
       </div>
@@ -215,41 +226,42 @@ export function ProductsPage() {
   const hasActiveFilters = searchQuery || brandFilter;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-surface">
       {/* Header */}
-      <div className="bg-[#0A0C10] border-b border-[#1A1D24] py-8">
-        <div className="max-w-7xl mx-auto px-4">
+      <div className="bg-surface-secondary border-b border-border">
+        <div className="container-apple py-12 lg:py-16">
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
           >
-            <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#00FF87] mb-2 block">
+            <span className="text-caption font-medium text-accent tracking-wide uppercase mb-2 block">
               Catálogo
             </span>
-            <h1 className="page-title">PRODUTOS</h1>
-            <p className="text-[#9CA3AF] mt-2">
-              {filteredProducts.length} produto{filteredProducts.length !== 1 ? "s" : ""} encontrado{filteredProducts.length !== 1 ? "s" : ""}
+            <h1 className="text-display-sm text-primary mb-2">Produtos</h1>
+            <p className="text-body text-secondary">
+              {filteredProducts.length} produto{filteredProducts.length !== 1 ? "s" : ""} disponíve{filteredProducts.length !== 1 ? "is" : "l"}
             </p>
           </motion.div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <div className="container-apple py-8 lg:py-12">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
           {/* Sidebar Filters - Desktop */}
-          <aside className="hidden lg:block w-64 flex-shrink-0">
-            <div className="sticky top-24 space-y-6">
+          <aside className="hidden lg:block w-60 flex-shrink-0">
+            <div className="sticky top-24 space-y-8">
               {/* Search */}
-              <div>
-                <label className="input-label mb-2 block">Buscar</label>
+              <div className="input-group">
+                <label className="input-label">Buscar</label>
                 <div className="relative">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+                  <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary" />
                   <input
                     type="text"
                     placeholder="Nome do produto..."
                     value={searchQuery}
                     onChange={(e) => updateFilter("q", e.target.value)}
-                    className="input-field pl-10"
+                    className="input-field pl-11"
                   />
                 </div>
               </div>
@@ -257,13 +269,13 @@ export function ProductsPage() {
               {/* Brand Filter */}
               <div>
                 <label className="input-label mb-3 block">Marca</label>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <button
                     onClick={() => updateFilter("marca", "")}
-                    className={`w-full text-left px-3 py-2 rounded-sm text-sm transition-colors ${
+                    className={`w-full text-left px-4 py-2.5 rounded-xl text-body-sm transition-all duration-200 ${
                       !brandFilter 
-                        ? "bg-[#00FF87]/10 text-[#00FF87]" 
-                        : "text-[#9CA3AF] hover:bg-[#1A1D24]"
+                        ? "bg-accent/10 text-accent font-medium" 
+                        : "text-secondary hover:bg-surface-secondary hover:text-primary"
                     }`}
                   >
                     Todas as marcas
@@ -275,16 +287,12 @@ export function ProductsPage() {
                       <button
                         key={brand}
                         onClick={() => updateFilter("marca", isActive ? "" : brand)}
-                        className={`w-full text-left px-3 py-2 rounded-sm text-sm transition-colors flex items-center gap-2 ${
+                        className={`w-full text-left px-4 py-2.5 rounded-xl text-body-sm transition-all duration-200 ${
                           isActive 
-                            ? "bg-[#00FF87]/10 text-[#00FF87]" 
-                            : "text-[#9CA3AF] hover:bg-[#1A1D24]"
+                            ? "bg-accent/10 text-accent font-medium" 
+                            : "text-secondary hover:bg-surface-secondary hover:text-primary"
                         }`}
                       >
-                        <span 
-                          className="w-2 h-2 rounded-full" 
-                          style={{ background: meta?.color || "#4B5563" }} 
-                        />
                         {meta?.label || brand}
                       </button>
                     );
@@ -293,8 +301,8 @@ export function ProductsPage() {
               </div>
 
               {/* Sort */}
-              <div>
-                <label className="input-label mb-2 block">Ordenar por</label>
+              <div className="input-group">
+                <label className="input-label">Ordenar por</label>
                 <select
                   value={sortBy}
                   onChange={(e) => updateFilter("sort", e.target.value)}
@@ -312,7 +320,8 @@ export function ProductsPage() {
                   onClick={clearFilters}
                   className="btn btn-secondary w-full"
                 >
-                  <X size={14} /> Limpar filtros
+                  <X size={16} />
+                  Limpar filtros
                 </button>
               )}
             </div>
@@ -323,38 +332,41 @@ export function ProductsPage() {
             {/* Mobile Filter Bar */}
             <div className="lg:hidden flex items-center gap-3 mb-6">
               <div className="flex-1 relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary" />
                 <input
                   type="text"
-                  placeholder="Buscar..."
+                  placeholder="Buscar produtos..."
                   value={searchQuery}
                   onChange={(e) => updateFilter("q", e.target.value)}
-                  className="input-field pl-10"
+                  className="input-field pl-11"
                 />
               </div>
               <button
                 onClick={() => setMobileFilterOpen(true)}
                 className="btn btn-secondary btn-icon relative"
+                aria-label="Abrir filtros"
               >
                 <SlidersHorizontal size={18} />
                 {hasActiveFilters && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#00FF87]" />
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-accent" />
                 )}
               </button>
             </div>
 
             {/* View Toggle & Results */}
             <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 p-1 bg-surface-secondary rounded-xl">
                 <button
                   onClick={() => setView("grid")}
-                  className={`btn btn-icon btn-sm ${view === "grid" ? "btn-secondary" : "btn-ghost"}`}
+                  className={`btn btn-icon btn-sm ${view === "grid" ? "bg-surface shadow-sm" : "btn-ghost"}`}
+                  aria-label="Visualização em grade"
                 >
                   <LayoutGrid size={16} />
                 </button>
                 <button
                   onClick={() => setView("list")}
-                  className={`btn btn-icon btn-sm ${view === "list" ? "btn-secondary" : "btn-ghost"}`}
+                  className={`btn btn-icon btn-sm ${view === "list" ? "bg-surface shadow-sm" : "btn-ghost"}`}
+                  aria-label="Visualização em lista"
                 >
                   <List size={16} />
                 </button>
@@ -362,43 +374,61 @@ export function ProductsPage() {
               {hasActiveFilters && (
                 <button
                   onClick={clearFilters}
-                  className="text-sm text-[#9CA3AF] hover:text-[#00FF87] flex items-center gap-1"
+                  className="text-body-sm text-secondary hover:text-accent flex items-center gap-1.5 transition-colors"
                 >
-                  <X size={14} /> Limpar
+                  <X size={14} />
+                  Limpar filtros
                 </button>
               )}
             </div>
 
             {/* Products Grid/List */}
             {isLoading ? (
-              <div className={`grid gap-4 ${view === "grid" ? "grid-cols-2 md:grid-cols-3" : "grid-cols-1"}`}>
+              <div className={`grid gap-5 ${view === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}>
                 {[...Array(6)].map((_, i) => (
                   <div 
                     key={i} 
-                    className={`skeleton ${view === "grid" ? "aspect-[3/4]" : "h-24"}`}
+                    className={`skeleton rounded-2xl ${view === "grid" ? "aspect-[3/4]" : "h-24"}`}
                     style={{ animationDelay: `${i * 0.1}s` }}
                   />
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="empty-state card py-16">
-                <Filter size={48} className="text-[#4B5563] mb-4" />
-                <h3 className="text-lg font-medium text-[#F5F5F5] mb-2">Nenhum produto encontrado</h3>
-                <p className="text-sm text-[#9CA3AF] mb-4">Tente ajustar seus filtros de busca</p>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="card py-16 text-center"
+              >
+                <div className="w-16 h-16 rounded-2xl bg-surface-secondary flex items-center justify-center mx-auto mb-4">
+                  <Package size={32} className="text-tertiary" />
+                </div>
+                <h3 className="text-title-sm text-primary mb-2">Nenhum produto encontrado</h3>
+                <p className="text-body-sm text-secondary mb-6">Tente ajustar seus filtros de busca</p>
                 <button onClick={clearFilters} className="btn btn-secondary">
                   Limpar filtros
                 </button>
-              </div>
+              </motion.div>
             ) : (
               <motion.div 
                 layout
-                className={`grid gap-4 ${
-                  view === "grid" ? "grid-cols-2 md:grid-cols-3" : "grid-cols-1"
+                className={`grid gap-5 ${
+                  view === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
                 }`}
               >
                 <AnimatePresence mode="popLayout">
-                  {filteredProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} view={view} />
+                  {filteredProducts.map((product, index) => (
+                    <motion.div
+                      key={product.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ 
+                        duration: 0.4, 
+                        delay: index * 0.05,
+                        ease: [0.25, 0.1, 0.25, 1] 
+                      }}
+                    >
+                      <ProductCard product={product} view={view} />
+                    </motion.div>
                   ))}
                 </AnimatePresence>
               </motion.div>
@@ -411,43 +441,50 @@ export function ProductsPage() {
       <AnimatePresence>
         {mobileFilterOpen && (
           <>
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileFilterOpen(false)}
-              className="fixed inset-0 bg-black/60 z-50 lg:hidden"
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 lg:hidden"
             />
+
+            {/* Drawer */}
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
-              transition={{ type: "tween", duration: 0.3 }}
-              className="fixed right-0 top-0 bottom-0 w-80 max-w-full bg-[#111318] border-l border-[#1A1D24] z-50 lg:hidden overflow-y-auto"
+              transition={{ type: "tween", duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+              className="fixed right-0 top-0 bottom-0 w-80 max-w-[85vw] bg-surface border-l border-border z-50 lg:hidden overflow-y-auto"
             >
-              <div className="p-4 border-b border-[#1A1D24] flex items-center justify-between">
-                <h3 className="font-medium text-[#F5F5F5]">Filtros</h3>
+              {/* Header */}
+              <div className="p-5 border-b border-border flex items-center justify-between sticky top-0 bg-surface">
+                <h3 className="text-title-sm text-primary">Filtros</h3>
                 <button
                   onClick={() => setMobileFilterOpen(false)}
                   className="btn btn-ghost btn-icon"
+                  aria-label="Fechar filtros"
                 >
                   <X size={18} />
                 </button>
               </div>
-              <div className="p-4 space-y-6">
+
+              {/* Content */}
+              <div className="p-5 space-y-8">
                 {/* Brand Filter */}
                 <div>
                   <label className="input-label mb-3 block">Marca</label>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <button
                       onClick={() => {
                         updateFilter("marca", "");
                         setMobileFilterOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded-sm text-sm transition-colors ${
+                      className={`w-full text-left px-4 py-2.5 rounded-xl text-body-sm transition-all duration-200 ${
                         !brandFilter 
-                          ? "bg-[#00FF87]/10 text-[#00FF87]" 
-                          : "text-[#9CA3AF] hover:bg-[#1A1D24]"
+                          ? "bg-accent/10 text-accent font-medium" 
+                          : "text-secondary hover:bg-surface-secondary"
                       }`}
                     >
                       Todas as marcas
@@ -462,16 +499,12 @@ export function ProductsPage() {
                             updateFilter("marca", isActive ? "" : brand);
                             setMobileFilterOpen(false);
                           }}
-                          className={`w-full text-left px-3 py-2 rounded-sm text-sm transition-colors flex items-center gap-2 ${
+                          className={`w-full text-left px-4 py-2.5 rounded-xl text-body-sm transition-all duration-200 ${
                             isActive 
-                              ? "bg-[#00FF87]/10 text-[#00FF87]" 
-                              : "text-[#9CA3AF] hover:bg-[#1A1D24]"
+                              ? "bg-accent/10 text-accent font-medium" 
+                              : "text-secondary hover:bg-surface-secondary"
                           }`}
                         >
-                          <span 
-                            className="w-2 h-2 rounded-full" 
-                            style={{ background: meta?.color || "#4B5563" }} 
-                          />
                           {meta?.label || brand}
                         </button>
                       );
@@ -480,8 +513,8 @@ export function ProductsPage() {
                 </div>
 
                 {/* Sort */}
-                <div>
-                  <label className="input-label mb-2 block">Ordenar por</label>
+                <div className="input-group">
+                  <label className="input-label">Ordenar por</label>
                   <select
                     value={sortBy}
                     onChange={(e) => {
@@ -496,6 +529,7 @@ export function ProductsPage() {
                   </select>
                 </div>
 
+                {/* Clear Filters */}
                 {hasActiveFilters && (
                   <button
                     onClick={() => {
@@ -504,7 +538,8 @@ export function ProductsPage() {
                     }}
                     className="btn btn-secondary w-full"
                   >
-                    <X size={14} /> Limpar filtros
+                    <X size={16} />
+                    Limpar filtros
                   </button>
                 )}
               </div>

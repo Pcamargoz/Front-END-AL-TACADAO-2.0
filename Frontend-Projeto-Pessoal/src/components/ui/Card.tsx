@@ -8,6 +8,13 @@ interface CardProps {
   padding?: "none" | "sm" | "md" | "lg";
 }
 
+/**
+ * Card component following Apple-style design system
+ * - Clean white/dark background
+ * - Subtle border
+ * - 18px border-radius
+ * - Optional hover effect
+ */
 export function Card({ children, className, hover = false, padding = "md" }: CardProps) {
   const paddingClasses = {
     none: "",
@@ -36,9 +43,19 @@ interface ProductCardProps {
   onClick?: () => void;
 }
 
+/**
+ * Product card with hover effects
+ * Used for displaying products in grid
+ */
 export function ProductCard({ children, className, onClick }: ProductCardProps) {
   return (
-    <div className={cn("product-card", className)} onClick={onClick}>
+    <div 
+      className={cn(
+        "card card-hover cursor-pointer group",
+        className
+      )} 
+      onClick={onClick}
+    >
       {children}
     </div>
   );
@@ -49,41 +66,62 @@ interface StatCardProps {
   label: string;
   value: string | number;
   description?: string;
-  tint?: string;
-  color?: string;
+  trend?: "up" | "down" | "neutral";
 }
 
-export function StatCard({ icon, label, value, description, tint, color }: StatCardProps) {
+/**
+ * Stat card for displaying metrics
+ * Apple-style with clean typography and subtle accents
+ */
+export function StatCard({ icon, label, value, description, trend = "neutral" }: StatCardProps) {
+  const trendColors = {
+    up: "text-green-600 dark:text-green-400",
+    down: "text-red-600 dark:text-red-400",
+    neutral: "text-tertiary",
+  };
+
   return (
-    <div
-      className="stat-card card"
-      style={{ "--card-tint": tint || "rgba(0,255,135,0.04)" } as React.CSSProperties}
-    >
-      <div className="flex items-start justify-between mb-4 relative z-10">
-        <div
-          className="w-10 h-10 rounded-sm flex items-center justify-center"
-          style={{ 
-            background: tint || "rgba(0,255,135,0.10)", 
-            border: `1px solid ${color || "#00FF87"}25` 
-          }}
-        >
-          <span style={{ color: color || "#00FF87" }}>{icon}</span>
+    <div className="card p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="w-10 h-10 rounded-xl bg-surface-secondary flex items-center justify-center">
+          <span className="text-accent">{icon}</span>
         </div>
-        <span
-          className="badge"
-          style={{ 
-            background: `${color || "#00FF87"}12`, 
-            color: color || "#00FF87",
-            border: `1px solid ${color || "#00FF87"}25`
-          }}
-        >
-          live
-        </span>
+        {description && (
+          <span className={cn("text-caption font-medium", trendColors[trend])}>
+            {description}
+          </span>
+        )}
       </div>
-      <p className="stat-value mb-1 relative z-10">{value}</p>
-      <p className="text-sm text-[#9CA3AF] relative z-10">
-        {label} <span style={{ color: color || "#00FF87" }}>{description}</span>
-      </p>
+
+      {/* Value */}
+      <p className="text-display-xs text-primary mb-1">{value}</p>
+      
+      {/* Label */}
+      <p className="text-body-sm text-secondary">{label}</p>
+    </div>
+  );
+}
+
+interface FeatureCardProps {
+  icon: ReactNode;
+  title: string;
+  description: string;
+  className?: string;
+}
+
+/**
+ * Feature card for highlighting features/benefits
+ * Centered layout with icon, title, and description
+ */
+export function FeatureCard({ icon, title, description, className }: FeatureCardProps) {
+  return (
+    <div className={cn("card p-8 text-center", className)}>
+      <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
+        <span className="text-accent">{icon}</span>
+      </div>
+      <h3 className="text-title-sm text-primary mb-2">{title}</h3>
+      <p className="text-body-sm text-secondary">{description}</p>
     </div>
   );
 }

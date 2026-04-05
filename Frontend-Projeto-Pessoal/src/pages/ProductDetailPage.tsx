@@ -12,7 +12,8 @@ import {
   Package,
   Flame,
   Zap,
-  Scale
+  Scale,
+  Truck
 } from "lucide-react";
 import { apiListEstoque, type Produto } from "../api/client";
 import { BRAND_META, getMockPrice, formatCurrency } from "../lib/utils";
@@ -30,10 +31,10 @@ interface NutritionInfo {
 
 function getNutritionInfo(): NutritionInfo[] {
   return [
-    { label: "Calorias", value: "120 kcal", icon: <Flame size={16} /> },
-    { label: "Proteínas", value: "24g", icon: <Zap size={16} /> },
-    { label: "Carboidratos", value: "3g", icon: <Scale size={16} /> },
-    { label: "Gorduras", value: "1.5g", icon: <Package size={16} /> },
+    { label: "Calorias", value: "120 kcal", icon: <Flame size={18} /> },
+    { label: "Proteínas", value: "24g", icon: <Zap size={18} /> },
+    { label: "Carboidratos", value: "3g", icon: <Scale size={18} /> },
+    { label: "Gorduras", value: "1.5g", icon: <Package size={18} /> },
   ];
 }
 
@@ -89,16 +90,16 @@ export function ProductDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="skeleton h-6 w-32 mb-8" />
-          <div className="grid lg:grid-cols-2 gap-8">
-            <div className="skeleton aspect-square rounded-sm" />
+      <div className="min-h-screen bg-surface py-12">
+        <div className="container-apple">
+          <div className="skeleton h-6 w-32 mb-8 rounded-lg" />
+          <div className="grid lg:grid-cols-2 gap-12">
+            <div className="skeleton aspect-square rounded-2xl" />
             <div className="space-y-4">
-              <div className="skeleton h-8 w-48" />
-              <div className="skeleton h-12 w-64" />
-              <div className="skeleton h-24 w-full" />
-              <div className="skeleton h-12 w-32" />
+              <div className="skeleton h-8 w-48 rounded-lg" />
+              <div className="skeleton h-12 w-64 rounded-lg" />
+              <div className="skeleton h-24 w-full rounded-lg" />
+              <div className="skeleton h-12 w-32 rounded-lg" />
             </div>
           </div>
         </div>
@@ -108,83 +109,80 @@ export function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Package size={64} className="text-[#4B5563] mx-auto mb-4" />
-          <h2 className="text-xl font-medium text-[#F5F5F5] mb-2">Produto não encontrado</h2>
-          <p className="text-[#9CA3AF] mb-6">O produto que você está procurando não existe ou foi removido.</p>
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <div className="w-20 h-20 rounded-2xl bg-surface-secondary flex items-center justify-center mx-auto mb-6">
+            <Package size={40} className="text-tertiary" />
+          </div>
+          <h2 className="text-title-md text-primary mb-2">Produto não encontrado</h2>
+          <p className="text-body text-secondary mb-8 max-w-sm">
+            O produto que você está procurando não existe ou foi removido.
+          </p>
           <Link to="/produtos" className="btn btn-primary">
             Voltar ao catálogo
           </Link>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen py-8">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen bg-surface">
+      <div className="container-apple py-8 lg:py-12">
         {/* Breadcrumb */}
         <motion.nav
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 text-sm mb-8"
+          className="flex items-center gap-2 text-body-sm mb-8"
         >
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-1 text-[#9CA3AF] hover:text-[#00FF87] transition-colors"
+            className="flex items-center gap-1.5 text-secondary hover:text-accent transition-colors"
           >
             <ArrowLeft size={16} />
             Voltar
           </button>
-          <span className="text-[#4B5563]">/</span>
-          <Link to="/produtos" className="text-[#9CA3AF] hover:text-[#00FF87] transition-colors">
+          <span className="text-tertiary">/</span>
+          <Link to="/produtos" className="text-secondary hover:text-accent transition-colors">
             Produtos
           </Link>
-          <span className="text-[#4B5563]">/</span>
-          <span className="text-[#F5F5F5] truncate max-w-[200px]">{product.descricao}</span>
+          <span className="text-tertiary">/</span>
+          <span className="text-primary truncate max-w-[200px]">{product.descricao}</span>
         </motion.nav>
 
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
           {/* Product Image */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
             className="space-y-4"
           >
-            <div 
-              className="aspect-square rounded-sm overflow-hidden flex items-center justify-center relative"
-              style={{ 
-                background: `linear-gradient(135deg, ${meta?.bg || "#1A1D24"}, #111318)` 
-              }}
-            >
-              <div 
-                className="w-40 h-40 rounded-sm flex items-center justify-center"
-                style={{ background: meta?.bg || "rgba(255,255,255,0.1)" }}
-              >
-                <Dumbbell size={80} style={{ color: meta?.color || "#4B5563" }} />
-              </div>
+            <div className="aspect-square rounded-2xl overflow-hidden bg-surface-secondary flex items-center justify-center relative">
+              <Dumbbell size={120} className="text-tertiary" />
               {meta && (
-                <div 
-                  className="absolute top-4 left-4 px-3 py-1.5 rounded-sm text-xs font-bold tracking-wider uppercase"
-                  style={{ background: meta.bg, color: meta.color }}
-                >
+                <span className="absolute top-4 left-4 text-caption font-medium text-accent bg-accent/10 px-3 py-1.5 rounded-full">
                   {meta.label}
-                </div>
+                </span>
               )}
             </div>
             
-            {/* Thumbnails (mock) */}
-            <div className="flex gap-2">
+            {/* Thumbnails */}
+            <div className="flex gap-3">
               {[1, 2, 3].map((i) => (
                 <button
                   key={i}
-                  className={`w-16 h-16 rounded-sm flex items-center justify-center border-2 transition-colors ${
-                    i === 1 ? "border-[#00FF87]" : "border-[#1A1D24] hover:border-[#4B5563]"
+                  className={`w-20 h-20 rounded-xl flex items-center justify-center transition-all duration-200 ${
+                    i === 1 
+                      ? "ring-2 ring-accent bg-surface-secondary" 
+                      : "bg-surface-secondary hover:bg-surface-tertiary"
                   }`}
-                  style={{ background: meta?.bg || "#1A1D24" }}
                 >
-                  <Dumbbell size={20} style={{ color: meta?.color || "#4B5563" }} />
+                  <Dumbbell size={24} className="text-tertiary" />
                 </button>
               ))}
             </div>
@@ -194,34 +192,34 @@ export function ProductDetailPage() {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="space-y-6"
+            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+            className="space-y-8"
           >
             {/* Title & Price */}
             <div>
               {meta && (
-                <span 
-                  className="inline-block text-xs font-bold tracking-wider uppercase mb-2 px-2 py-1 rounded-sm"
-                  style={{ background: meta.bg, color: meta.color }}
-                >
+                <span className="text-caption font-medium text-accent mb-2 block">
                   {meta.label}
                 </span>
               )}
-              <h1 className="text-2xl lg:text-3xl font-display font-bold text-[#F5F5F5] mb-2">
+              <h1 className="text-display-xs text-primary mb-2">
                 {product.descricao}
               </h1>
               {product.medida && (
-                <p className="text-sm text-[#4B5563] font-mono mb-4">{product.medida}g</p>
+                <p className="text-body-sm text-tertiary mb-4">{product.medida}g</p>
               )}
-              <p className="price text-3xl">{formatCurrency(price)}</p>
+              <p className="text-display-xs text-accent font-semibold">{formatCurrency(price)}</p>
             </div>
 
             {/* Fornecedor */}
             {product.fornecedor && (
-              <div className="flex items-center gap-2 p-3 bg-[#1A1D24] rounded-sm">
-                <Package size={16} className="text-[#00E5FF] flex-shrink-0" />
+              <div className="flex items-center gap-3 p-4 bg-surface-secondary rounded-xl">
+                <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                  <Package size={18} className="text-accent" />
+                </div>
                 <div>
-                  <p className="text-xs text-[#4B5563]">Fornecedor</p>
-                  <p className="text-sm text-[#F5F5F5]">
+                  <p className="text-caption text-tertiary">Fornecedor</p>
+                  <p className="text-body-sm text-primary font-medium">
                     {product.fornecedor.nomeFantasia || product.fornecedor.razaoSocial}
                   </p>
                 </div>
@@ -237,10 +235,10 @@ export function ProductDetailPage() {
                     <button
                       key={flavor}
                       onClick={() => setSelectedFlavor(flavor)}
-                      className={`px-4 py-2 rounded-sm text-sm font-medium transition-all ${
+                      className={`px-4 py-2.5 rounded-full text-body-sm font-medium transition-all duration-200 ${
                         (selectedFlavor || realFlavors[0]) === flavor
-                          ? "bg-[#00FF87] text-[#090B10]"
-                          : "bg-[#1A1D24] text-[#9CA3AF] hover:bg-[#252830] hover:text-[#F5F5F5]"
+                          ? "bg-primary text-on-primary"
+                          : "bg-surface-secondary text-secondary hover:bg-surface-tertiary hover:text-primary"
                       }`}
                     >
                       {flavor}
@@ -259,10 +257,10 @@ export function ProductDetailPage() {
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-6 py-3 rounded-sm text-sm font-mono font-medium transition-all border-2 ${
+                      className={`px-6 py-3 rounded-xl text-body-sm font-medium transition-all duration-200 border-2 ${
                         (selectedSize || realSizes[0]) === size
-                          ? "border-[#00FF87] bg-[#00FF87]/10 text-[#00FF87]"
-                          : "border-[#1A1D24] bg-[#111318] text-[#9CA3AF] hover:border-[#4B5563]"
+                          ? "border-accent bg-accent/10 text-accent"
+                          : "border-border bg-surface text-secondary hover:border-tertiary"
                       }`}
                     >
                       {size}
@@ -274,17 +272,19 @@ export function ProductDetailPage() {
 
             {/* Quantity & Add to Cart */}
             <div className="flex items-center gap-4">
-              <div className="flex items-center bg-[#1A1D24] rounded-sm">
+              <div className="flex items-center bg-surface-secondary rounded-xl">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-12 h-12 flex items-center justify-center text-[#9CA3AF] hover:text-[#F5F5F5] transition-colors"
+                  className="w-12 h-12 flex items-center justify-center text-secondary hover:text-primary transition-colors"
+                  aria-label="Diminuir quantidade"
                 >
                   <Minus size={18} />
                 </button>
-                <span className="w-12 text-center font-mono text-[#F5F5F5]">{quantity}</span>
+                <span className="w-12 text-center text-body font-medium text-primary">{quantity}</span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
-                  className="w-12 h-12 flex items-center justify-center text-[#9CA3AF] hover:text-[#F5F5F5] transition-colors"
+                  className="w-12 h-12 flex items-center justify-center text-secondary hover:text-primary transition-colors"
+                  aria-label="Aumentar quantidade"
                 >
                   <Plus size={18} />
                 </button>
@@ -307,21 +307,30 @@ export function ProductDetailPage() {
               </button>
             </div>
 
+            {/* Shipping info */}
+            <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/20 rounded-xl border border-green-200 dark:border-green-900/30">
+              <Truck size={20} className="text-green-600 dark:text-green-400" />
+              <div>
+                <p className="text-body-sm text-green-700 dark:text-green-300 font-medium">Frete Grátis</p>
+                <p className="text-caption text-green-600 dark:text-green-400">Para compras acima de R$ 199</p>
+              </div>
+            </div>
+
             {/* Nutrition Info */}
-            <div className="card p-4">
-              <h3 className="text-sm font-medium text-[#F5F5F5] mb-4 flex items-center gap-2">
-                <Flame size={16} className="text-[#00E5FF]" />
+            <div className="card p-6">
+              <h3 className="text-title-sm text-primary mb-4 flex items-center gap-2">
+                <Flame size={18} className="text-accent" />
                 Informações Nutricionais
-                <span className="text-xs text-[#4B5563] font-normal">(porção de 30g)</span>
+                <span className="text-caption text-tertiary font-normal">(porção de 30g)</span>
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {getNutritionInfo().map((info) => (
-                  <div key={info.label} className="text-center p-3 bg-[#090B10] rounded-sm">
-                    <div className="flex items-center justify-center text-[#00FF87] mb-2">
+                  <div key={info.label} className="text-center p-4 bg-surface-secondary rounded-xl">
+                    <div className="flex items-center justify-center text-accent mb-2">
                       {info.icon}
                     </div>
-                    <div className="text-lg font-mono font-bold text-[#F5F5F5]">{info.value}</div>
-                    <div className="text-xs text-[#4B5563]">{info.label}</div>
+                    <div className="text-title-sm text-primary font-semibold">{info.value}</div>
+                    <div className="text-caption text-tertiary">{info.label}</div>
                   </div>
                 ))}
               </div>
@@ -329,8 +338,8 @@ export function ProductDetailPage() {
 
             {/* Description */}
             <div>
-              <h3 className="text-sm font-medium text-[#F5F5F5] mb-2">Descrição</h3>
-              <p className="text-sm text-[#9CA3AF] leading-relaxed">
+              <h3 className="text-title-sm text-primary mb-3">Descrição</h3>
+              <p className="text-body text-secondary leading-relaxed">
                 Suplemento de alta qualidade desenvolvido para atletas e praticantes de atividades físicas 
                 que buscam máximo desempenho e resultados. Fórmula premium com ingredientes selecionados 
                 para garantir a melhor absorção e eficácia.
@@ -344,43 +353,43 @@ export function ProductDetailPage() {
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mt-16"
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="mt-20"
           >
-            <h2 className="section-title mb-8">Produtos Relacionados</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {relatedProducts.map((p) => {
+            <h2 className="text-title-lg text-primary mb-8">Produtos Relacionados</h2>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+              {relatedProducts.map((p, index) => {
                 const pMeta = p.marca ? BRAND_META[p.marca] : null;
                 const pPrice = getProductPrice(p);
                 return (
-                  <Link
+                  <motion.div
                     key={p.id}
-                    to={`/produtos/${p.id}`}
-                    className="product-card group"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 * index, duration: 0.4 }}
                   >
-                    <div className="aspect-square bg-gradient-to-br from-[#1A1D24] to-[#111318] flex items-center justify-center">
-                      <div 
-                        className="w-16 h-16 rounded-sm flex items-center justify-center"
-                        style={{ background: pMeta?.bg || "rgba(255,255,255,0.05)" }}
-                      >
-                        <Dumbbell size={28} style={{ color: pMeta?.color || "#4B5563" }} />
+                    <Link
+                      to={`/produtos/${p.id}`}
+                      className="card overflow-hidden group block"
+                    >
+                      <div className="aspect-square bg-surface-secondary flex items-center justify-center">
+                        <Dumbbell size={40} className="text-tertiary group-hover:scale-110 transition-transform duration-300" />
                       </div>
-                    </div>
-                    <div className="p-4">
-                      {pMeta && (
-                        <span 
-                          className="inline-block text-[9px] font-bold tracking-wider uppercase mb-1 px-1.5 py-0.5 rounded-sm"
-                          style={{ background: pMeta.bg, color: pMeta.color }}
-                        >
-                          {pMeta.label}
+                      <div className="p-4">
+                        {pMeta && (
+                          <span className="text-caption font-medium text-accent mb-1 block">
+                            {pMeta.label}
+                          </span>
+                        )}
+                        <h3 className="text-body-sm text-primary group-hover:text-accent transition-colors line-clamp-2 min-h-[40px]">
+                          {p.descricao}
+                        </h3>
+                        <span className="text-body font-semibold text-accent mt-2 block">
+                          {formatCurrency(pPrice)}
                         </span>
-                      )}
-                      <h3 className="text-sm text-[#F5F5F5] group-hover:text-[#00FF87] transition-colors line-clamp-2 min-h-[40px]">
-                        {p.descricao}
-                      </h3>
-                      <span className="price text-sm">{formatCurrency(pPrice)}</span>
-                    </div>
-                  </Link>
+                      </div>
+                    </Link>
+                  </motion.div>
                 );
               })}
             </div>
