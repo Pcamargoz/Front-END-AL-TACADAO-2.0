@@ -1,0 +1,118 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * ADMIN LAYOUT COMPLEMENTARY STYLES
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * 
+ * Complementary styles for AdminLayout component following Apple-style design
+ */
+
+/* Safe area for mobile navigation */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Emerald color classes (if not available in Tailwind) */
+.bg-emerald-50 {
+  background-color: #ecfdf5;
+}
+
+.bg-emerald-500 {
+  background-color: #10b981;
+}
+
+.bg-emerald-500\/10 {
+  background-color: rgba(16, 185, 129, 0.1);
+}
+
+.text-emerald-400 {
+  color: #34d399;
+}
+
+.text-emerald-500 {
+  color: #10b981;
+}
+
+.text-emerald-600 {
+  color: #059669;
+}
+
+/* Dark mode specific overrides */
+@media (prefers-color-scheme: dark) {
+  .bg-emerald-50 {
+    background-color: rgba(16, 185, 129, 0.1);
+  }
+  
+  .text-emerald-600 {
+    color: #34d399;
+  }
+}
+
+/* Enhanced hover states for admin navigation */
+.admin-nav-item:hover {
+  transform: translateX(2px);
+}
+
+.admin-nav-item.active {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+}
+
+/* Smooth transitions for sidebar */
+.admin-sidebar {
+  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* Better mobile bottom navigation */
+.mobile-bottom-nav {
+  background: rgba(var(--color-bg-primary), 0.95);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* Active indicator animation */
+.active-indicator {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+/* User info section styling */
+.user-info-card {
+  background: rgba(var(--color-bg-secondary), 0.5);
+  border: 1px solid rgba(var(--color-border), 0.5);
+}
+
+/* Enhanced button hover states */
+.admin-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Logo improvements */
+.admin-logo {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+/* Scrollbar styling for sidebar */
+.admin-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.admin-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(var(--color-border-strong), 0.5);
+  border-radius: 2px;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--color-border-strong), 0.8);
+}
+
+/* Performance optimizations */
+.will-change-sidebar {
+  will-change: transform, width;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
