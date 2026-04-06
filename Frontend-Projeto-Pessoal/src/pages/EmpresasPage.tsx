@@ -9,6 +9,7 @@ import { Modal } from "../components/ui/Modal";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { useFornecedor } from "../context/FornecedorContext";
 import { useAuth } from "../auth/AuthContext";
+import { formatCNPJ, formatPhone } from "../lib/utils";
 
 export function EmpresasPage() {
   const navigate = useNavigate();
@@ -262,9 +263,9 @@ export function EmpresasPage() {
 
                   <div className="space-y-2 mb-5">
                     <p className="text-body-sm text-secondary truncate">{f.email}</p>
-                    <p className="text-caption text-tertiary">{f.cnpj}</p>
+                    <p className="text-caption text-tertiary">{formatCNPJ(f.cnpj)}</p>
                     {f.telefone && (
-                      <p className="text-caption text-tertiary">{f.telefone}</p>
+                      <p className="text-caption text-tertiary">{formatPhone(f.telefone)}</p>
                     )}
                   </div>
 
@@ -314,7 +315,7 @@ export function EmpresasPage() {
               <p className="text-body font-medium text-primary truncate">
                 {uiState.selectedFornecedor?.nomeFantasia || uiState.selectedFornecedor?.razaoSocial}
               </p>
-              <p className="text-caption text-tertiary truncate">{uiState.selectedFornecedor?.cnpj}</p>
+              <p className="text-caption text-tertiary truncate">{uiState.selectedFornecedor?.cnpj ? formatCNPJ(uiState.selectedFornecedor.cnpj) : ""}</p>
             </div>
           </div>
 

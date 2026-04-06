@@ -378,7 +378,7 @@ export function HomePage() {
       {/* -----------------------------------------------------------------------
        * CTA SECTION
        * ----------------------------------------------------------------------- */}
-      <section className="section">
+      <section className="section pb-20 lg:pb-24">
         <div className="container text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
