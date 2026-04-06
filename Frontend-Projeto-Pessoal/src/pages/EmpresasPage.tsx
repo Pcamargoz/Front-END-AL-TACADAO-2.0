@@ -190,10 +190,14 @@ export function EmpresasPage() {
 
         {/* Error */}
         {error && (
-          <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl flex items-center gap-2 mb-6">
-            <span className="w-2 h-2 rounded-full bg-red-500" />
-            Erro ao carregar empresas: {String(error)}
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50/40 dark:bg-red-950/10 border border-red-200/50 dark:border-red-900/20 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl flex items-center gap-2 mb-6 backdrop-blur-sm"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500/60" />
+            <span className="text-body-sm">Não foi possível conectar ao servidor. Verifique se os microserviços estão rodando.</span>
+          </motion.div>
         )}
 
         {/* Content */}
@@ -211,7 +215,7 @@ export function EmpresasPage() {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="card p-12 text-center"
+            className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-12 text-center"
           >
             <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-surface-secondary flex items-center justify-center">
               <Building2 size={36} className="text-tertiary" />
@@ -244,7 +248,7 @@ export function EmpresasPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   transition={{ delay: i * 0.04, duration: 0.3 }}
-                  className="card p-6 group cursor-pointer"
+                  className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-6 group cursor-pointer transition-all duration-200 ease-out hover:shadow-xl hover:scale-[1.02] hover:border-emerald-500/40"
                   onClick={() => openGate(f)}
                 >
                   <div className="flex items-start gap-4 mb-5">

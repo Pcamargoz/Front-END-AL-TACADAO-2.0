@@ -38,7 +38,7 @@ export function Navbar() {
 
   return (
     <>
-      <header className="navbar">
+       <header className="navbar min-h-[56px] lg:min-h-[48px]">
         <div className="flex items-center gap-6 flex-1">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 flex-shrink-0">
@@ -93,7 +93,7 @@ export function Navbar() {
           </button>
 
           {/* Cart */}
-          <Link to="/carrinho" className="btn btn-ghost btn-icon relative" aria-label="Carrinho">
+           <Link to="/carrinho" className="btn btn-ghost btn-icon relative min-w-[44px] min-h-[44px]" aria-label="Carrinho">
             <ShoppingBag size={20} />
             {totalItems > 0 && (
               <span className="cart-badge">{totalItems > 99 ? "99+" : totalItems}</span>
@@ -129,14 +129,14 @@ export function Navbar() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 top-full mt-2 w-64 bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-xl shadow-lg z-50 overflow-hidden"
+                      className="absolute right-0 top-full mt-2 min-w-[220px] bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-xl shadow-lg z-50 p-2"
                     >
                       {/* User Info */}
-                      <div className="p-4 border-b border-[var(--color-divider)]">
-                        <p className="text-[15px] font-medium text-[var(--color-text-primary)]">
+                      <div className="px-3 py-3 border-b border-[var(--color-divider)] mx-2">
+                        <p className="text-[15px] font-medium text-[var(--color-text-primary)] truncate">
                           {user?.nome || user?.login}
                         </p>
-                        <p className="text-[13px] text-[var(--color-text-tertiary)]">
+                        <p className="text-[13px] text-[var(--color-text-tertiary)] truncate">
                           {user?.email}
                         </p>
                         <span className="inline-block mt-2 text-[11px] font-semibold tracking-wider uppercase px-2 py-1 rounded-md bg-[var(--color-accent-subtle)] text-[var(--color-accent)]">
@@ -145,18 +145,18 @@ export function Navbar() {
                       </div>
 
                       {/* Menu Items */}
-                      <div className="p-2">
+                      <div className="p-1">
                         <Link
                           to="/empresas"
                           onClick={() => setUserMenuOpen(false)}
-                          className="flex items-center gap-3 px-3 py-2.5 text-[14px] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)] rounded-lg transition-colors"
+                          className="flex items-center gap-3 px-3 py-2.5 text-[14px] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[rgba(255,255,255,0.05)] rounded-lg transition-all duration-150"
                         >
                           <Building2 size={18} />
                           Minhas Empresas
                         </Link>
                         <button
                           onClick={handleLogout}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 text-[14px] text-[var(--color-error)] hover:bg-[var(--color-error-bg)] rounded-lg transition-colors"
+                          className="w-full flex items-center gap-3 px-3 py-2.5 text-[14px] text-[var(--color-error)] hover:bg-[var(--color-error-bg)] rounded-lg transition-all duration-150"
                         >
                           <LogOut size={18} />
                           Sair
@@ -216,13 +216,21 @@ export function Navbar() {
       {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: "100%" }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: "100%" }}
-            transition={{ type: "tween", duration: 0.25 }}
-            className="md:hidden fixed inset-0 top-[48px] z-50 bg-[var(--color-bg-primary)]"
-          >
+          <>
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            
+            {/* Menu */}
+            <motion.div
+              initial={{ opacity: 0, x: "100%" }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="md:hidden fixed inset-0 top-[56px] z-50 bg-[var(--color-bg-primary)]"
+            >
             <nav className="flex flex-col p-6 gap-2">
               {navLinks.map(({ to, label, exact }) => (
                 <NavLink
@@ -285,6 +293,7 @@ export function Navbar() {
               )}
             </nav>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>

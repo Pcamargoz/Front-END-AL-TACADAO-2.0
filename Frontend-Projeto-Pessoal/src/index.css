@@ -24,6 +24,8 @@
   --color-bg-secondary: #F7F5F2;
   --color-bg-tertiary: #EEEBE6;
   --color-bg-elevated: #FFFFFF;
+  --color-bg-card: #FFFFFF;
+  --color-bg-hover: rgba(26, 23, 21, 0.04);
   
   /* Text - Tons quentes de cinza/marrom para legibilidade acolhedora */
   --color-text-primary: #1A1715;
@@ -32,11 +34,12 @@
   --color-text-quaternary: #B5ADA5;
   
   /* Accent - Verde Esmeralda Vibrante (energia, saúde, crescimento) */
-  --color-accent: #059669;
-  --color-accent-hover: #047857;
-  --color-accent-active: #065F46;
-  --color-accent-subtle: rgba(5, 150, 105, 0.10);
-  --color-accent-rgb: 5, 150, 105;
+  --color-accent: #10b981;
+  --color-accent-hover: #059669;
+  --color-accent-active: #047857;
+  --color-accent-subtle: rgba(16, 185, 129, 0.10);
+  --color-accent-muted: rgba(16, 185, 129, 0.12);
+  --color-accent-rgb: 16, 185, 129;
   
   /* Secondary Accent - Âmbar Dourado (premium, confiança, energia) */
   --color-accent-gold: #D97706;
@@ -55,6 +58,7 @@
   /* Borders - Suaves e quentes */
   --color-border: rgba(26, 23, 21, 0.08);
   --color-border-strong: rgba(26, 23, 21, 0.15);
+  --color-border-hover: rgba(26, 23, 21, 0.16);
   --color-divider: rgba(26, 23, 21, 0.06);
   
   /* Shadows - Mais quentes e naturais */
@@ -146,6 +150,8 @@
     --color-bg-secondary: #1E1B18;
     --color-bg-tertiary: #282420;
     --color-bg-elevated: #1E1B18;
+    --color-bg-card: #1E1B18;
+    --color-bg-hover: rgba(245, 242, 238, 0.04);
     
     /* Text - Tons cremosos para conforto visual */
     --color-text-primary: #F5F2EE;
@@ -158,6 +164,7 @@
     --color-accent-hover: #34D399;
     --color-accent-active: #059669;
     --color-accent-subtle: rgba(16, 185, 129, 0.18);
+    --color-accent-muted: rgba(16, 185, 129, 0.12);
     --color-accent-rgb: 16, 185, 129;
     
     /* Secondary Accent - Âmbar mais claro */
@@ -176,6 +183,7 @@
     /* Borders */
     --color-border: rgba(245, 242, 238, 0.08);
     --color-border-strong: rgba(245, 242, 238, 0.15);
+    --color-border-hover: rgba(245, 242, 238, 0.16);
     --color-divider: rgba(245, 242, 238, 0.06);
     
     /* Shadows - Warm dark tones, never pure black */
@@ -574,7 +582,7 @@ a:focus-visible {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════════
- * BUTTONS - Warm & Inviting
+ * BUTTONS - Apple-Style with Emerald Theme (#10b981)
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
@@ -584,73 +592,145 @@ a:focus-visible {
   justify-content: center;
   gap: var(--space-2);
   font-family: var(--font-sans);
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
   cursor: pointer;
   border: none;
   outline: none;
-  transition: all var(--duration-normal) var(--ease-default);
+  transition: all 0.15s ease-out;
   white-space: nowrap;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  border-radius: var(--radius-lg);
+  min-height: 40px;
+  min-width: 40px;
+  touch-action: manipulation;
   /* GPU acceleration for smooth animations */
   will-change: transform, box-shadow;
-  transform: var(--gpu-layer);
+  transform: translateZ(0);
 }
 
-/* Primary - Clean Apple-style solid color */
+/* Primary - Emerald filled (#10b981) */
 .btn-primary {
-  padding: 14px 28px;
+  padding: 8px 16px;
   background: var(--color-accent);
   color: #FFFFFF;
-  border-radius: var(--radius-pill);
-  box-shadow: 0 4px 14px rgba(var(--color-accent-rgb), 0.18);
+  box-shadow: 0 1px 2px rgba(var(--color-accent-rgb), 0.1);
 }
 
 .btn-primary:hover {
   background: var(--color-accent-hover);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 20px rgba(var(--color-accent-rgb), 0.18);
+  box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.15);
+  transform: translateY(-1px) scale(1.02);
 }
 
 .btn-primary:active {
-  transform: translateY(0) scale(1);
-  box-shadow: 0 2px 8px rgba(var(--color-accent-rgb), 0.15);
+  background: var(--color-accent-active);
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 4px rgba(var(--color-accent-rgb), 0.2);
 }
 
-/* Secondary - Clean outline style */
+.btn-primary:focus-visible {
+  outline: 2px solid rgba(var(--color-accent-rgb), 0.5);
+  outline-offset: 2px;
+}
+
+/* Secondary - Slate with emerald accents */
 .btn-secondary {
-  padding: 13px 27px;
+  padding: 8px 16px;
   background: var(--color-bg-elevated);
   color: var(--color-accent);
-  border: 1.5px solid var(--color-accent);
-  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-accent);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .btn-secondary:hover {
   background: var(--color-accent-subtle);
   border-color: var(--color-accent-hover);
-  transform: translateY(-2px) scale(1.02);
+  transform: translateY(-1px) scale(1.02);
 }
 
 .btn-secondary:active {
   background: var(--color-accent);
   color: #FFFFFF;
-  transform: translateY(0) scale(1);
+  transform: translateY(0) scale(0.98);
 }
 
-/* Ghost - Subtle but present */
+.btn-secondary:focus-visible {
+  outline: 2px solid rgba(var(--color-accent-rgb), 0.5);
+  outline-offset: 2px;
+}
+
+/* Outline - Transparent with emerald border */
+.btn-outline {
+  padding: 8px 16px;
+  background: transparent;
+  color: var(--color-accent);
+  border: 1px solid rgba(var(--color-accent-rgb), 0.5);
+}
+
+.btn-outline:hover {
+  background: var(--color-accent-subtle);
+  border-color: var(--color-accent);
+  transform: translateY(-1px) scale(1.02);
+}
+
+.btn-outline:active {
+  background: rgba(var(--color-accent-rgb), 0.2);
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-outline:focus-visible {
+  outline: 2px solid rgba(var(--color-accent-rgb), 0.5);
+  outline-offset: 2px;
+}
+
+/* Ghost - Subtle interaction */
 .btn-ghost {
   padding: var(--space-3) var(--space-4);
   background: transparent;
   color: var(--color-text-secondary);
-  border-radius: var(--radius-md);
 }
 
 .btn-ghost:hover {
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
+  transform: translateY(-1px) scale(1.02);
+}
+
+.btn-ghost:active {
+  background: var(--color-bg-tertiary);
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-ghost:focus-visible {
+  outline: 2px solid rgba(var(--color-accent-rgb), 0.5);
+  outline-offset: 2px;
+}
+
+/* Danger - Red for destructive actions */
+.btn-danger {
+  padding: 8px 16px;
+  background: var(--color-error);
+  color: #FFFFFF;
+  box-shadow: 0 1px 2px rgba(220, 38, 38, 0.1);
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+  transform: translateY(-1px) scale(1.02);
+}
+
+.btn-danger:active {
+  background: #b91c1c;
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-danger:focus-visible {
+  outline: 2px solid rgba(220, 38, 38, 0.5);
+  outline-offset: 2px;
 }
 
 /* Warm - Using gold accent for special CTAs */
@@ -658,7 +738,6 @@ a:focus-visible {
   padding: 14px 28px;
   background: var(--color-accent-gold);
   color: #FFFFFF;
-  border-radius: var(--radius-pill);
   box-shadow: 0 4px 14px rgba(217, 119, 6, 0.18);
 }
 
@@ -668,44 +747,74 @@ a:focus-visible {
   box-shadow: 0 6px 20px rgba(217, 119, 6, 0.25);
 }
 
-/* Danger */
-.btn-danger {
-  padding: 13px 27px;
-  background: var(--color-error-bg);
-  color: var(--color-error);
-  border: 1px solid var(--color-error);
-  border-radius: var(--radius-lg);
-}
-
-.btn-danger:hover {
-  background: var(--color-error);
-  color: #FFFFFF;
-  transform: translateY(-2px);
-}
-
-/* Sizes */
+/* Button sizes with proper touch targets */
 .btn-sm {
-  padding: 8px 16px;
+  padding: 6px 12px;
   font-size: 14px;
+  min-height: 32px;
 }
 
 .btn-lg {
-  padding: 18px 36px;
-  font-size: 17px;
+  padding: 12px 24px;
+  font-size: 16px;
+  min-height: 48px;
+}
+
+.btn-xl {
+  padding: 16px 32px;
+  font-size: 18px;
+  min-height: 56px;
 }
 
 .btn-icon {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   padding: 0;
-  border-radius: var(--radius-md);
+  min-width: 40px;
+  min-height: 40px;
 }
 
+/* Disabled state */
 .btn:disabled {
-  opacity: 0.4;
+  opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+  transform: none !important;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+/* Loading state */
+.btn-loading {
+  opacity: 0.75;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Text link button */
+.btn-link {
+  padding: 0;
+  background: none;
+  color: var(--color-accent);
+  font-size: inherit;
+  min-height: auto;
+  min-width: auto;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+  color: var(--color-accent-hover);
+}
+
+/* Button with icon arrow */
+.btn-arrow::after {
+  content: "→";
+  display: inline-block;
+  margin-left: var(--space-1);
+  transition: transform 0.15s ease-out;
+}
+
+.btn-arrow:hover::after {
+  transform: translateX(4px);
 }
 
 
@@ -1696,11 +1805,12 @@ select.input-field {
 
 
 /* -------------------------------------------------------------------------------
- * CORRE��O DE FOCO - IMPORTA��O
+ * CORRE��O DE FOCO - IMPORTA��O
  * -------------------------------------------------------------------------------
  */
 
 @import './styles/input-focus-fix.css';
+@import './styles/admin-layout.css';
 
 
 /* -------------------------------------------------------------------------------
@@ -2075,6 +2185,49 @@ select.input-field {
   @container (min-width: 600px) {
     .container-responsive .card-grid {
       grid-template-columns: repeat(3, 1fr);
+    }
+  }
+}
+
+/* ===== MOBILE OPTIMIZATIONS ===================================================== */
+
+/* GPU Acceleration for mobile performance */
+.navbar, .bottom-nav, .mobile-menu {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Mobile-specific animations and interactions */
+@media (max-width: 734px) {
+  * {
+    transition-duration: 250ms !important; /* Faster transitions on mobile */
+  }
+  
+  .btn:active {
+    transform: scale(0.96); /* Visual feedback on touch */
+  }
+  
+  /* Better touch responsiveness */
+  .btn, .bottom-nav-item, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+}
+
+/* Smooth scrolling optimization for mobile */
+@media (max-width: 768px) {
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Reduce motion for better performance on low-end devices */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
     }
   }
 }
