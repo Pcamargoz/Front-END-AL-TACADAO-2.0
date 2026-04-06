@@ -35,7 +35,7 @@ function ProductCard({ product, view }: { product: Produto; view: "grid" | "list
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-        className="card p-4 flex items-center gap-5 group"
+        className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-4 flex items-center gap-5 group transition-all duration-200 ease-out hover:shadow-xl hover:scale-[1.02] hover:border-emerald-500/40"
       >
         {/* Image placeholder */}
         <div className="w-20 h-20 rounded-xl bg-surface-secondary flex items-center justify-center flex-shrink-0 group-hover:bg-surface-tertiary transition-colors">
@@ -96,7 +96,7 @@ function ProductCard({ product, view }: { product: Produto; view: "grid" | "list
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-      className="card overflow-hidden group"
+      className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 overflow-hidden group transition-all duration-200 ease-out hover:shadow-xl hover:scale-[1.02] hover:border-emerald-500/40"
     >
       <Link to={`/produtos/${product.id}`}>
         <div className="aspect-square bg-surface-secondary flex items-center justify-center relative overflow-hidden">
@@ -397,7 +397,7 @@ export function ProductsPage() {
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="card py-16 text-center"
+                className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 py-16 text-center"
               >
                 <div className="w-16 h-16 rounded-2xl bg-surface-secondary flex items-center justify-center mx-auto mb-4">
                   <Package size={32} className="text-tertiary" />
@@ -411,8 +411,8 @@ export function ProductsPage() {
             ) : (
               <motion.div 
                 layout
-                className={`grid gap-5 ${
-                  view === "grid" ? "grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
+                className={`grid gap-3 sm:gap-5 ${
+                  view === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
                 }`}
               >
                 <AnimatePresence mode="popLayout">

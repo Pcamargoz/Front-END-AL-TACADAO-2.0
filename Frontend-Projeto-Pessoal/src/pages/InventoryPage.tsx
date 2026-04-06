@@ -182,7 +182,7 @@ function ProductCard({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.92 }}
       transition={{ duration: 0.2 }}
-      className="card p-4 hover:border-accent/25 transition-all group"
+      className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-4 transition-all duration-200 ease-out hover:shadow-xl hover:scale-[1.02] hover:border-emerald-500/40 group"
     >
       <div className="flex items-start justify-between gap-2 mb-3">
         {meta && (
@@ -428,7 +428,7 @@ export function InventoryPage() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="card text-center py-12">
+        <div className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 text-center py-12">
           <Package size={48} className="mx-auto text-[#4B5563] mb-3" />
           <p className="text-[#9CA3AF] mb-4">
             {search || brandFilter ? "Nenhum produto encontrado" : "Estoque vazio"}
@@ -458,7 +458,7 @@ export function InventoryPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="card overflow-hidden"
+          className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 overflow-hidden"
         >
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -469,7 +469,7 @@ export function InventoryPage() {
                   <th className="px-4 sm:px-6 py-3 sm:py-4 hidden md:table-cell min-w-[80px]">Peso</th>
                   <th className="px-6 py-4 hidden lg:table-cell">PreÃ§o</th>
                   <th className="px-4 sm:px-6 py-3 sm:py-4 hidden xl:table-cell min-w-[120px]">Fornecedor</th>
-                  <th className="px-4 sm:px-6 py-3 sm:py-4 w-20 sm:w-24 min-w-[80px]">Ações</th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 w-20 sm:w-24 min-w-[80px]">Aï¿½ï¿½es</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1A1D24]">

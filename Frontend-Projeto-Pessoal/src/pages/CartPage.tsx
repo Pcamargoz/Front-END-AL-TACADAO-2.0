@@ -96,7 +96,7 @@ export function CartPage() {
                       delay: index * 0.05,
                       ease: [0.25, 0.1, 0.25, 1] 
                     }}
-                    className="card p-5 flex gap-5"
+                    className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-5 flex gap-5 transition-all duration-200 ease-out hover:shadow-xl hover:border-slate-600/60"
                   >
                     {/* Product Image */}
                     <Link 
@@ -183,7 +183,7 @@ export function CartPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
-              className="card p-6 sticky top-24"
+              className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-6 sticky top-24 transition-all duration-200 ease-out hover:shadow-xl hover:border-slate-600/60"
             >
               <h2 className="text-title text-primary mb-6">Resumo do Pedido</h2>
 

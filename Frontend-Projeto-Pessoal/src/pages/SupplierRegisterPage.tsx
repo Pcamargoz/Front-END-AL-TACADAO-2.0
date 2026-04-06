@@ -216,7 +216,7 @@ export function SupplierRegisterPage() {
           ))}
         </div>
 
-        <div className="card p-8">
+        <div className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-8 transition-all duration-200 ease-out hover:shadow-xl hover:border-slate-600/60">
           {errors.global && (
             <motion.div
               initial={{ opacity: 0, y: -6 }}

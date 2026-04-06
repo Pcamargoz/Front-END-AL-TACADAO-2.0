@@ -216,7 +216,7 @@ export function HomePage() {
        * HERO SECTION
        * ----------------------------------------------------------------------- */}
       <section className="hero">
-        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
+         <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -312,7 +312,7 @@ export function HomePage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-20 card card-bordered">
+            <div className="text-center py-20 bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--color-bg-secondary)] flex items-center justify-center">
                 <Dumbbell size={32} className="text-[var(--color-text-tertiary)]" />
               </div>
@@ -395,7 +395,7 @@ export function HomePage() {
             <p className="text-body-lg text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
               Cadastre-se agora e tenha acesso aos melhores preços do mercado.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 px-4">
               <Link to="/cadastro" className="btn btn-primary btn-lg">
                 Criar Conta Grátis
               </Link>

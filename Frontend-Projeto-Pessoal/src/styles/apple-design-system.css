@@ -478,7 +478,7 @@
 }
 
 
-/* ── BUTTONS ────────────────────────────────────────────────────────────────── */
+/* ── BUTTONS (APPLE-STYLE WITH EMERALD GREEN THEME) ──────────────────────────── */
 
 /* Button base - shared styles */
 .btn {
@@ -487,77 +487,194 @@
   justify-content: center;
   gap: var(--space-2);
   font-family: var(--font-body);
-  font-size: 17px;
-  font-weight: 400;
-  line-height: 1.2;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
   text-decoration: none;
   cursor: pointer;
   border: none;
   outline: none;
-  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition: all 0.15s ease-out;
   white-space: nowrap;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  border-radius: var(--radius-md);
+  min-height: 40px;
 }
 
-/* Primary button - Filled pill */
+/* Primary button - Emerald filled */
 .btn-primary {
-  padding: 12px 24px;
-  background: var(--color-accent);
+  padding: 8px 16px;
+  background: #10b981; /* emerald-500 */
   color: #FFFFFF;
-  border-radius: var(--radius-pill);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .btn-primary:hover {
-  background: var(--color-accent-hover);
+  background: #059669; /* emerald-600 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transform: scale(1.02);
 }
 
 .btn-primary:active {
-  background: var(--color-accent-active);
-  transform: scale(0.98);
+  background: #047857; /* emerald-700 */
+  transform: scale(0.95);
 }
 
-/* Secondary button - Outlined pill */
+.btn-primary:focus-visible {
+  outline: 2px solid rgba(16, 185, 129, 0.5);
+  outline-offset: 2px;
+}
+
+/* Secondary button - Slate filled */
 .btn-secondary {
-  padding: 11px 23px;
-  background: transparent;
-  color: var(--color-accent);
-  border: 1px solid var(--color-accent);
-  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  background: #374151; /* slate-700 */
+  color: #f1f5f9; /* slate-100 */
+  border: 1px solid #4b5563; /* slate-600 */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .btn-secondary:hover {
-  background: var(--color-accent-subtle);
+  background: #4b5563; /* slate-600 */
+  border-color: #6b7280; /* slate-500 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: scale(1.02);
 }
 
 .btn-secondary:active {
-  background: var(--color-accent);
-  color: #FFFFFF;
+  background: #6b7280; /* slate-500 */
+  transform: scale(0.95);
 }
 
-/* Ghost button - Text only */
+.btn-secondary:focus-visible {
+  outline: 2px solid rgba(100, 116, 139, 0.5);
+  outline-offset: 2px;
+}
+
+/* Outline button - Emerald border */
+.btn-outline {
+  padding: 8px 16px;
+  background: transparent;
+  color: #34d399; /* emerald-400 */
+  border: 1px solid rgba(16, 185, 129, 0.5);
+}
+
+.btn-outline:hover {
+  background: rgba(16, 185, 129, 0.1);
+  color: #6ee7b7; /* emerald-300 */
+  border-color: #34d399; /* emerald-400 */
+  transform: scale(1.02);
+}
+
+.btn-outline:active {
+  background: rgba(16, 185, 129, 0.2);
+  transform: scale(0.95);
+}
+
+.btn-outline:focus-visible {
+  outline: 2px solid rgba(16, 185, 129, 0.5);
+  outline-offset: 2px;
+}
+
+/* Ghost button - Transparent with subtle hover */
 .btn-ghost {
   padding: 8px 16px;
   background: transparent;
-  color: var(--color-accent);
-  border-radius: var(--radius-sm);
+  color: #cbd5e1; /* slate-300 */
 }
 
 .btn-ghost:hover {
-  background: var(--color-accent-subtle);
+  background: rgba(30, 41, 59, 0.5); /* slate-800/50 */
+  color: #f1f5f9; /* slate-100 */
+  transform: scale(1.02);
+}
+
+.btn-ghost:active {
+  background: rgba(51, 65, 85, 0.5); /* slate-700/50 */
+  transform: scale(0.95);
+}
+
+.btn-ghost:focus-visible {
+  outline: 2px solid rgba(100, 116, 139, 0.5);
+  outline-offset: 2px;
+}
+
+/* Danger button - Red filled */
+.btn-danger {
+  padding: 8px 16px;
+  background: #ef4444; /* red-500 */
+  color: #FFFFFF;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-danger:hover {
+  background: #dc2626; /* red-600 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: scale(1.02);
+}
+
+.btn-danger:active {
+  background: #b91c1c; /* red-700 */
+  transform: scale(0.95);
+}
+
+.btn-danger:focus-visible {
+  outline: 2px solid rgba(239, 68, 68, 0.5);
+  outline-offset: 2px;
+}
+
+/* Button sizes */
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 14px;
+  min-height: 32px;
+}
+
+.btn-lg {
+  padding: 12px 24px;
+  font-size: 16px;
+  min-height: 48px;
+}
+
+.btn-xl {
+  padding: 16px 32px;
+  font-size: 18px;
+  min-height: 56px;
+}
+
+.btn-icon {
+  padding: 8px;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+/* Disabled state */
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  pointer-events: none;
+}
+
+/* Loading state */
+.btn-loading {
+  opacity: 0.75;
+  cursor: not-allowed;
 }
 
 /* Text link button */
 .btn-link {
   padding: 0;
   background: none;
-  color: var(--color-accent);
+  color: #10b981; /* emerald-500 */
   font-size: inherit;
+  min-height: auto;
 }
 
 .btn-link:hover {
   text-decoration: underline;
+  color: #059669; /* emerald-600 */
 }
 
 /* Button with icon arrow */
@@ -565,29 +682,11 @@
   content: "→";
   display: inline-block;
   margin-left: var(--space-1);
-  transition: transform 0.3s ease;
+  transition: transform 0.15s ease-out;
 }
 
 .btn-arrow:hover::after {
   transform: translateX(4px);
-}
-
-/* Button sizes */
-.btn-sm {
-  padding: 8px 16px;
-  font-size: 14px;
-}
-
-.btn-lg {
-  padding: 16px 32px;
-  font-size: 19px;
-}
-
-/* Disabled state */
-.btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  transform: none;
 }
 
 

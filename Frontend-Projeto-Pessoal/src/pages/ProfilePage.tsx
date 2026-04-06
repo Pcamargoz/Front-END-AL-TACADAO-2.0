@@ -123,7 +123,7 @@ export function ProfilePage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="card p-6"
+          className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-6 transition-all duration-200 ease-out hover:shadow-xl hover:border-slate-600/60"
         >
           <h3 className="text-sm font-medium text-primary mb-4 flex items-center gap-2">
             <Building2 size={16} className="text-accent-blue" />
