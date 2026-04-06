@@ -147,7 +147,7 @@ function UsuarioCard({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.92 }}
       transition={{ duration: 0.2 }}
-      className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-4 transition-all duration-200 ease-out hover:shadow-xl hover:scale-[1.02] hover:border-emerald-500/40 group"
+      className="card card-hover p-4 group"
     >
       <div className="flex items-start justify-between gap-2 mb-3">
         <span
@@ -264,7 +264,7 @@ export function EmpresaUsuariosPage() {
   // ── Acesso restrito ──────────────────────────────────────────────────
   if (!isGerente) {
     return (
-      <div className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 text-center py-16">
+      <div className="card text-center py-16">
         <Shield size={48} className="mx-auto text-quaternary mb-4" />
         <h2 className="text-lg font-semibold text-primary mb-2">Acesso restrito</h2>
         <p className="text-sm text-tertiary">
@@ -315,7 +315,7 @@ export function EmpresaUsuariosPage() {
           ))}
         </div>
       ) : usuarios.length === 0 ? (
-        <div className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 text-center py-12">
+        <div className="card text-center py-12">
           <Users size={48} className="mx-auto text-quaternary mb-3" />
           <p className="text-tertiary mb-4">Nenhum usuario na empresa</p>
           <button onClick={() => setModalOpen(true)} className="btn btn-primary">

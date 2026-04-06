@@ -9,12 +9,17 @@ interface CardProps {
 }
 
 /**
- * Card component following Apple-style design system
- * - Apple-style dark theme with bg-white/5 or bg-slate-800/50 with backdrop-blur
- * - Subtle borders with border-slate-700/50 and rounded-xl corners
- * - Soft shadows with shadow-lg shadow-black/10
- * - Smooth hover states with subtle elevation and scale-[1.02]
- * - Duration-200 ease-out transitions for all animations
+ * Card Component - Apple-Style Design System
+ * 
+ * Uses CSS variables for theming:
+ * - --color-bg-elevated: Card background
+ * - --color-border: Subtle border
+ * - --color-accent: Accent color on hover
+ * - --shadow-md/lg: Elevation shadows
+ * 
+ * Props:
+ * - hover: Enable hover animation (translateY + shadow)
+ * - padding: none | sm (16px) | md (24px) | lg (32px)
  */
 export function Card({ children, className, hover = false, padding = "md" }: CardProps) {
   const paddingClasses = {
@@ -27,12 +32,11 @@ export function Card({ children, className, hover = false, padding = "md" }: Car
   return (
     <div
       className={cn(
-        // Apple-style base card styling
-        "bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10",
-        "transition-all duration-200 ease-out",
-        // Hover effects for Apple-style elevation
-        hover && "hover:shadow-xl hover:scale-[1.02] hover:border-slate-600/60 cursor-pointer",
+        // Base card using CSS variables
+        "card",
         paddingClasses[padding],
+        // Hover effects using CSS class
+        hover && "card-hover cursor-pointer",
         className
       )}
     >
@@ -48,18 +52,13 @@ interface ProductCardProps {
 }
 
 /**
- * Product card with Apple-style hover effects
- * Used for displaying products in grid with elevated hover states
+ * Product Card - Premium hover effects with accent border
  */
 export function ProductCard({ children, className, onClick }: ProductCardProps) {
   return (
     <div 
       className={cn(
-        // Apple-style product card with enhanced interactions
-        "bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10",
-        "transition-all duration-200 ease-out cursor-pointer group",
-        // Premium hover effects with scale and elevation
-        "hover:shadow-xl hover:scale-[1.02] hover:border-emerald-500/40",
+        "product-card group",
         className
       )} 
       onClick={onClick}
@@ -78,35 +77,34 @@ interface StatCardProps {
 }
 
 /**
- * Stat card for displaying metrics with Apple-style design
- * Features clear hierarchy, subtle accents, and emerald color scheme
+ * Stat Card - Dashboard metrics with trend indicator
  */
 export function StatCard({ icon, label, value, description, trend = "neutral" }: StatCardProps) {
-  const trendColors = {
-    up: "text-emerald-400",
-    down: "text-red-400", 
-    neutral: "text-slate-400",
+  const trendClasses = {
+    up: "text-[var(--color-success)]",
+    down: "text-[var(--color-error)]", 
+    neutral: "text-[var(--color-text-tertiary)]",
   };
 
   return (
-    <div className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-6 transition-all duration-200 ease-out hover:shadow-xl hover:border-slate-600/60">
+    <div className="stat-card">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <div className="w-10 h-10 rounded-xl bg-slate-800/50 flex items-center justify-center border border-slate-700/30">
-          <span className="text-emerald-400">{icon}</span>
+        <div className="w-10 h-10 rounded-xl bg-[var(--color-accent-subtle)] flex items-center justify-center">
+          <span className="text-[var(--color-accent)]">{icon}</span>
         </div>
         {description && (
-          <span className={cn("text-xs font-medium", trendColors[trend])}>
+          <span className={cn("text-xs font-medium", trendClasses[trend])}>
             {description}
           </span>
         )}
       </div>
 
       {/* Value */}
-      <p className="text-2xl font-semibold text-slate-100 mb-1">{value}</p>
+      <p className="stat-value mb-1">{value}</p>
       
       {/* Label */}
-      <p className="text-sm text-slate-300">{label}</p>
+      <p className="text-sm text-[var(--color-text-secondary)]">{label}</p>
     </div>
   );
 }
@@ -119,21 +117,19 @@ interface FeatureCardProps {
 }
 
 /**
- * Feature card for highlighting features/benefits with Apple-style dark theme
- * Centered layout with icon, title, and description
+ * Feature Card - Centered layout for benefits/features
  */
 export function FeatureCard({ icon, title, description, className }: FeatureCardProps) {
   return (
     <div className={cn(
-      "bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-8 text-center",
-      "transition-all duration-200 ease-out hover:shadow-xl hover:scale-[1.02] hover:border-slate-600/60",
+      "category-card",
       className
     )}>
-      <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
-        <span className="text-emerald-400">{icon}</span>
+      <div className="w-12 h-12 rounded-2xl bg-[var(--color-accent-subtle)] border border-[var(--color-accent)]/20 flex items-center justify-center mx-auto mb-4">
+        <span className="text-[var(--color-accent)]">{icon}</span>
       </div>
-      <h3 className="text-lg font-semibold text-slate-100 mb-2">{title}</h3>
-      <p className="text-sm text-slate-300">{description}</p>
+      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">{title}</h3>
+      <p className="text-sm text-[var(--color-text-secondary)]">{description}</p>
     </div>
   );
 }

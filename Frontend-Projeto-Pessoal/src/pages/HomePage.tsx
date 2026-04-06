@@ -312,7 +312,7 @@ export function HomePage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-20 bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10">
+            <div className="empty-state card">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--color-bg-secondary)] flex items-center justify-center">
                 <Dumbbell size={32} className="text-[var(--color-text-tertiary)]" />
               </div>

@@ -215,7 +215,7 @@ export function EmpresasPage() {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-12 text-center"
+            className="card p-12 text-center"
           >
             <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-surface-secondary flex items-center justify-center">
               <Building2 size={36} className="text-tertiary" />
@@ -248,7 +248,7 @@ export function EmpresasPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   transition={{ delay: i * 0.04, duration: 0.3 }}
-                  className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-6 group cursor-pointer transition-all duration-200 ease-out hover:shadow-xl hover:scale-[1.02] hover:border-emerald-500/40"
+                  className="card card-hover p-6 group cursor-pointer transition-all duration-200 ease-out hover:shadow-xl hover:scale-[1.02] hover:border-[var(--color-accent)]"
                   onClick={() => openGate(f)}
                 >
                   <div className="flex items-start gap-4 mb-5">

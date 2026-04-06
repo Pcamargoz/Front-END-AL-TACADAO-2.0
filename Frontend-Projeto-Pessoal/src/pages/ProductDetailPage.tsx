@@ -317,7 +317,7 @@ export function ProductDetailPage() {
             </div>
 
             {/* Nutrition Info */}
-            <div className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-6 transition-all duration-200 ease-out hover:shadow-xl hover:border-slate-600/60">
+            <div className="card p-6">
               <h3 className="text-title-sm text-primary mb-4 flex items-center gap-2">
                 <Flame size={18} className="text-accent" />
                 Informações Nutricionais
@@ -370,7 +370,7 @@ export function ProductDetailPage() {
                   >
                     <Link
                       to={`/produtos/${p.id}`}
-                      className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 overflow-hidden group block transition-all duration-200 ease-out hover:shadow-xl hover:scale-[1.02] hover:border-emerald-500/40"
+                      className="card card-hover overflow-hidden group block"
                     >
                       <div className="aspect-square bg-surface-secondary flex items-center justify-center">
                         <Dumbbell size={40} className="text-tertiary group-hover:scale-110 transition-transform duration-300" />
