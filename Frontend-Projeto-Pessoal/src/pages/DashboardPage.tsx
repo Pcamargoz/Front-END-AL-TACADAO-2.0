@@ -22,7 +22,7 @@ function StatCard({ title, value, change, icon }: StatCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card card-hover p-6"
+      className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-6 transition-all duration-200 ease-out hover:shadow-xl hover:border-slate-600/60"
     >
       <div className="flex items-start justify-between mb-4">
         <div className="w-12 h-12 rounded-xl bg-surface-secondary flex items-center justify-center">
@@ -51,7 +51,7 @@ interface RecentActivityItem {
 
 function RecentActivity({ items }: { items: RecentActivityItem[] }) {
   return (
-    <div className="card card-hover p-6">
+    <div className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-6 transition-all duration-200 ease-out hover:shadow-xl hover:border-slate-600/60">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-title-sm text-primary flex items-center gap-2">
           <Activity size={18} className="text-accent" />
@@ -196,7 +196,7 @@ export function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="card card-hover p-6"
+          className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-6 transition-all duration-200 ease-out hover:shadow-xl hover:border-slate-600/60"
         >
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-title-sm text-primary flex items-center gap-2">
@@ -264,7 +264,7 @@ export function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="card card-hover p-6"
+          className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-6 transition-all duration-200 ease-out hover:shadow-xl hover:border-slate-600/60"
         >
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-title-sm text-primary flex items-center gap-2">
@@ -334,14 +334,14 @@ export function DashboardPage() {
           <Link
             key={i}
             to={action.to}
-            className="card card-hover p-5 flex items-center gap-4 group"
+            className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-5 flex items-center gap-4 group transition-all duration-200 ease-out hover:shadow-xl hover:scale-[1.02] hover:border-emerald-500/40"
           >
-            <div className="w-12 h-12 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] flex items-center justify-center group-hover:bg-[var(--color-accent-subtle)] group-hover:border-[var(--color-accent)] transition-all duration-200">
-              <span className="text-[var(--color-text-tertiary)] group-hover:text-[var(--color-accent)] transition-colors">
+            <div className="w-12 h-12 rounded-xl bg-slate-800/50 border border-slate-700/30 flex items-center justify-center group-hover:bg-emerald-500/10 group-hover:border-emerald-500/30 transition-all duration-200">
+              <span className="text-slate-400 group-hover:text-emerald-400 transition-colors">
                 {action.icon}
               </span>
             </div>
-            <span className="text-sm text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors">
+            <span className="text-sm text-slate-300 group-hover:text-slate-100 transition-colors">
               {action.label}
             </span>
           </Link>
