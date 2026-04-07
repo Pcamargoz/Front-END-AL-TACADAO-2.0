@@ -1,80 +1,31 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { 
-  ArrowRight, 
-  Zap, 
-  Shield, 
-  Truck, 
-  CreditCard,
-  Dumbbell,
-  Flame,
-  Pill,
-  Heart,
-  ShoppingBag,
-  ChevronDown
-} from "lucide-react";
+import { ArrowRight, Zap, Shield, Truck, CreditCard, Dumbbell, Flame, Pill, Heart, ShoppingBag, ChevronDown } from "lucide-react";
 import { apiListEstoque, type Produto } from "../api/client";
-import { BRAND_META, getMockPrice, formatCurrency, CATEGORIES } from "../lib/utils";
+import { BRAND_META, formatCurrency, CATEGORIES } from "../lib/utils";
 import { useCart } from "../hooks/useCart";
 
-function getProductPrice(product: Produto): number {
-  return product.preco ?? getMockPrice(product.id);
-}
-
-/* -------------------------------------------------------------------------------
- * PRODUCT CARD - Apple Style
- * Clean, minimal, with subtle hover animation
- * -------------------------------------------------------------------------------
- */
 function FeaturedProductCard({ product }: { product: Produto }) {
   const { addItem, isInCart } = useCart();
   const meta = product.marca ? BRAND_META[product.marca] : null;
-  const price = getProductPrice(product);
+  const price = product.preco ?? 0; // Using actual price or fallback
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-      className="product-card group"
-    >
-      {/* Product Image Area */}
-      <div className="aspect-square bg-[var(--color-bg-tertiary)] flex items-center justify-center relative overflow-hidden">
-        <div 
-          className="w-24 h-24 rounded-2xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110"
-          style={{ background: meta?.bg || "var(--color-accent-subtle)" }}
-        >
+    <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }} className="product-card">
+      <div style={{ aspectRatio: "1 / 1", background: "var(--color-bg-tertiary)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", borderRadius: "calc(var(--radius-2xl) - 1px) calc(var(--radius-2xl) - 1px) 0 0" }}>
+        <div style={{ width: "96px", height: "96px", borderRadius: "16px", display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.5s ease", background: meta?.bg || "var(--color-accent-subtle)" }}
+             onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")} onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}>
           <Dumbbell size={40} style={{ color: meta?.color || "var(--color-accent)" }} />
         </div>
       </div>
-
-      {/* Product Info */}
-      <div className="p-6">
-        {meta && (
-          <span 
-            className="inline-block text-[11px] font-semibold tracking-wider uppercase mb-2 px-2 py-1 rounded-md"
-            style={{ background: meta.bg, color: meta.color }}
-          >
-            {meta.label}
-          </span>
-        )}
-        <h3 className="text-[15px] font-medium text-[var(--color-text-primary)] mb-1 line-clamp-2 min-h-[44px] leading-snug">
-          {product.descricao}
-        </h3>
-        {product.medida && (
-          <p className="text-[13px] text-[var(--color-text-tertiary)] mb-4">{product.medida}g</p>
-        )}
-        <div className="flex items-center justify-between">
-          <span className="text-lg font-semibold text-[var(--color-text-primary)]">
-            {formatCurrency(price)}
-          </span>
-          <button
-            onClick={() => addItem(product, 1, price)}
-            disabled={isInCart(product.id)}
-            className={`btn btn-sm ${isInCart(product.id) ? "btn-secondary" : "btn-primary"}`}
-          >
+      <div style={{ padding: "var(--space-6)" }}>
+        {meta && <span style={{ display: "inline-block", fontSize: "11px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: "var(--space-2)", padding: "4px 8px", borderRadius: "6px", background: meta.bg, color: meta.color }}>{meta.label}</span>}
+        <h3 className="line-clamp-2" style={{ fontSize: "15px", fontWeight: "var(--font-weight-medium)", color: "var(--color-text-primary)", marginBottom: "4px", minHeight: "44px", lineHeight: "1.4" }}>{product.descricao}</h3>
+        {product.medida && <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", marginBottom: "var(--space-4)" }}>{product.medida}g</p>}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: product.medida ? "0" : "auto" }}>
+          <span style={{ fontSize: "18px", fontWeight: "var(--font-weight-semibold)", color: "var(--color-text-primary)" }}>{formatCurrency(price)}</span>
+          <button onClick={() => addItem(product, 1, price)} disabled={isInCart(product.id)} className={`btn btn-sm ${isInCart(product.id) ? "btn-secondary" : "btn-primary"}`}>
             {isInCart(product.id) ? "Adicionado" : <><ShoppingBag size={14} /> Comprar</>}
           </button>
         </div>
@@ -83,325 +34,145 @@ function FeaturedProductCard({ product }: { product: Produto }) {
   );
 }
 
-/* -------------------------------------------------------------------------------
- * CATEGORY CARD - Apple Style
- * -------------------------------------------------------------------------------
- */
 function CategoryCard({ category }: { category: typeof CATEGORIES[number] }) {
   const icons: Record<string, React.ReactNode> = {
-    proteinas: <Dumbbell size={28} />,
-    "pre-treino": <Zap size={28} />,
-    creatina: <Flame size={28} />,
-    vitaminas: <Pill size={28} />,
-    aminoacidos: <Heart size={28} />,
+    proteinas: <Dumbbell size={28} />, "pre-treino": <Zap size={28} />,
+    creatina: <Flame size={28} />, vitaminas: <Pill size={28} />, aminoacidos: <Heart size={28} />,
   };
 
   return (
     <Link to={`/produtos?categoria=${category.id}`}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-        className="category-card group"
-      >
-        <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-[var(--color-accent-subtle)] flex items-center justify-center text-[var(--color-accent)] transition-transform duration-300 group-hover:scale-110">
-          {icons[category.id] || <span className="text-2xl">{category.icon}</span>}
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }} className="category-card" style={{ padding: "var(--space-6)", textAlign: "center", borderRadius: "var(--radius-2xl)", background: "var(--color-bg-elevated)", border: "1px solid var(--color-border)", transition: "all 0.3s ease" }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "var(--shadow-lg)"; e.currentTarget.style.borderColor = "var(--color-accent)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--shadow-sm)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}>
+        <div style={{ width: "56px", height: "56px", margin: "0 auto var(--space-4)", borderRadius: "var(--radius-xl)", background: "var(--color-accent-subtle)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-accent)" }}>
+          {icons[category.id] || <span style={{ fontSize: "24px" }}>{category.icon}</span>}
         </div>
-        <h3 className="text-[15px] font-medium text-[var(--color-text-primary)]">
-          {category.label}
-        </h3>
+        <h3 style={{ fontSize: "15px", fontWeight: "var(--font-weight-medium)", color: "var(--color-text-primary)" }}>{category.label}</h3>
       </motion.div>
     </Link>
   );
 }
 
-/* -------------------------------------------------------------------------------
- * BENEFIT ITEM - Apple Style
- * -------------------------------------------------------------------------------
- */
 function BenefitItem({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-      className="flex items-start gap-5"
-    >
-      <div className="w-12 h-12 rounded-xl bg-[var(--color-accent-subtle)] flex items-center justify-center flex-shrink-0 text-[var(--color-accent)]">
-        {icon}
-      </div>
+    <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }} style={{ display: "flex", alignItems: "flex-start", gap: "var(--space-5)" }}>
+      <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "var(--color-accent-subtle)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--color-accent)" }}>{icon}</div>
       <div>
-        <h4 className="text-[17px] font-semibold text-[var(--color-text-primary)] mb-1">{title}</h4>
-        <p className="text-[15px] text-[var(--color-text-secondary)] leading-relaxed">{description}</p>
+        <h4 style={{ fontSize: "17px", fontWeight: "var(--font-weight-semibold)", color: "var(--color-text-primary)", marginBottom: "4px" }}>{title}</h4>
+        <p style={{ fontSize: "15px", color: "var(--color-text-secondary)", lineHeight: "1.6" }}>{description}</p>
       </div>
     </motion.div>
   );
 }
 
-/* -------------------------------------------------------------------------------
- * SCROLL INDICATOR - Apple Style
- * -------------------------------------------------------------------------------
- */
-function ScrollIndicator() {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 1.5 }}
-      className="absolute bottom-10 left-1/2 -translate-x-1/2"
-    >
-      <motion.div
-        animate={{ y: [0, 8, 0] }}
-        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-        className="flex flex-col items-center gap-2 text-[var(--color-text-tertiary)]"
-      >
-        <span className="text-[11px] font-medium tracking-wider uppercase">Rolar</span>
-        <ChevronDown size={20} />
-      </motion.div>
-    </motion.div>
-  );
-}
-
-/* -------------------------------------------------------------------------------
- * STATS SECTION - Apple Style
- * -------------------------------------------------------------------------------
- */
 function StatsSection() {
   const stats = [
-    { value: "500+", label: "Produtos" },
-    { value: "50+", label: "Marcas" },
-    { value: "1000+", label: "Clientes" },
-    { value: "24h", label: "Entrega" },
+    { value: "500+", label: "Produtos" }, { value: "50+", label: "Marcas" },
+    { value: "1000+", label: "Clientes" }, { value: "24h", label: "Entrega" },
   ];
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-      className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12"
-    >
+    <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 0.1, 0.25, 1] }} style={{ marginTop: "80px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "var(--space-8)", textAlign: "center" }}>
       {stats.map((stat, i) => (
-        <div key={i} className="text-center">
-          <p className="text-4xl md:text-5xl font-semibold text-[var(--color-accent)] mb-1 tracking-tight">
-            {stat.value}
-          </p>
-          <p className="text-[13px] font-medium tracking-wider uppercase text-[var(--color-text-tertiary)]">
-            {stat.label}
-          </p>
+        <div key={i}>
+          <p style={{ fontSize: "clamp(32px, 5vw, 48px)", fontWeight: "var(--font-weight-semibold)", color: "var(--color-accent)", marginBottom: "4px", letterSpacing: "var(--tracking-tight)" }}>{stat.value}</p>
+          <p style={{ fontSize: "13px", fontWeight: "var(--font-weight-medium)", letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--color-text-tertiary)" }}>{stat.label}</p>
         </div>
       ))}
     </motion.div>
   );
 }
 
-/* -------------------------------------------------------------------------------
- * HOME PAGE - Apple Style
- * -------------------------------------------------------------------------------
- */
 export function HomePage() {
-  const { data: productsData } = useQuery({
-    queryKey: ["estoque"],
-    queryFn: () => apiListEstoque(),
-  });
+  const { data: productsData } = useQuery({ queryKey: ["estoque"], queryFn: () => apiListEstoque() });
   const products: Produto[] = productsData?.content ?? [];
   const featuredProducts = products.slice(0, 8);
 
   return (
     <div className="page-wrapper">
-      
-      {/* -----------------------------------------------------------------------
-       * HERO SECTION
-       * ----------------------------------------------------------------------- */}
       <section className="hero">
-         <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-          >
-            {/* Eyebrow */}
-            <span className="inline-block mb-5 text-[12px] font-semibold tracking-[0.2em] uppercase text-[var(--color-accent)]">
-              Distribuidora B2B
-            </span>
-
-            {/* Title */}
-            <h1 className="hero-title">
-              Suplementos
-              <br />
-              <span className="text-accent">Premium</span>
-            </h1>
-
-            {/* Subtitle */}
-            <p className="hero-subtitle">
-              A maior variedade de suplementos para sua loja. 
-              Preços competitivos, entrega rápida e qualidade garantida.
-            </p>
-
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/produtos" className="btn btn-primary btn-lg">
-                Ver Produtos
-                <ArrowRight size={18} />
-              </Link>
-              <Link to="/cadastro" className="btn btn-secondary btn-lg">
-                Cadastre-se
-              </Link>
+        <div style={{ position: "relative", zIndex: 10, textAlign: "center", padding: "0 var(--space-4)", maxWidth: "896px", margin: "0 auto" }}>
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}>
+            <span style={{ display: "inline-block", marginBottom: "var(--space-5)", fontSize: "12px", fontWeight: "var(--font-weight-semibold)", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--color-accent)" }}>Distribuidora B2B</span>
+            <h1 className="hero-title">Suplementos<br /><span style={{ color: "var(--color-accent)" }}>Premium</span></h1>
+            <p className="hero-subtitle">A maior variedade de suplementos para sua loja. Preços competitivos, entrega rápida e qualidade garantida.</p>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: "var(--space-4)" }}>
+              <Link to="/produtos" className="btn btn-primary btn-lg">Ver Produtos <ArrowRight size={18} /></Link>
+              <Link to="/cadastro" className="btn btn-secondary btn-lg">Cadastre-se</Link>
             </div>
           </motion.div>
-
-          {/* Stats */}
           <StatsSection />
         </div>
-
-        {/* Scroll Indicator */}
-        <ScrollIndicator />
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }} style={{ position: "absolute", bottom: "40px", left: "50%", transform: "translateX(-50%)" }}>
+          <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", color: "var(--color-text-tertiary)" }}>
+            <span style={{ fontSize: "11px", fontWeight: "var(--font-weight-medium)", letterSpacing: "0.05em", textTransform: "uppercase" }}>Rolar</span>
+            <ChevronDown size={20} />
+          </motion.div>
+        </motion.div>
       </section>
 
-      {/* -----------------------------------------------------------------------
-       * CATEGORIES SECTION
-       * ----------------------------------------------------------------------- */}
-      <section className="section bg-[var(--color-bg-secondary)]">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-14"
-          >
-            <span className="text-eyebrow mb-3 block">Navegue por</span>
+      <section className="section bg-surface-secondary">
+        <div className="container-apple">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} style={{ textAlign: "center", marginBottom: "56px" }}>
+            <span className="text-eyebrow" style={{ marginBottom: "12px" }}>Navegue por</span>
             <h2 className="text-headline">Categorias</h2>
           </motion.div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-5">
-            {CATEGORIES.slice(0, 8).map((cat) => (
-              <CategoryCard key={cat.id} category={cat} />
-            ))}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "var(--space-5)" }}>
+            {CATEGORIES.slice(0, 8).map((cat) => <CategoryCard key={cat.id} category={cat} />)}
           </div>
         </div>
       </section>
 
-      {/* -----------------------------------------------------------------------
-       * FEATURED PRODUCTS SECTION
-       * ----------------------------------------------------------------------- */}
       <section className="section">
-        <div className="container container-wide">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-14 gap-4"
-          >
+        <div className="container-apple">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "56px", gap: "var(--space-4)" }}>
             <div>
-              <span className="text-eyebrow mb-3 block">Destaques</span>
+              <span className="text-eyebrow" style={{ marginBottom: "12px" }}>Destaques</span>
               <h2 className="text-headline">Produtos em Alta</h2>
             </div>
-            <Link to="/produtos" className="btn btn-secondary hidden sm:flex">
-              Ver todos <ArrowRight size={16} />
-            </Link>
+            <Link to="/produtos" className="btn btn-secondary hidden sm\:flex">Ver todos <ArrowRight size={16} /></Link>
           </motion.div>
-
           {featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-              {featuredProducts.map((product) => (
-                <FeaturedProductCard key={product.id} product={product} />
-              ))}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "var(--space-5)" }}>
+              {featuredProducts.map((p) => <FeaturedProductCard key={p.id} product={p} />)}
             </div>
           ) : (
             <div className="empty-state card">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--color-bg-secondary)] flex items-center justify-center">
-                <Dumbbell size={32} className="text-[var(--color-text-tertiary)]" />
+              <div style={{ width: "64px", height: "64px", margin: "0 auto var(--space-4)", borderRadius: "var(--radius-full)", background: "var(--color-bg-secondary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Dumbbell size={32} style={{ color: "var(--color-text-tertiary)" }} />
               </div>
-              <p className="text-[var(--color-text-secondary)] mb-6">
-                Nenhum produto cadastrado ainda.
-              </p>
-              <Link to="/cadastro" className="btn btn-primary">
-                Cadastre-se para adicionar
-              </Link>
+              <p style={{ color: "var(--color-text-secondary)", marginBottom: "var(--space-6)" }}>Nenhum produto cadastrado ainda.</p>
+              <Link to="/cadastro" className="btn btn-primary">Cadastre-se para adicionar</Link>
             </div>
           )}
-
-          {/* Mobile CTA */}
-          <div className="mt-10 text-center sm:hidden">
-            <Link to="/produtos" className="btn btn-secondary">
-              Ver todos <ArrowRight size={16} />
-            </Link>
+          <div className="sm\:hidden" style={{ marginTop: "40px", textAlign: "center" }}>
+            <Link to="/produtos" className="btn btn-secondary">Ver todos <ArrowRight size={16} /></Link>
           </div>
         </div>
       </section>
 
-      {/* -----------------------------------------------------------------------
-       * BENEFITS SECTION
-       * ----------------------------------------------------------------------- */}
-      <section className="section bg-[var(--color-bg-secondary)]">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-14"
-          >
-            <span className="text-eyebrow mb-3 block">Por que escolher</span>
+      <section className="section bg-surface-secondary">
+        <div className="container-apple">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} style={{ textAlign: "center", marginBottom: "56px" }}>
+            <span className="text-eyebrow" style={{ marginBottom: "12px" }}>Por que escolher</span>
             <h2 className="text-headline">AL-TACADÃO</h2>
           </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 max-w-4xl mx-auto">
-            <BenefitItem
-              icon={<Truck size={24} />}
-              title="Entrega Expressa"
-              description="Receba seus produtos em até 24h para a região metropolitana. Frete grátis acima de R$ 500."
-            />
-            <BenefitItem
-              icon={<Shield size={24} />}
-              title="Produtos Originais"
-              description="Garantia de autenticidade. Trabalhamos apenas com distribuidores oficiais."
-            />
-            <BenefitItem
-              icon={<CreditCard size={24} />}
-              title="Condições Especiais"
-              description="Preços exclusivos para revendedores. Parcelamento em até 12x."
-            />
-            <BenefitItem
-              icon={<Zap size={24} />}
-              title="Suporte Dedicado"
-              description="Equipe especializada para ajudar na escolha dos melhores produtos."
-            />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "var(--space-8)", maxWidth: "896px", margin: "0 auto" }}>
+            <BenefitItem icon={<Truck size={24} />} title="Entrega Expressa" description="Receba seus produtos em até 24h para a região metropolitana. Frete grátis acima de R$ 500." />
+            <BenefitItem icon={<Shield size={24} />} title="Produtos Originais" description="Garantia de autenticidade. Trabalhamos apenas com distribuidores oficiais." />
+            <BenefitItem icon={<CreditCard size={24} />} title="Condições Especiais" description="Preços exclusivos para revendedores. Parcelamento em até 12x." />
+            <BenefitItem icon={<Zap size={24} />} title="Suporte Dedicado" description="Equipe especializada para ajudar na escolha dos melhores produtos." />
           </div>
         </div>
       </section>
 
-      {/* -----------------------------------------------------------------------
-       * CTA SECTION
-       * ----------------------------------------------------------------------- */}
-      <section className="section pb-20 lg:pb-24">
-        <div className="container text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="max-w-2xl mx-auto"
-          >
-            <h2 className="text-headline mb-4">
-              Pronto para
-              <br />
-              <span className="text-accent">começar?</span>
-            </h2>
-            <p className="text-body-lg text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
-              Cadastre-se agora e tenha acesso aos melhores preços do mercado.
-            </p>
-             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 px-4">
-              <Link to="/cadastro" className="btn btn-primary btn-lg">
-                Criar Conta Grátis
-              </Link>
-              <Link to="/produtos" className="btn btn-ghost">
-                Explorar Catálogo <ArrowRight size={16} />
-              </Link>
+      <section className="section" style={{ paddingBottom: "96px" }}>
+        <div className="container-apple" style={{ textAlign: "center" }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} style={{ maxWidth: "672px", margin: "0 auto" }}>
+            <h2 className="text-headline" style={{ marginBottom: "16px" }}>Pronto para<br /><span style={{ color: "var(--color-accent)" }}>começar?</span></h2>
+            <p className="text-body-lg" style={{ color: "var(--color-text-secondary)", marginBottom: "40px", margin: "0 auto" }}>Cadastre-se agora e tenha acesso aos melhores preços do mercado.</p>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: "var(--space-3)", padding: "0 var(--space-4)" }}>
+              <Link to="/cadastro" className="btn btn-primary btn-lg">Criar Conta Grátis</Link>
+              <Link to="/produtos" className="btn btn-ghost">Explorar Catálogo <ArrowRight size={16} /></Link>
             </div>
           </motion.div>
         </div>
@@ -409,4 +180,3 @@ export function HomePage() {
     </div>
   );
 }
-

@@ -8,6 +8,10 @@ import { useAuth } from "../auth/AuthContext";
 import { useFornecedor } from "../context/FornecedorContext";
 import { motion } from "framer-motion";
 
+function getProductPrice(product: Produto): number {
+  return product.preco ?? getMockPrice(product.id);
+}
+
 interface StatCardProps {
   title: string;
   value: string | number;
@@ -17,33 +21,30 @@ interface StatCardProps {
 
 function StatCard({ title, value, change, icon }: StatCardProps) {
   const isPositive = change && change > 0;
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-6 transition-all duration-200 ease-out hover:shadow-xl hover:border-slate-600/60"
+      className="stat-card"
     >
-      <div className="flex items-start justify-between mb-4">
-        <div className="w-12 h-12 rounded-xl bg-surface-secondary flex items-center justify-center">
-          <span className="text-accent">{icon}</span>
-        </div>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "var(--space-4)" }}>
+        <div className="stat-icon">{icon}</div>
         {change !== undefined && (
-          <div className={`flex items-center gap-1 text-caption font-medium ${isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+          <span className={`stat-change ${isPositive ? "positive" : "negative"}`}>
             {isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
             {Math.abs(change)}%
-          </div>
+          </span>
         )}
       </div>
-      <h3 className="text-display-xs text-primary mb-1">{value}</h3>
-      <p className="text-body-sm text-secondary">{title}</p>
+      <div className="stat-value">{value}</div>
+      <div className="stat-label">{title}</div>
     </motion.div>
   );
 }
 
 interface RecentActivityItem {
   id: string;
-  type: "product" | "user" | "order";
   title: string;
   timestamp: string;
   icon: React.ReactNode;
@@ -51,25 +52,26 @@ interface RecentActivityItem {
 
 function RecentActivity({ items }: { items: RecentActivityItem[] }) {
   return (
-    <div className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-6 transition-all duration-200 ease-out hover:shadow-xl hover:border-slate-600/60">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-title-sm text-primary flex items-center gap-2">
-          <Activity size={18} className="text-accent" />
+    <div className="card" style={{ padding: "var(--space-6)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "var(--space-6)" }}>
+        <h3 style={{ fontSize: "var(--text-body)", fontWeight: "var(--font-weight-semibold)", color: "var(--color-text-primary)", display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+          <Activity size={18} style={{ color: "var(--color-accent)" }} />
           Atividade Recente
         </h3>
-        <button className="text-caption text-accent hover:text-accent-hover transition-colors">
-          Ver tudo
-        </button>
       </div>
-      <div className="space-y-4">
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
         {items.map((item) => (
-          <div key={item.id} className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-surface-secondary flex items-center justify-center text-tertiary">
+          <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
+            <div style={{
+              width: "40px", height: "40px", borderRadius: "var(--radius-md)",
+              background: "var(--color-bg-secondary)", display: "flex", alignItems: "center", justifyContent: "center",
+              color: "var(--color-text-tertiary)", flexShrink: 0,
+            }}>
               {item.icon}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-body-sm text-primary truncate">{item.title}</p>
-              <p className="text-caption text-tertiary flex items-center gap-1">
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-text-primary)" }} className="truncate">{item.title}</p>
+              <p style={{ fontSize: "var(--text-caption)", color: "var(--color-text-tertiary)", display: "flex", alignItems: "center", gap: "4px" }}>
                 <Clock size={12} /> {item.timestamp}
               </p>
             </div>
@@ -80,17 +82,12 @@ function RecentActivity({ items }: { items: RecentActivityItem[] }) {
   );
 }
 
-function getProductPrice(product: Produto): number {
-  return product.preco ?? getMockPrice(product.id);
-}
-
 export function DashboardPage() {
   const { user } = useAuth();
   const { nome: fornecedorNome, isGerente } = useFornecedor();
   const { id } = useParams();
 
   const { data: productsData } = useQuery({ queryKey: ["estoque"], queryFn: () => apiListEstoque() });
-  
   const products: Produto[] = productsData?.content ?? [];
 
   const brandCount: Record<string, number> = {};
@@ -98,7 +95,7 @@ export function DashboardPage() {
 
   const brandData = Object.entries(brandCount)
     .map(([brand, count]) => ({
-      name:  BRAND_META[brand]?.label ?? brand,
+      name: BRAND_META[brand]?.label ?? brand,
       value: count,
       color: BRAND_META[brand]?.color ?? "var(--color-text-quaternary)",
     }))
@@ -106,135 +103,105 @@ export function DashboardPage() {
     .slice(0, 8);
 
   const totalRevenue = products.reduce((acc, p) => acc + getProductPrice(p), 0);
-  
+
   const topProducts = [...products]
     .sort((a, b) => getProductPrice(b) - getProductPrice(a))
     .slice(0, 5);
 
   const recentActivity: RecentActivityItem[] = [
-    { id: "1", type: "product", title: "Novo produto cadastrado: Whey Protein", timestamp: "Há 2 horas", icon: <Package size={16} /> },
-    { id: "2", type: "product", title: "Estoque atualizado: Creatina", timestamp: "Há 4 horas", icon: <Package size={16} /> },
-    { id: "3", type: "order", title: "Pedido #1234 finalizado", timestamp: "Há 6 horas", icon: <ShoppingBag size={16} /> },
-    { id: "4", type: "product", title: "Novo produto: BCAA", timestamp: "Há 8 horas", icon: <Package size={16} /> },
+    { id: "1", title: "Novo produto cadastrado: Whey Protein", timestamp: "Há 2 horas", icon: <Package size={16} /> },
+    { id: "2", title: "Estoque atualizado: Creatina", timestamp: "Há 4 horas", icon: <Package size={16} /> },
+    { id: "3", title: "Pedido #1234 finalizado", timestamp: "Há 6 horas", icon: <ShoppingBag size={16} /> },
+    { id: "4", title: "Novo produto: BCAA", timestamp: "Há 8 horas", icon: <Package size={16} /> },
   ];
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
 
   return (
-    <div className="space-y-6 sm:space-y-8 p-4 sm:p-6 lg:p-8 safe-area-padding">
-      {/* Empresa Info Header */}
+    <div style={{ padding: "var(--space-8) var(--container-padding)", maxWidth: "var(--container-wide)", margin: "0 auto", display: "flex", flexDirection: "column", gap: "var(--space-8)" }}>
+      {/* Company Info */}
       {fornecedorNome && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-4 p-4 rounded-xl bg-accent/5 border border-accent/20"
+          style={{
+            display: "flex", alignItems: "center", gap: "var(--space-4)",
+            padding: "var(--space-4)", borderRadius: "var(--radius-lg)",
+            background: "var(--color-accent-subtle)", border: "1px solid var(--color-accent-muted)",
+          }}
         >
-          <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
-            <Building2 size={22} className="text-accent" />
+          <div style={{
+            width: "48px", height: "48px", borderRadius: "var(--radius-md)",
+            background: "var(--color-accent-muted)", display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <Building2 size={22} style={{ color: "var(--color-accent)" }} />
           </div>
-          <div className="flex-1">
-            <p className="text-caption text-tertiary uppercase tracking-wider">Empresa</p>
-            <p className="text-title-md text-primary">{fornecedorNome}</p>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: "var(--text-caption)", color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "var(--tracking-wider)" }}>Empresa</p>
+            <p style={{ fontSize: "18px", fontWeight: "var(--font-weight-semibold)", color: "var(--color-text-primary)" }}>{fornecedorNome}</p>
           </div>
-          <span className={`text-caption font-medium px-3 py-1.5 rounded-full ${
-            isGerente 
-              ? "bg-accent/10 text-accent" 
-              : "bg-blue-500/10 text-blue-500"
-          }`}>
+          <span className={`badge ${isGerente ? "badge-accent" : "badge-neutral"}`}>
             {isGerente ? "GERENTE" : "FUNCIONÁRIO"}
           </span>
         </motion.div>
       )}
 
-      {/* Welcome Header */}
+      {/* Welcome */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "var(--space-4)" }}
       >
         <div>
-          <h1 className="text-display-xs text-primary">
-            {greeting}, {user?.nome || user?.login}!
-          </h1>
-          <p className="text-body text-secondary mt-1">
-            Aqui está o resumo do seu negócio hoje
-          </p>
+          <h1 className="text-display-xs">{greeting}, {user?.nome || user?.login}!</h1>
+          <p className="text-body" style={{ marginTop: "var(--space-1)" }}>Aqui está o resumo do seu negócio hoje</p>
         </div>
         <Link to={`/empresas/${id}/painel/estoque`} className="btn btn-primary">
-          <Package size={18} />
-          Ver Estoque
+          <Package size={18} /> Ver Estoque
         </Link>
       </motion.div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-        <StatCard
-          title="Receita Estimada"
-          value={formatCurrency(totalRevenue)}
-          change={12.5}
-          icon={<DollarSign size={24} />}
-        />
-        <StatCard
-          title="Produtos"
-          value={products.length}
-          change={8.2}
-          icon={<Package size={24} />}
-        />
-        <StatCard
-          title="Marcas"
-          value={brandData.length}
-          change={5.1}
-          icon={<TrendingUp size={24} />}
-        />
+      {/* Stats */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "var(--space-5)" }}>
+        <StatCard title="Receita Estimada" value={formatCurrency(totalRevenue)} change={12.5} icon={<DollarSign size={24} />} />
+        <StatCard title="Produtos" value={products.length} change={8.2} icon={<Package size={24} />} />
+        <StatCard title="Marcas" value={brandData.length} change={5.1} icon={<TrendingUp size={24} />} />
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+      {/* Main Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "var(--space-6)" }}>
         {/* Brand Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-6 transition-all duration-200 ease-out hover:shadow-xl hover:border-slate-600/60"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-title-sm text-primary flex items-center gap-2">
-              <TrendingUp size={18} className="text-accent" />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          className="card" style={{ padding: "var(--space-6)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "var(--space-6)" }}>
+            <h3 style={{ fontSize: "var(--text-body)", fontWeight: "var(--font-weight-semibold)", color: "var(--color-text-primary)", display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+              <TrendingUp size={18} style={{ color: "var(--color-accent)" }} />
               Distribuição por Marca
             </h3>
-            <span className="text-caption px-2.5 py-1 rounded-full bg-surface-secondary text-secondary">
-              {brandData.length} marcas
-            </span>
+            <span className="badge badge-neutral">{brandData.length} marcas</span>
           </div>
 
           {brandData.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 rounded-2xl bg-surface-secondary flex items-center justify-center mx-auto mb-4">
-                <Package size={32} className="text-tertiary" />
-              </div>
-              <p className="text-body-sm text-secondary">Nenhum produto cadastrado</p>
+            <div className="empty-state">
+              <div className="empty-icon"><Package size={32} /></div>
+              <p className="empty-description">Nenhum produto cadastrado</p>
             </div>
           ) : (
             <>
               <ResponsiveContainer width="100%" height={180}>
                 <PieChart>
-                  <Pie
-                    data={brandData}
-                    cx="50%" cy="50%"
-                    innerRadius={50} outerRadius={80}
-                    paddingAngle={3} dataKey="value"
-                  >
+                  <Pie data={brandData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
                     {brandData.map((entry, i) => (
                       <Cell key={i} fill={entry.color} opacity={0.85} />
                     ))}
                   </Pie>
                   <Tooltip
                     contentStyle={{
-                      background: "var(--surface)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "12px",
-                      color: "var(--text-primary)",
+                      background: "var(--color-bg-elevated)",
+                      border: "1px solid var(--color-border)",
+                      borderRadius: "var(--radius-md)",
+                      color: "var(--color-text-primary)",
                       fontSize: "13px",
                       boxShadow: "var(--shadow-md)",
                     }}
@@ -242,16 +209,14 @@ export function DashboardPage() {
                   />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="space-y-2 mt-4">
+              <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)", marginTop: "var(--space-4)" }}>
                 {brandData.slice(0, 5).map((b) => (
-                  <div key={b.name} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ background: b.color }} />
-                      <span className="text-body-sm text-secondary truncate max-w-[140px]">{b.name}</span>
+                  <div key={b.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+                      <span style={{ width: "10px", height: "10px", borderRadius: "var(--radius-full)", background: b.color }} />
+                      <span style={{ fontSize: "var(--text-body-sm)", color: "var(--color-text-secondary)" }} className="truncate">{b.name}</span>
                     </div>
-                    <span className="text-body-sm font-medium text-primary">
-                      {b.value}
-                    </span>
+                    <span style={{ fontSize: "var(--text-body-sm)", fontWeight: "var(--font-weight-medium)", color: "var(--color-text-primary)" }}>{b.value}</span>
                   </div>
                 ))}
               </div>
@@ -260,53 +225,47 @@ export function DashboardPage() {
         </motion.div>
 
         {/* Top Products */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-6 transition-all duration-200 ease-out hover:shadow-xl hover:border-slate-600/60"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-title-sm text-primary flex items-center gap-2">
-              <Package size={18} className="text-accent" />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+          className="card" style={{ padding: "var(--space-6)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "var(--space-6)" }}>
+            <h3 style={{ fontSize: "var(--text-body)", fontWeight: "var(--font-weight-semibold)", color: "var(--color-text-primary)", display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+              <Package size={18} style={{ color: "var(--color-accent)" }} />
               Produtos em Destaque
             </h3>
-            <Link 
-              to={`/empresas/${id}/painel/estoque`} 
-              className="text-caption text-accent hover:text-accent-hover transition-colors flex items-center gap-1"
-            >
+            <Link to={`/empresas/${id}/painel/estoque`} style={{ fontSize: "var(--text-caption)", color: "var(--color-accent)", display: "flex", alignItems: "center", gap: "4px" }}>
               Ver todos <ArrowRight size={14} />
             </Link>
           </div>
 
           {topProducts.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 rounded-2xl bg-surface-secondary flex items-center justify-center mx-auto mb-4">
-                <Package size={32} className="text-tertiary" />
-              </div>
-              <p className="text-body-sm text-secondary">Nenhum produto ainda</p>
+            <div className="empty-state">
+              <div className="empty-icon"><Package size={32} /></div>
+              <p className="empty-description">Nenhum produto ainda</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
               {topProducts.map((p) => {
                 const meta = p.marca ? BRAND_META[p.marca] : null;
                 return (
-                  <div 
-                    key={p.id} 
-                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-secondary transition-colors"
+                  <div key={p.id} style={{
+                    display: "flex", alignItems: "center", gap: "var(--space-3)",
+                    padding: "var(--space-3)", borderRadius: "var(--radius-md)",
+                    transition: "background var(--duration-fast) var(--ease-out)",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-bg-secondary)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-surface-secondary flex items-center justify-center">
-                      <Dumbbell size={18} className="text-tertiary" />
+                    <div style={{
+                      width: "40px", height: "40px", borderRadius: "var(--radius-md)",
+                      background: meta?.bg || "var(--color-bg-secondary)", display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <Dumbbell size={18} style={{ color: meta?.color || "var(--color-text-tertiary)" }} />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-body-sm text-primary truncate">{p.descricao}</p>
-                      <p className="text-caption text-accent">
-                        {meta?.label ?? p.marca ?? "Sem marca"}
-                      </p>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-text-primary)" }} className="truncate">{p.descricao}</p>
+                      <p style={{ fontSize: "var(--text-caption)", color: "var(--color-accent)" }}>{meta?.label ?? p.marca ?? "Sem marca"}</p>
                     </div>
-                    <span className="text-body-sm font-semibold text-accent">
-                      {formatCurrency(getProductPrice(p))}
-                    </span>
+                    <span className="price">{formatCurrency(getProductPrice(p))}</span>
                   </div>
                 );
               })}
@@ -315,17 +274,13 @@ export function DashboardPage() {
         </motion.div>
 
         {/* Recent Activity */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <RecentActivity items={recentActivity} />
         </motion.div>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "var(--space-4)" }}>
         {[
           { icon: <Package size={22} />, label: "Ver Estoque", to: `/empresas/${id}/painel/estoque` },
           { icon: <ShoppingBag size={22} />, label: "Meu Perfil", to: `/empresas/${id}/painel/perfil` },
@@ -334,20 +289,22 @@ export function DashboardPage() {
           <Link
             key={i}
             to={action.to}
-            className="bg-white/5 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-lg shadow-black/10 p-5 flex items-center gap-4 group transition-all duration-200 ease-out hover:shadow-xl hover:scale-[1.02] hover:border-emerald-500/40"
+            className="card card-hover"
+            style={{
+              padding: "var(--space-5)", display: "flex", alignItems: "center", gap: "var(--space-4)", cursor: "pointer",
+            }}
           >
-            <div className="w-12 h-12 rounded-xl bg-slate-800/50 border border-slate-700/30 flex items-center justify-center group-hover:bg-emerald-500/10 group-hover:border-emerald-500/30 transition-all duration-200">
-              <span className="text-slate-400 group-hover:text-emerald-400 transition-colors">
-                {action.icon}
-              </span>
+            <div style={{
+              width: "48px", height: "48px", borderRadius: "var(--radius-md)",
+              background: "var(--color-bg-secondary)", display: "flex", alignItems: "center", justifyContent: "center",
+              color: "var(--color-text-tertiary)", transition: "all var(--duration-fast) var(--ease-out)",
+            }}>
+              {action.icon}
             </div>
-            <span className="text-sm text-slate-300 group-hover:text-slate-100 transition-colors">
-              {action.label}
-            </span>
+            <span style={{ fontSize: "var(--text-body-sm)", color: "var(--color-text-secondary)" }}>{action.label}</span>
           </Link>
         ))}
       </div>
     </div>
   );
 }
-

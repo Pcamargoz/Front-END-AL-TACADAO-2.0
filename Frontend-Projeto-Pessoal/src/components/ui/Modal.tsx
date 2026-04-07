@@ -1,292 +1,125 @@
-﻿import { useEffect, useRef, useCallback, type ReactNode } from "react";
+import { useEffect, useCallback } from "react";
+import type { ReactNode } from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "../../lib/utils";
 
-interface Props {
+interface ModalProps {
   open: boolean;
   onClose: () => void;
   title?: string;
-  description?: string;
   children: ReactNode;
-  size?: "sm" | "md" | "lg" | "xl";
-  showClose?: boolean;
+  size?: "sm" | "md" | "lg";
 }
 
-/**
- * Modal component following Apple-style design system - FOCO CORRIGIDO
- * - Clean, centered design
- * - Backdrop blur
- * - Smooth animations
- * - Keyboard accessible (Escape to close)
- * - FOCO GERENCIADO CORRETAMENTE
- */
-export function Modal({ 
-  open, 
-  onClose, 
-  title, 
-  description,
-  children, 
-  size = "md",
-  showClose = true 
-}: Props) {
-  const modalRef = useRef<HTMLDivElement>(null);
-  const previousActiveElement = useRef<HTMLElement | null>(null);
+const sizeWidths = {
+  sm: "420px",
+  md: "520px",
+  lg: "640px",
+};
 
-  // CORREÇÃO 1: Callback memoizado para fechar
-  const handleClose = useCallback(() => {
-    onClose();
-  }, [onClose]);
+export function Modal({ open, onClose, title, children, size = "md" }: ModalProps) {
+  const handleEscape = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    },
+    [onClose],
+  );
 
-  // CORREÇÃO 2: Gerenciamento de foco melhorado
   useEffect(() => {
-    if (!open) return;
-
-    // Salva o elemento que estava com foco antes de abrir o modal
-    previousActiveElement.current = document.activeElement as HTMLElement;
-
-    // Handle escape key
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        handleClose();
-      }
-    };
-
-    // CORREÇÃO 3: Previne scroll apenas no body
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    
-    // Adiciona listener de teclado
-    document.addEventListener("keydown", onKey);
-
-    // CORREÇÃO 4: Foca no modal com delay para garantir renderização
-    const focusTimeout = setTimeout(() => {
-      if (modalRef.current) {
-        // Procura primeiro por um input dentro do modal
-        const firstInput = modalRef.current.querySelector('input, textarea, select, button:not([tabindex="-1"]):not([disabled])') as HTMLElement;
-        if (firstInput) {
-          firstInput.focus();
-        } else {
-          modalRef.current.focus();
-        }
-      }
-    }, 50);
-
+    if (open) {
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
+    }
     return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = originalOverflow;
-      clearTimeout(focusTimeout);
-      
-      // CORREÇÃO 5: Restaura o foco para o elemento anterior
-      if (previousActiveElement.current) {
-        previousActiveElement.current.focus();
-        previousActiveElement.current = null;
-      }
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "";
     };
-  }, [open, handleClose]);
-
-  // CORREÇÃO 6: Previne propagação do clique no conteúdo
-  const handleContentClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-  }, []);
-
-  const maxWidthClasses = {
-    sm: "max-w-sm",
-    md: "max-w-md",
-    lg: "max-w-lg",
-    xl: "max-w-xl",
-  };
+  }, [open, handleEscape]);
 
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 200,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "var(--space-6)",
+          }}
+        >
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={handleClose}
-            aria-hidden="true"
+            onClick={onClose}
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "var(--color-overlay)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+            }}
           />
 
-          {/* Modal */}
+          {/* Panel */}
           <motion.div
-            ref={modalRef}
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            initial={{ opacity: 0, scale: 0.96, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ 
-              duration: 0.3, 
-              ease: [0.25, 0.1, 0.25, 1] 
+            exit={{ opacity: 0, scale: 0.96, y: 10 }}
+            transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+            style={{
+              position: "relative",
+              width: "100%",
+              maxWidth: sizeWidths[size],
+              maxHeight: "90vh",
+              overflowY: "auto",
+              background: "var(--color-bg-elevated)",
+              border: "1px solid var(--color-border)",
+              borderRadius: "var(--radius-xl)",
+              boxShadow: "var(--shadow-xl)",
             }}
-            className={cn(
-              "relative w-full mx-4",
-              "bg-surface border border-border rounded-2xl shadow-2xl",
-              "focus:outline-none",
-              maxWidthClasses[size]
-            )}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={title ? "modal-title" : undefined}
-            aria-describedby={description ? "modal-description" : undefined}
-            tabIndex={-1}
-            onClick={handleContentClick}
           >
             {/* Header */}
-            {(title || showClose) && (
-              <div className="flex items-start justify-between p-6 pb-0">
-                <div className="flex-1">
-                  {title && (
-                    <h2 
-                      id="modal-title"
-                      className="text-title-md text-primary"
-                    >
-                      {title}
-                    </h2>
-                  )}
-                  {description && (
-                    <p 
-                      id="modal-description"
-                      className="text-body-sm text-secondary mt-1"
-                    >
-                      {description}
-                    </p>
-                  )}
-                </div>
-                {showClose && (
-                  <button
-                    onClick={handleClose}
-                    className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center",
-                      "text-tertiary hover:text-primary",
-                      "bg-surface-secondary hover:bg-surface-tertiary",
-                      "transition-all duration-200",
-                      "focus:outline-none focus:ring-2 focus:ring-accent/20"
-                    )}
-                    aria-label="Fechar modal"
-                    type="button"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
+            {title && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "var(--space-6) var(--space-6) 0",
+                }}
+              >
+                <h2
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "var(--text-title-sm)",
+                    fontWeight: "var(--font-weight-semibold)",
+                    color: "var(--color-text-primary)",
+                  }}
+                >
+                  {title}
+                </h2>
+                <button
+                  onClick={onClose}
+                  className="btn btn-ghost btn-icon btn-sm"
+                  aria-label="Fechar"
+                  style={{ borderRadius: "var(--radius-full)" }}
+                >
+                  <X size={18} />
+                </button>
               </div>
             )}
 
             {/* Content */}
-            <div className="p-6">
-              {children}
-            </div>
+            <div style={{ padding: "var(--space-6)" }}>{children}</div>
           </motion.div>
         </div>
       )}
     </AnimatePresence>
-  );
-}
-
-interface ModalFooterProps {
-  children: ReactNode;
-  className?: string;
-}
-
-/**
- * Modal footer for action buttons
- */
-export function ModalFooter({ children, className }: ModalFooterProps) {
-  return (
-    <div className={cn(
-      "flex items-center justify-end gap-3 pt-4 mt-2",
-      "border-t border-border",
-      className
-    )}>
-      {children}
-    </div>
-  );
-}
-
-interface ConfirmModalProps {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  title: string;
-  description?: string;
-  confirmText?: string;
-  cancelText?: string;
-  variant?: "default" | "danger";
-  loading?: boolean;
-}
-
-/**
- * Confirmation modal for destructive or important actions
- */
-export function ConfirmModal({
-  open,
-  onClose,
-  onConfirm,
-  title,
-  description,
-  confirmText = "Confirmar",
-  cancelText = "Cancelar",
-  variant = "default",
-  loading = false,
-}: ConfirmModalProps) {
-  return (
-    <Modal open={open} onClose={onClose} size="sm" showClose={false}>
-      <div className="text-center">
-        {/* Icon */}
-        <div className={cn(
-          "w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center",
-          variant === "danger" 
-            ? "bg-red-100 dark:bg-red-950/30" 
-            : "bg-accent/10"
-        )}>
-          <span className={cn(
-            "text-2xl",
-            variant === "danger" ? "text-red-600 dark:text-red-400" : "text-accent"
-          )}>
-            {variant === "danger" ? "!" : "?"}
-          </span>
-        </div>
-
-        {/* Content */}
-        <h3 className="text-title-sm text-primary mb-2">{title}</h3>
-        {description && (
-          <p className="text-body-sm text-secondary mb-6">{description}</p>
-        )}
-
-        {/* Actions */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onClose}
-            disabled={loading}
-            className="btn btn-secondary flex-1"
-            type="button"
-          >
-            {cancelText}
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={loading}
-            className={cn(
-              "btn flex-1",
-              variant === "danger" ? "btn-danger" : "btn-primary"
-            )}
-            type="button"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                Processando...
-              </span>
-            ) : (
-              confirmText
-            )}
-          </button>
-        </div>
-      </div>
-    </Modal>
   );
 }

@@ -1,8 +1,6 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+/** Simple class name joiner (no Tailwind merging needed) */
+export function cn(...args: (string | boolean | undefined | null)[]): string {
+  return args.filter(Boolean).join(" ");
 }
 
 export function formatDate(date: string | Date) {

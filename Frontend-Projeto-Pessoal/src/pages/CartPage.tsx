@@ -1,17 +1,6 @@
-﻿import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  ShoppingBag, 
-  Trash2, 
-  Minus, 
-  Plus, 
-  ArrowRight, 
-  Package,
-  Dumbbell,
-  Tag,
-  Truck,
-  ShieldCheck
-} from "lucide-react";
+import { ShoppingBag, Trash2, Minus, Plus, ArrowRight, Package, Dumbbell, Tag, Truck, ShieldCheck } from "lucide-react";
 import { useCart } from "../hooks/useCart";
 import { BRAND_META, formatCurrency } from "../lib/utils";
 
@@ -20,26 +9,16 @@ export function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="page-wrapper">
-        <div className="container max-w-lg py-20">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-            className="text-center"
-          >
-            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-[var(--color-bg-secondary)] flex items-center justify-center">
-              <ShoppingBag size={36} className="text-tertiary" />
+      <div className="page-wrapper" style={{ minHeight: "100vh", background: "var(--color-bg-primary)" }}>
+        <div className="container" style={{ maxWidth: "32rem", paddingTop: "5rem", paddingBottom: "5rem", margin: "0 auto", textAlign: "center" }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}>
+            <div style={{ width: "80px", height: "80px", margin: "0 auto 24px", borderRadius: "16px", background: "var(--color-bg-secondary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <ShoppingBag size={36} style={{ color: "var(--color-text-tertiary)" }} />
             </div>
-            <h1 className="text-headline text-primary mb-3">
-              Seu carrinho está vazio
-            </h1>
-            <p className="text-body text-secondary mb-8">
-              Explore nosso catálogo e encontre os melhores suplementos para você.
-            </p>
-            <Link to="/produtos" className="btn btn-primary">
-              <Package size={18} />
-              Explorar produtos
+            <h1 className="text-headline" style={{ marginBottom: "12px", color: "var(--color-text-primary)" }}>Seu carrinho está vazio</h1>
+            <p className="text-body" style={{ color: "var(--color-text-secondary)", marginBottom: "32px" }}>Explore nosso catálogo e encontre os melhores suplementos para você.</p>
+            <Link to="/produtos" className="btn btn-primary" style={{ display: "inline-flex" }}>
+              <Package size={18} /> Explorar produtos
             </Link>
           </motion.div>
         </div>
@@ -48,126 +27,67 @@ export function CartPage() {
   }
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper" style={{ minHeight: "100vh", background: "var(--color-bg-primary)" }}>
       {/* Header */}
-      <div className="bg-[var(--color-bg-secondary)] border-b border-border">
-        <div className="container py-12">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-          >
-            <span className="text-caption font-medium text-accent tracking-wide uppercase mb-2 block">
+      <div style={{ background: "var(--color-bg-secondary)", borderBottom: "1px solid var(--color-border)" }}>
+        <div className="container" style={{ paddingTop: "48px", paddingBottom: "48px", maxWidth: "var(--container-wide)", margin: "0 auto", paddingLeft: "var(--container-padding)", paddingRight: "var(--container-padding)" }}>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}>
+            <span style={{ fontSize: "12px", fontWeight: "var(--font-weight-medium)", color: "var(--color-accent)", letterSpacing: "var(--tracking-wide)", textTransform: "uppercase", marginBottom: "8px", display: "block" }}>
               Carrinho
             </span>
-            <div className="flex items-center justify-between">
-              <h1 className="text-headline text-primary">Seu Pedido</h1>
-              <button
-                onClick={clearCart}
-                className="text-body-sm text-secondary hover:text-red-500 transition-colors flex items-center gap-1.5"
-              >
-                <Trash2 size={16} />
-                Limpar tudo
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <h1 className="text-headline" style={{ color: "var(--color-text-primary)" }}>Seu Pedido</h1>
+              <button onClick={clearCart} style={{ fontSize: "14px", color: "var(--color-text-secondary)", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-error)"} onMouseLeave={(e) => e.currentTarget.style.color = "var(--color-text-secondary)"}>
+                <Trash2 size={16} /> Limpar tudo
               </button>
             </div>
-            <p className="text-body text-secondary mt-2">
+            <p className="text-body" style={{ color: "var(--color-text-secondary)", marginTop: "8px" }}>
               {totalItems} {totalItems === 1 ? "item" : "itens"} no carrinho
             </p>
           </motion.div>
         </div>
       </div>
 
-      <div className="container py-8 lg:py-12">
-        <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
+      <div className="container" style={{ maxWidth: "var(--container-wide)", margin: "0 auto", paddingTop: "clamp(32px, 5vw, 48px)", paddingBottom: "clamp(32px, 5vw, 48px)", paddingLeft: "var(--container-padding)", paddingRight: "var(--container-padding)" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "clamp(32px, 5vw, 48px)" }}>
           {/* Cart Items */}
-          <div className="lg:col-span-2 space-y-4">
+          <div style={{ flex: "1 1 60%", display: "flex", flexDirection: "column", gap: "16px" }}>
             <AnimatePresence mode="popLayout">
               {items.map((item, index) => {
                 const meta = item.product.marca ? BRAND_META[item.product.marca] : null;
                 return (
-                  <motion.div
-                    key={item.product.id}
-                    layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -20, height: 0 }}
-                    transition={{ 
-                      duration: 0.4, 
-                      delay: index * 0.05,
-                      ease: [0.25, 0.1, 0.25, 1] 
-                    }}
-                    className="card card-hover p-5 flex gap-5"
-                  >
-                    {/* Product Image */}
-                    <Link 
-                      to={`/produtos/${item.product.id}`}
-                      className="w-24 h-24 rounded-xl flex-shrink-0 flex items-center justify-center bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
-                    >
-                      <Dumbbell size={32} className="text-tertiary" />
+                  <motion.div key={item.product.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20, height: 0 }} transition={{ duration: 0.4, delay: index * 0.05, ease: [0.25, 0.1, 0.25, 1] }} className="card" style={{ padding: "20px", display: "flex", gap: "20px" }}>
+                    {/* Image */}
+                    <Link to={`/produtos/${item.product.id}`} style={{ width: "96px", height: "96px", borderRadius: "12px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--color-bg-secondary)", transition: "background 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--color-bg-tertiary)"} onMouseLeave={(e) => e.currentTarget.style.background = "var(--color-bg-secondary)"}>
+                      <Dumbbell size={32} style={{ color: "var(--color-text-tertiary)" }} />
                     </Link>
 
-                    {/* Product Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4">
+                    {/* Info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px" }}>
                         <div>
-                          {meta && (
-                            <span className="text-caption font-medium text-accent mb-1 block">
-                              {meta.label}
-                            </span>
-                          )}
-                          <Link 
-                            to={`/produtos/${item.product.id}`}
-                            className="text-body font-medium text-primary hover:text-accent transition-colors block line-clamp-2"
-                          >
-                            {item.product.descricao}
+                          {meta && <span style={{ fontSize: "12px", fontWeight: "var(--font-weight-medium)", color: "var(--color-accent)", marginBottom: "4px", display: "block" }}>{meta.label}</span>}
+                          <Link to={`/produtos/${item.product.id}`} style={{ textDecoration: "none" }}>
+                            <h3 className="line-clamp-2" style={{ fontSize: "16px", fontWeight: "var(--font-weight-medium)", color: "var(--color-text-primary)", transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-accent)"} onMouseLeave={(e) => e.currentTarget.style.color = "var(--color-text-primary)"}>{item.product.descricao}</h3>
                           </Link>
-                          {item.product.medida && (
-                            <p className="text-caption text-tertiary mt-1">
-                              {item.product.medida}g
-                            </p>
-                          )}
+                          {item.product.medida && <p style={{ fontSize: "12px", color: "var(--color-text-tertiary)", marginTop: "4px" }}>{item.product.medida}g</p>}
                         </div>
-                        <button
-                          onClick={() => removeItem(item.product.id)}
-                          className="text-tertiary hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-[var(--color-bg-secondary)]"
-                          aria-label="Remover item"
-                        >
+                        <button onClick={() => removeItem(item.product.id)} style={{ color: "var(--color-text-tertiary)", background: "none", border: "none", cursor: "pointer", padding: "6px", borderRadius: "8px", transition: "all 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-error)"; e.currentTarget.style.background = "var(--color-bg-secondary)"; }} onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-text-tertiary)"; e.currentTarget.style.background = "none"; }} aria-label="Remover item">
                           <Trash2 size={18} />
                         </button>
                       </div>
 
-                      <div className="flex items-center justify-between mt-4">
-                        {/* Quantity Control */}
-                        <div className="flex items-center bg-[var(--color-bg-secondary)] rounded-xl">
-                          <button
-                            onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))}
-                            className="w-10 h-10 flex items-center justify-center text-secondary hover:text-primary transition-colors"
-                            aria-label="Diminuir quantidade"
-                          >
-                            <Minus size={16} />
-                          </button>
-                          <span className="w-10 text-center text-body font-medium text-primary">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                            className="w-10 h-10 flex items-center justify-center text-secondary hover:text-primary transition-colors"
-                            aria-label="Aumentar quantidade"
-                          >
-                            <Plus size={16} />
-                          </button>
+                      <div style={{ display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "space-between", marginTop: "16px" }}>
+                        {/* Quantity */}
+                        <div style={{ display: "flex", alignItems: "center", background: "var(--color-bg-secondary)", borderRadius: "12px" }}>
+                          <button onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))} style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-text-secondary)", background: "none", border: "none", cursor: "pointer", transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-text-primary)"} onMouseLeave={(e) => e.currentTarget.style.color = "var(--color-text-secondary)"} aria-label="Diminuir quantidade"><Minus size={16} /></button>
+                          <span style={{ width: "40px", textAlign: "center", fontSize: "16px", fontWeight: "var(--font-weight-medium)", color: "var(--color-text-primary)" }}>{item.quantity}</span>
+                          <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-text-secondary)", background: "none", border: "none", cursor: "pointer", transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-text-primary)"} onMouseLeave={(e) => e.currentTarget.style.color = "var(--color-text-secondary)"} aria-label="Aumentar quantidade"><Plus size={16} /></button>
                         </div>
-
                         {/* Price */}
-                        <div className="text-right">
-                          <span className="text-title-sm text-primary font-semibold">
-                            {formatCurrency(item.price * item.quantity)}
-                          </span>
-                          {item.quantity > 1 && (
-                            <p className="text-caption text-tertiary">
-                              {item.quantity}x {formatCurrency(item.price)}
-                            </p>
-                          )}
+                        <div style={{ textAlign: "right" }}>
+                          <span style={{ fontSize: "18px", fontWeight: "var(--font-weight-semibold)", color: "var(--color-text-primary)", display: "block" }}>{formatCurrency(item.price * item.quantity)}</span>
+                          {item.quantity > 1 && <p style={{ fontSize: "12px", color: "var(--color-text-tertiary)" }}>{item.quantity}x {formatCurrency(item.price)}</p>}
                         </div>
                       </div>
                     </div>
@@ -178,79 +98,64 @@ export function CartPage() {
           </div>
 
           {/* Order Summary */}
-          <div className="lg:col-span-1">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="card card-hover p-6 sticky top-24"
-            >
-              <h2 className="text-title text-primary mb-6">Resumo do Pedido</h2>
+          <div style={{ flex: "1 1 30%", minWidth: "300px" }}>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }} className="card" style={{ padding: "24px", position: "sticky", top: "96px" }}>
+              <h2 className="text-title" style={{ color: "var(--color-text-primary)", marginBottom: "24px" }}>Resumo do Pedido</h2>
 
               {/* Coupon */}
-              <div className="mb-6">
-                <label className="input-label mb-2 block">Cupom de desconto</label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Tag size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary" />
-                    <input
-                      type="text"
-                      placeholder="CODIGO10"
-                      className="input-field pl-11 text-body-sm"
-                    />
+              <div style={{ marginBottom: "24px" }}>
+                <label className="input-label" style={{ marginBottom: "8px", display: "block" }}>Cupom de desconto</label>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <div style={{ position: "relative", flex: 1 }}>
+                    <Tag size={16} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-tertiary)" }} />
+                    <input type="text" placeholder="CODIGO10" className="input-field" style={{ paddingLeft: "44px", fontSize: "14px" }} />
                   </div>
-                  <button className="btn btn-secondary btn-sm">Aplicar</button>
+                  <button className="btn btn-secondary btn-sm" style={{ padding: "0 16px" }}>Aplicar</button>
                 </div>
               </div>
 
               {/* Price Breakdown */}
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between text-body-sm">
-                  <span className="text-secondary">Subtotal ({totalItems} itens)</span>
-                  <span className="text-primary font-medium">{formatCurrency(totalPrice)}</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "24px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px" }}>
+                  <span style={{ color: "var(--color-text-secondary)" }}>Subtotal ({totalItems} itens)</span>
+                  <span style={{ color: "var(--color-text-primary)", fontWeight: "var(--font-weight-medium)" }}>{formatCurrency(totalPrice)}</span>
                 </div>
-                <div className="flex justify-between text-body-sm">
-                  <span className="text-secondary">Frete</span>
-                  <span className="text-[var(--color-success)] font-medium">Grátis</span>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px" }}>
+                  <span style={{ color: "var(--color-text-secondary)" }}>Frete</span>
+                  <span style={{ color: "var(--color-success)", fontWeight: "var(--font-weight-medium)" }}>Grátis</span>
                 </div>
-                <div className="border-t border-border pt-4 flex justify-between">
-                  <span className="text-body font-medium text-primary">Total</span>
-                  <span className="text-title text-accent font-semibold">{formatCurrency(totalPrice)}</span>
+                <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: "16px", display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: "16px", fontWeight: "var(--font-weight-medium)", color: "var(--color-text-primary)" }}>Total</span>
+                  <span className="text-title" style={{ color: "var(--color-accent)", fontWeight: "var(--font-weight-semibold)" }}>{formatCurrency(totalPrice)}</span>
                 </div>
               </div>
 
-              {/* Checkout Button */}
-              <button className="btn btn-primary w-full mb-3">
-                Finalizar Pedido
-                <ArrowRight size={18} />
+              <button className="btn btn-primary" style={{ width: "100%", marginBottom: "12px" }}>
+                Finalizar Pedido <ArrowRight size={18} />
               </button>
 
-              {/* Continue Shopping */}
-              <Link 
-                to="/produtos" 
-                className="btn btn-ghost w-full"
-              >
+              <Link to="/produtos" className="btn btn-ghost" style={{ width: "100%" }}>
                 Continuar comprando
               </Link>
 
-              {/* Trust badges */}
-              <div className="mt-6 pt-6 border-t border-border space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[var(--color-success-bg)] flex items-center justify-center">
-                    <Truck size={18} className="text-[var(--color-success)]" />
+              {/* Badges */}
+              <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid var(--color-border)", display: "flex", flexDirection: "column", gap: "12px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: "rgba(34, 197, 94, 0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Truck size={18} style={{ color: "rgb(34, 197, 94)" }} />
                   </div>
                   <div>
-                    <p className="text-body-sm text-primary font-medium">Frete Grátis</p>
-                    <p className="text-caption text-tertiary">Para compras acima de R$ 199</p>
+                    <p style={{ fontSize: "14px", fontWeight: "var(--font-weight-medium)", color: "var(--color-text-primary)" }}>Frete Grátis</p>
+                    <p style={{ fontSize: "12px", color: "var(--color-text-tertiary)" }}>Para compras acima de R$ 199</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[var(--color-info-bg)] flex items-center justify-center">
-                    <ShieldCheck size={18} className="text-[var(--color-info)]" />
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: "rgba(59, 130, 246, 0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <ShieldCheck size={18} style={{ color: "rgb(59, 130, 246)" }} />
                   </div>
                   <div>
-                    <p className="text-body-sm text-primary font-medium">Compra Segura</p>
-                    <p className="text-caption text-tertiary">Seus dados estão protegidos</p>
+                    <p style={{ fontSize: "14px", fontWeight: "var(--font-weight-medium)", color: "var(--color-text-primary)" }}>Compra Segura</p>
+                    <p style={{ fontSize: "12px", color: "var(--color-text-tertiary)" }}>Seus dados estão protegidos</p>
                   </div>
                 </div>
               </div>

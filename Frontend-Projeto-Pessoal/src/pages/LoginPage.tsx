@@ -1,33 +1,18 @@
-﻿import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Lock, User, ArrowRight, Dumbbell, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "../auth/AuthContext";
 
-/* ═══════════════════════════════════════════════════════════════════════════════
- * LOGIN PAGE - Apple Style - FOCO CORRIGIDO
- * 
- * Features:
- * - Clean split layout  
- * - Minimal form with subtle animations
- * - Soft gradients and rounded corners
- * - INPUTS COM FOCO ESTÁVEL
- * ═══════════════════════════════════════════════════════════════════════════════
- */
 export function LoginPage() {
   const { user, loading, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // CORREÇÃO 1: Referencias para manter foco estável
+
   const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
-  // CORREÇÃO 2: Estados consolidados para evitar re-renders
-  const [formData, setFormData] = useState(() => ({
-    loginVal: "",
-    password: ""
-  }));
+  const [formData, setFormData] = useState(() => ({ loginVal: "", password: "" }));
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -35,230 +20,184 @@ export function LoginPage() {
   const fromRegister = (location.state as { fromRegister?: boolean } | null)?.fromRegister;
 
   useEffect(() => {
-    if (!loading && user) {
-      navigate("/empresas", { replace: true });
-    }
+    if (!loading && user) navigate("/empresas", { replace: true });
   }, [user, loading, navigate]);
 
-  // CORREÇÃO 3: Handlers memoizados para evitar re-renders
-  const handleInputChange = useCallback((field: 'loginVal' | 'password') => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: e.target.value
-    }));
+  const handleInputChange = useCallback((field: "loginVal" | "password") => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
   }, []);
 
-  const toggleShowPassword = useCallback(() => {
-    setShowPass(prev => !prev);
-  }, []);
+  const toggleShowPassword = useCallback(() => setShowPass((p) => !p), []);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
-    
     setError("");
     setSubmitting(true);
-
     const result = await login(formData.loginVal, formData.password);
-
-    if (!result.ok) {
-      setError(result.message);
-    }
+    if (!result.ok) setError(result.message);
     setSubmitting(false);
   }, [login, formData.loginVal, formData.password, submitting]);
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-secondary)] flex">
-      {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[var(--color-bg-primary)] relative overflow-hidden items-center justify-center">
-        <div className="relative z-10 px-12 xl:px-20 max-w-lg">
+    <div style={{ minHeight: "100vh", background: "var(--color-bg-secondary)", display: "flex" }}>
+      {/* Left - Branding */}
+      <div
+        style={{
+          display: "none",
+          width: "50%",
+          background: "var(--color-bg-primary)",
+          position: "relative",
+          overflow: "hidden",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        className="lg\:flex"
+      >
+        <div style={{ position: "relative", zIndex: 1, padding: "0 clamp(48px, 5vw, 80px)", maxWidth: "520px" }}>
           {/* Logo */}
-          <div className="flex items-center gap-3 mb-16">
-            <div className="w-12 h-12 rounded-2xl bg-[var(--color-accent)] flex items-center justify-center">
-              <Dumbbell size={24} className="text-white" />
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", marginBottom: "var(--space-16)" }}>
+            <div style={{ width: "48px", height: "48px", borderRadius: "var(--radius-lg)", background: "var(--color-accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Dumbbell size={24} color="#fff" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-[var(--color-text-primary)] tracking-tight">
+              <h1 style={{ fontSize: "20px", fontWeight: "var(--font-weight-semibold)", color: "var(--color-text-primary)", letterSpacing: "var(--tracking-tight)" }}>
                 AL-TACADÃO
               </h1>
-              <p className="text-[11px] text-[var(--color-text-tertiary)] tracking-wider uppercase">
+              <p style={{ fontSize: "11px", color: "var(--color-text-tertiary)", letterSpacing: "var(--tracking-wider)", textTransform: "uppercase" }}>
                 Suplementos Premium
               </p>
             </div>
           </div>
 
           {/* Headline */}
-          <h2 className="text-5xl xl:text-6xl font-semibold text-[var(--color-text-primary)] mb-6 leading-[1.1] tracking-tight">
-            Potencialize
-            <br />
-            <span className="text-[var(--color-accent)]">seus resultados</span>
+          <h2 style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "clamp(40px, 5vw, 64px)",
+            fontWeight: "var(--font-weight-semibold)",
+            color: "var(--color-text-primary)",
+            lineHeight: 1.1,
+            letterSpacing: "var(--tracking-tight)",
+            marginBottom: "var(--space-6)",
+          }}>
+            Potencialize<br />
+            <span style={{ color: "var(--color-accent)" }}>seus resultados</span>
           </h2>
-          <p className="text-[var(--color-text-secondary)] text-lg mb-12 leading-relaxed">
+          <p style={{ color: "var(--color-text-secondary)", fontSize: "18px", lineHeight: 1.6, marginBottom: "var(--space-12)" }}>
             A plataforma B2B líder em distribuição de suplementos esportivos de alta performance.
           </p>
 
           {/* Features */}
-          <div className="space-y-5">
-            {[
-              "Catálogo exclusivo de marcas premium",
-              "Gestão completa de pedidos",
-              "Preços especiais para distribuidores",
-            ].map((feature, i) => (
-              <div key={`feature-${i}`} className="flex items-center gap-4">
-                <div className="w-7 h-7 rounded-lg bg-[var(--color-accent-subtle)] flex items-center justify-center">
-                  <Check size={16} className="text-[var(--color-accent)]" />
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-5)" }}>
+            {["Catálogo exclusivo de marcas premium", "Gestão completa de pedidos", "Preços especiais para distribuidores"].map((f, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "var(--space-4)" }}>
+                <div style={{ width: "28px", height: "28px", borderRadius: "var(--radius-sm)", background: "var(--color-accent-subtle)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Check size={16} style={{ color: "var(--color-accent)" }} />
                 </div>
-                <span className="text-[15px] text-[var(--color-text-secondary)]">{feature}</span>
+                <span style={{ fontSize: "15px", color: "var(--color-text-secondary)" }}>{f}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Right Side - Form */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
+      {/* Right - Form */}
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "var(--space-6) var(--space-6) var(--space-12)" }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-          className="w-full max-w-md"
+          style={{ width: "100%", maxWidth: "420px" }}
         >
           {/* Mobile Logo */}
-          <div className="flex items-center justify-center gap-3 mb-10 lg:hidden">
-            <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)] flex items-center justify-center">
-              <Dumbbell size={20} className="text-white" />
+          <div className="lg\:hidden" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "var(--space-3)", marginBottom: "var(--space-10)" }}>
+            <div style={{ width: "40px", height: "40px", borderRadius: "var(--radius-md)", background: "var(--color-accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Dumbbell size={20} color="#fff" />
             </div>
-            <span className="text-xl font-semibold text-[var(--color-text-primary)]">AL-TACADÃO</span>
+            <span style={{ fontSize: "20px", fontWeight: "var(--font-weight-semibold)", color: "var(--color-text-primary)" }}>AL-TACADÃO</span>
           </div>
 
           <div className="auth-card">
-            <h2 className="text-2xl font-semibold text-[var(--color-text-primary)] mb-2 text-center">
+            <h2 style={{ fontSize: "var(--text-title-sm)", fontWeight: "var(--font-weight-semibold)", color: "var(--color-text-primary)", marginBottom: "var(--space-2)", textAlign: "center" }}>
               Bem-vindo de volta
             </h2>
-            <p className="text-[15px] text-[var(--color-text-tertiary)] mb-8 text-center">
+            <p style={{ fontSize: "15px", color: "var(--color-text-tertiary)", marginBottom: "var(--space-8)", textAlign: "center" }}>
               Entre na sua conta para continuar
             </p>
 
-            {/* Success Message */}
+            {/* Success */}
             {fromRegister && (
-              <motion.div
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-6 p-4 rounded-xl bg-[var(--color-success-bg)] flex items-center gap-3"
-              >
-                <div className="w-5 h-5 rounded-full bg-[var(--color-success)] flex items-center justify-center flex-shrink-0">
-                  <Check size={12} className="text-white" />
+              <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+                style={{ marginBottom: "var(--space-6)", padding: "var(--space-4)", borderRadius: "var(--radius-md)", background: "var(--color-success-bg)", display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
+                <div style={{ width: "20px", height: "20px", borderRadius: "var(--radius-full)", background: "var(--color-success)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Check size={12} color="#fff" />
                 </div>
-                <span className="text-[14px] text-[var(--color-success)]">
-                  Conta criada com sucesso! Faça login para continuar.
-                </span>
+                <span style={{ fontSize: "14px", color: "var(--color-success)" }}>Conta criada com sucesso! Faça login para continuar.</span>
               </motion.div>
             )}
 
-            {/* Error Message */}
+            {/* Error */}
             {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-6 p-4 rounded-xl bg-[var(--color-error-bg)] flex items-center gap-3"
-              >
-                <span className="w-2 h-2 rounded-full bg-[var(--color-error)] flex-shrink-0" />
-                <span className="text-[14px] text-[var(--color-error)]">{error}</span>
+              <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+                style={{ marginBottom: "var(--space-6)", padding: "var(--space-4)", borderRadius: "var(--radius-md)", background: "var(--color-error-bg)", display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
+                <span style={{ width: "8px", height: "8px", borderRadius: "var(--radius-full)", background: "var(--color-error)", flexShrink: 0 }} />
+                <span style={{ fontSize: "14px", color: "var(--color-error)" }}>{error}</span>
               </motion.div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-              {/* CORREÇÃO 4: Username com key estável */}
+            <form onSubmit={handleSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: "var(--space-5)" }}>
               <div className="input-group">
                 <label className="input-label">Usuário</label>
-                <div className="relative">
-                  <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-quaternary)]" />
-                  <input
-                    ref={usernameRef}
-                    type="text"
-                    className="input-field pl-12"
-                    placeholder="seu.usuario"
-                    value={formData.loginVal}
-                    onChange={handleInputChange('loginVal')}
-                    autoFocus
-                    autoComplete="username"
-                    required
-                  />
+                <div style={{ position: "relative" }}>
+                  <User size={18} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-quaternary)" }} />
+                  <input ref={usernameRef} type="text" className="input-field" style={{ paddingLeft: "44px" }}
+                    placeholder="seu.usuario" value={formData.loginVal} onChange={handleInputChange("loginVal")} autoFocus autoComplete="username" required />
                 </div>
               </div>
 
-              {/* CORREÇÃO 5: Password com key estável */}
               <div className="input-group">
                 <label className="input-label">Senha</label>
-                <div className="relative">
-                  <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-quaternary)]" />
-                  <input
-                    ref={passwordRef}
-                    type={showPass ? "text" : "password"}
-                    className="input-field pl-12 pr-12"
-                    placeholder="••••••••"
-                    value={formData.password}
-                    onChange={handleInputChange('password')}
-                    autoComplete="current-password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={toggleShowPassword}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-text-quaternary)] hover:text-[var(--color-text-secondary)] transition-colors"
-                    tabIndex={-1}
-                  >
+                <div style={{ position: "relative" }}>
+                  <Lock size={18} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-quaternary)" }} />
+                  <input ref={passwordRef} type={showPass ? "text" : "password"} className="input-field" style={{ paddingLeft: "44px", paddingRight: "44px" }}
+                    placeholder="••••••••" value={formData.password} onChange={handleInputChange("password")} autoComplete="current-password" required />
+                  <button type="button" onClick={toggleShowPassword} tabIndex={-1}
+                    style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-quaternary)", transition: "color var(--duration-fast)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                     {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
 
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={submitting || !formData.loginVal || !formData.password}
-                className="btn btn-primary w-full mt-6"
-              >
+              <button type="submit" disabled={submitting || !formData.loginVal || !formData.password} className="btn btn-primary w-full" style={{ marginTop: "var(--space-2)" }}>
                 {submitting ? (
-                  <span className="flex items-center gap-2">
-                    <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span className="spinner" style={{ width: "16px", height: "16px", borderWidth: "2px" }} />
                     Entrando...
                   </span>
                 ) : (
-                  <span className="flex items-center gap-2">
-                    Entrar
-                    <ArrowRight size={18} />
-                  </span>
+                  <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>Entrar <ArrowRight size={18} /></span>
                 )}
               </button>
             </form>
 
             {/* Divider */}
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[var(--color-divider)]" />
+            <div style={{ position: "relative", margin: "var(--space-8) 0" }}>
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center" }}>
+                <div style={{ width: "100%", height: "1px", background: "var(--color-divider)" }} />
               </div>
-              <div className="relative flex justify-center text-[13px]">
-                <span className="px-4 bg-[var(--color-bg-elevated)] text-[var(--color-text-quaternary)]">
-                  ou
-                </span>
+              <div style={{ position: "relative", display: "flex", justifyContent: "center" }}>
+                <span style={{ padding: "0 var(--space-4)", background: "var(--color-bg-elevated)", fontSize: "13px", color: "var(--color-text-quaternary)" }}>ou</span>
               </div>
             </div>
 
-            {/* Register Link */}
-            <p className="text-center text-[15px] text-[var(--color-text-secondary)]">
+            {/* Register */}
+            <p style={{ textAlign: "center", fontSize: "15px", color: "var(--color-text-secondary)" }}>
               Não tem uma conta?{" "}
-              <Link 
-                to="/cadastro" 
-                className="text-[var(--color-accent)] hover:underline font-medium"
-              >
-                Criar conta
-              </Link>
+              <Link to="/cadastro" style={{ color: "var(--color-accent)", fontWeight: "var(--font-weight-medium)" }}>Criar conta</Link>
             </p>
           </div>
 
-          {/* Footer */}
-          <p className="text-center text-[13px] text-[var(--color-text-quaternary)] mt-8">
+          <p style={{ textAlign: "center", fontSize: "13px", color: "var(--color-text-quaternary)", marginTop: "var(--space-8)" }}>
             © {new Date().getFullYear()} AL-TACADÃO. Todos os direitos reservados.
           </p>
         </motion.div>

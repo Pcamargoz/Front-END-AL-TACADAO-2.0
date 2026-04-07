@@ -63,7 +63,6 @@ export function RegisterPage() {
     }
   };
 
-  // Benefits list
   const benefits = [
     "Acesso a preços exclusivos B2B",
     "Catálogo completo de suplementos",
@@ -72,67 +71,42 @@ export function RegisterPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-surface flex">
+    <div style={{ minHeight: "100vh", display: "flex", background: "var(--color-bg-primary)" }}>
       {/* Left side - Benefits (hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-surface-secondary items-center justify-center p-16">
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-          className="max-w-md"
-        >
-          {/* Brand */}
-          <div className="mb-12">
-            <h2 className="text-display-sm text-primary mb-2">AL-TACADÃO</h2>
-            <p className="text-body text-secondary">
-              Plataforma B2B de suplementos esportivos
-            </p>
+      <div className="lg\:flex" style={{ display: "none", width: "50%", background: "var(--color-bg-secondary)", alignItems: "center", justifyContent: "center", padding: "var(--space-16)" }}>
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }} style={{ maxWidth: "440px" }}>
+          <div style={{ marginBottom: "var(--space-12)" }}>
+            <h2 className="text-display-sm" style={{ marginBottom: "var(--space-2)" }}>AL-TACADÃO</h2>
+            <p className="text-body" style={{ color: "var(--color-text-secondary)" }}>Plataforma B2B de suplementos esportivos</p>
           </div>
 
-          {/* Benefits */}
-          <div className="space-y-6">
-            <h3 className="text-title-md text-primary">
-              Por que criar uma conta?
-            </h3>
-            <ul className="space-y-4">
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
+            <h3 className="text-title-md">Por que criar uma conta?</h3>
+            <ul style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
               {benefits.map((benefit, index) => (
-                <motion.li
-                  key={benefit}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ 
-                    duration: 0.5, 
-                    delay: 0.2 + index * 0.1,
-                    ease: [0.25, 0.1, 0.25, 1] 
-                  }}
-                  className="flex items-start gap-3"
-                >
-                  <CheckCircle2 size={20} className="text-accent shrink-0 mt-0.5" />
-                  <span className="text-body text-secondary">{benefit}</span>
+                <motion.li key={benefit} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 + index * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+                  style={{ display: "flex", alignItems: "flex-start", gap: "var(--space-3)" }}>
+                  <CheckCircle2 size={20} style={{ color: "var(--color-accent)", flexShrink: 0, marginTop: "2px" }} />
+                  <span className="text-body" style={{ color: "var(--color-text-secondary)" }}>{benefit}</span>
                 </motion.li>
               ))}
             </ul>
           </div>
 
-          {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-            className="mt-16 pt-8 border-t border-border"
-          >
-            <div className="grid grid-cols-3 gap-8">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+            style={{ marginTop: "var(--space-16)", paddingTop: "var(--space-8)", borderTop: "1px solid var(--color-border)" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "var(--space-8)" }}>
               <div>
-                <p className="text-display-xs text-primary">500+</p>
-                <p className="text-caption text-tertiary">Produtos</p>
+                <p className="text-display-xs" style={{ color: "var(--color-text-primary)" }}>500+</p>
+                <p className="text-caption" style={{ color: "var(--color-text-tertiary)" }}>Produtos</p>
               </div>
               <div>
-                <p className="text-display-xs text-primary">1.2k</p>
-                <p className="text-caption text-tertiary">Empresas</p>
+                <p className="text-display-xs" style={{ color: "var(--color-text-primary)" }}>1.2k</p>
+                <p className="text-caption" style={{ color: "var(--color-text-tertiary)" }}>Empresas</p>
               </div>
               <div>
-                <p className="text-display-xs text-primary">98%</p>
-                <p className="text-caption text-tertiary">Satisfação</p>
+                <p className="text-display-xs" style={{ color: "var(--color-text-primary)" }}>98%</p>
+                <p className="text-caption" style={{ color: "var(--color-text-tertiary)" }}>Satisfação</p>
               </div>
             </div>
           </motion.div>
@@ -140,184 +114,102 @@ export function RegisterPage() {
       </div>
 
       {/* Right side - Form */}
-      <div className="flex-1 flex items-center justify-center p-8 lg:p-16">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-          className="w-full max-w-md"
-        >
-          {/* Header */}
-          <div className="mb-10">
-            <Link 
-              to="/login" 
-              className="inline-flex items-center gap-2 text-body-sm text-secondary hover:text-primary transition-colors mb-8"
-            >
-              <ArrowLeft size={16} />
-              Voltar para login
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "clamp(32px, 5vw, 64px)" }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }} style={{ width: "100%", maxWidth: "440px" }}>
+          
+          <div style={{ marginBottom: "var(--space-10)" }}>
+            <Link to="/login" style={{ display: "inline-flex", alignItems: "center", gap: "var(--space-2)", fontSize: "14px", color: "var(--color-text-secondary)", marginBottom: "var(--space-8)", transition: "color var(--duration-fast)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-text-primary)")} onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-secondary)")}>
+              <ArrowLeft size={16} /> Voltar para login
             </Link>
-            <h1 className="text-display-sm text-primary mb-2">
-              Criar conta
-            </h1>
-            <p className="text-body text-secondary">
-              Preencha os dados abaixo para solicitar seu cadastro
-            </p>
+            <h1 className="text-display-sm" style={{ marginBottom: "var(--space-2)" }}>Criar conta</h1>
+            <p className="text-body" style={{ color: "var(--color-text-secondary)" }}>Preencha os dados abaixo para solicitar seu cadastro</p>
           </div>
 
-          {/* Error Alert */}
           {globalError && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30"
-            >
-              <p className="text-body-sm text-red-600 dark:text-red-400">{globalError}</p>
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
+              style={{ marginBottom: "var(--space-6)", padding: "var(--space-4)", borderRadius: "var(--radius-lg)", background: "var(--color-error-bg)", border: "1px solid var(--color-error)" }}>
+              <p style={{ fontSize: "14px", color: "var(--color-error)" }}>{globalError}</p>
             </motion.div>
           )}
 
-          {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            {/* Nome */}
             <div className="input-group">
               <label className="input-label">Nome completo</label>
-              <div className="relative">
-                <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary" />
-                <input
-                  {...register("nome")}
-                  className={`input-field pl-11 ${errors.nome ? "error" : ""}`}
-                  placeholder="Seu nome completo"
-                  autoComplete="name"
-                />
+              <div style={{ position: "relative" }}>
+                <User size={18} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-tertiary)" }} />
+                <input {...register("nome")} className={`input-field pl-11 ${errors.nome ? "error" : ""}`} placeholder="Seu nome completo" autoComplete="name" style={{ paddingLeft: "42px" }} />
               </div>
-              {errors.nome && (
-                <span className="input-error">{errors.nome.message}</span>
-              )}
+              {errors.nome && <span style={{ fontSize: "12px", color: "var(--color-error)", marginTop: "4px", display: "block" }}>{errors.nome.message}</span>}
             </div>
 
-            {/* Login e Email */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-4)" }}>
               <div className="input-group">
                 <label className="input-label">Usuário</label>
-                <div className="relative">
-                  <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary" />
-                  <input
-                    {...register("login")}
-                    className={`input-field pl-11 ${errors.login ? "error" : ""}`}
-                    placeholder="seu.usuario"
-                    autoComplete="username"
-                  />
+                <div style={{ position: "relative" }}>
+                  <User size={18} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-tertiary)" }} />
+                  <input {...register("login")} className={`input-field pl-11 ${errors.login ? "error" : ""}`} placeholder="seu.usuario" autoComplete="username" style={{ paddingLeft: "42px" }} />
                 </div>
-                {errors.login && (
-                  <span className="input-error">{errors.login.message}</span>
-                )}
+                {errors.login && <span style={{ fontSize: "12px", color: "var(--color-error)", marginTop: "4px", display: "block" }}>{errors.login.message}</span>}
               </div>
 
               <div className="input-group">
                 <label className="input-label">E-mail</label>
-                <div className="relative">
-                  <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary" />
-                  <input
-                    {...register("email")}
-                    type="email"
-                    className={`input-field pl-11 ${errors.email ? "error" : ""}`}
-                    placeholder="email@empresa.com"
-                    autoComplete="email"
-                  />
+                <div style={{ position: "relative" }}>
+                  <Mail size={18} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-tertiary)" }} />
+                  <input {...register("email")} type="email" className={`input-field pl-11 ${errors.email ? "error" : ""}`} placeholder="email@empresa.com" autoComplete="email" style={{ paddingLeft: "42px" }} />
                 </div>
-                {errors.email && (
-                  <span className="input-error">{errors.email.message}</span>
-                )}
+                {errors.email && <span style={{ fontSize: "12px", color: "var(--color-error)", marginTop: "4px", display: "block" }}>{errors.email.message}</span>}
               </div>
             </div>
 
-            {/* Senhas */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-4)" }}>
               <div className="input-group">
                 <label className="input-label">Senha</label>
-                <div className="relative">
-                  <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary" />
-                  <input
-                    {...register("senha")}
-                    type={showPass ? "text" : "password"}
-                    className={`input-field pl-11 pr-11 ${errors.senha ? "error" : ""}`}
-                    placeholder="Min. 6 caracteres"
-                    autoComplete="new-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPass((s) => !s)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-tertiary hover:text-secondary transition-colors"
-                  >
+                <div style={{ position: "relative" }}>
+                  <Lock size={18} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-tertiary)" }} />
+                  <input {...register("senha")} type={showPass ? "text" : "password"} className={`input-field pl-11 pr-11 ${errors.senha ? "error" : ""}`} placeholder="Min. 6 caracteres" autoComplete="new-password" style={{ paddingLeft: "42px", paddingRight: "42px" }} />
+                  <button type="button" onClick={() => setShowPass((s) => !s)} style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-tertiary)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                     {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {errors.senha && (
-                  <span className="input-error">{errors.senha.message}</span>
-                )}
+                {errors.senha && <span style={{ fontSize: "12px", color: "var(--color-error)", marginTop: "4px", display: "block" }}>{errors.senha.message}</span>}
               </div>
 
               <div className="input-group">
                 <label className="input-label">Confirmar senha</label>
-                <div className="relative">
-                  <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary" />
-                  <input
-                    {...register("confirmarSenha")}
-                    type={showPass ? "text" : "password"}
-                    className={`input-field pl-11 ${errors.confirmarSenha ? "error" : ""}`}
-                    placeholder="Repita a senha"
-                    autoComplete="new-password"
-                  />
+                <div style={{ position: "relative" }}>
+                  <Lock size={18} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-tertiary)" }} />
+                  <input {...register("confirmarSenha")} type={showPass ? "text" : "password"} className={`input-field pl-11 ${errors.confirmarSenha ? "error" : ""}`} placeholder="Repita a senha" autoComplete="new-password" style={{ paddingLeft: "42px" }} />
                 </div>
-                {errors.confirmarSenha && (
-                  <span className="input-error">{errors.confirmarSenha.message}</span>
-                )}
+                {errors.confirmarSenha && <span style={{ fontSize: "12px", color: "var(--color-error)", marginTop: "4px", display: "block" }}>{errors.confirmarSenha.message}</span>}
               </div>
             </div>
 
-            {/* Submit */}
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={submitting}
-                className="btn btn-primary w-full"
-              >
+            <div style={{ paddingTop: "var(--space-2)" }}>
+              <button type="submit" disabled={submitting} className="btn btn-primary w-full">
                 {submitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                    Criando conta...
+                  <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                    <span className="spinner" style={{ width: "16px", height: "16px", borderWidth: "2px" }} /> Criando conta...
                   </span>
-                ) : (
-                  "Criar conta"
-                )}
+                ) : "Criar conta"}
               </button>
             </div>
           </form>
 
-          {/* Footer */}
-          <div className="mt-8 pt-8 border-t border-border">
-            <p className="text-center text-body-sm text-secondary">
-              Já tem uma conta?{" "}
-              <Link 
-                to="/login" 
-                className="text-accent hover:text-accent-hover transition-colors font-medium"
-              >
-                Entrar
-              </Link>
+          <div style={{ marginTop: "var(--space-8)", paddingTop: "var(--space-8)", borderTop: "1px solid var(--color-border)" }}>
+            <p style={{ textAlign: "center", fontSize: "14px", color: "var(--color-text-secondary)" }}>
+              Já tem uma conta? <Link to="/login" style={{ color: "var(--color-accent)", fontWeight: "var(--font-weight-medium)" }}>Entrar</Link>
             </p>
           </div>
 
-          {/* Terms */}
-          <p className="text-center text-caption text-tertiary mt-6">
+          <p style={{ textAlign: "center", fontSize: "12px", color: "var(--color-text-tertiary)", marginTop: "var(--space-6)" }}>
             Ao criar uma conta, você concorda com nossos{" "}
-            <button className="text-secondary hover:text-primary transition-colors">
-              Termos de Uso
-            </button>
+            <button style={{ color: "var(--color-text-secondary)", transition: "color var(--duration-fast)" }} onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-text-primary)")} onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-secondary)")}>Termos de Uso</button>
             {" "}e{" "}
-            <button className="text-secondary hover:text-primary transition-colors">
-              Política de Privacidade
-            </button>
+            <button style={{ color: "var(--color-text-secondary)", transition: "color var(--duration-fast)" }} onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-text-primary)")} onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-secondary)")}>Política de Privacidade</button>
           </p>
+
         </motion.div>
       </div>
     </div>
