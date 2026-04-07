@@ -1,3 +1,8 @@
+// ══════════════════════════════════════════════════════════════════════════════
+// API BASE URL - URL do Gateway
+// ══════════════════════════════════════════════════════════════════════════════
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 const h = { Accept: "application/json" };
 
 // Helper para pegar o token armazenado no localStorage
@@ -16,7 +21,8 @@ function fornecedorHeaders(): Record<string, string> {
 
 // Interceptor global para 401 - limpa token e redireciona
 async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
-  const res = await fetch(url, {
+  const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+  const res = await fetch(fullUrl, {
     ...options,
     headers: { ...authHeaders(), ...fornecedorHeaders(), ...options.headers },
   });
@@ -61,7 +67,7 @@ export type LoginResponse = {
 
 // POST /api/auth/login
 export async function apiLogin(login: string, password: string): Promise<Response> {
-  return fetch("/api/auth/login", {
+  return fetch(`${API_BASE_URL}/api/auth/login`, {
     method: "POST",
     headers: { ...h, "Content-Type": "application/json" },
     body: JSON.stringify({ login, senha: password }),
@@ -72,7 +78,7 @@ export async function apiLogin(login: string, password: string): Promise<Respons
 export async function apiMe(): Promise<MeResponse | null> {
   const token = localStorage.getItem("jwt_token");
   if (!token) return null;
-  const res = await fetch("/api/auth/me", { method: "GET", headers: authHeaders() });
+  const res = await fetch(`${API_BASE_URL}/api/auth/me`, { method: "GET", headers: authHeaders() });
   if (res.status === 401) {
     localStorage.removeItem("jwt_token");
     return null;
@@ -114,7 +120,7 @@ export type ErroResposta = { status: number; message: string; erros?: ErroCampo[
 
 // POST /cadastro/solicitar - Auto-registro de usuario (público)
 export async function apiSolicitarCadastro(payload: SolicitarCadastroPayload): Promise<Response> {
-  return fetch("/cadastro/solicitar", {
+  return fetch(`${API_BASE_URL}/cadastro/solicitar`, {
     method: "POST",
     headers: { ...h, "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -386,7 +392,7 @@ export async function apiListUsuariosEmpresa(fornecedorId: string): Promise<Forn
 // POST /cadastro/solicitar + POST /fornecedor/{id}/usuarios - criar usuário e associar
 export async function apiCriarUsuarioNaEmpresa(fornecedorId: string, payload: CriarUsuarioEmpresaPayload): Promise<Response> {
   // 1. Criar o usuário no MS-3
-  const regRes = await fetch("/cadastro/solicitar", {
+  const regRes = await fetch(`${API_BASE_URL}/cadastro/solicitar`, {
     method: "POST",
     headers: { ...authHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify({
