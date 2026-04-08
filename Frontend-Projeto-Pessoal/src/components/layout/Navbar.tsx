@@ -4,6 +4,7 @@ import { Search, ShoppingBag, User, Menu, X, LogOut, Building2 } from "lucide-re
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../auth/AuthContext";
 import { useCart } from "../../hooks/useCart";
+import { ThemeToggle } from "../ui/ThemeToggle";
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -40,12 +41,12 @@ export function Navbar() {
       <header className="navbar" role="banner">
         <div style={{ display: "flex", alignItems: "center", gap: "var(--space-6)", flex: 1 }}>
           {/* Logo */}
-          <Link to="/" style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", flexShrink: 0 }} aria-label="AL-TACADÃO - Página inicial">
-            <div style={{ width: "32px", height: "32px", borderRadius: "var(--radius-sm)", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--color-accent)" }}>
-              <span style={{ fontSize: "13px", fontWeight: "var(--font-weight-semibold)", color: "#fff", letterSpacing: "var(--tracking-tight)" }}>AT</span>
+          <Link to="/" className="tactile" style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", flexShrink: 0 }} aria-label="AL TACADÃO — Página inicial">
+            <div style={{ width: "30px", height: "30px", borderRadius: "9px", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, var(--color-accent), var(--color-accent-hover))", boxShadow: "0 4px 14px -2px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.25)" }}>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#fff", letterSpacing: "-0.02em" }}>AT</span>
             </div>
-            <span className="hidden sm\:inline" style={{ fontSize: "17px", fontWeight: "var(--font-weight-semibold)", color: "var(--color-text-primary)", letterSpacing: "var(--tracking-tight)" }}>
-              AL-TACADÃO
+            <span className="hidden sm\:inline" style={{ fontSize: "17px", fontWeight: 600, color: "var(--color-text)", letterSpacing: "-0.02em", fontFamily: "var(--font-display)" }}>
+              AL <span style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontWeight: 400 }}>tacadão</span>
             </span>
           </Link>
 
@@ -74,6 +75,9 @@ export function Navbar() {
           <button onClick={() => setSearchOpen(!searchOpen)} className="lg\:hidden btn btn-ghost btn-icon" aria-label="Buscar">
             <Search size={20} />
           </button>
+
+          {/* Theme toggle */}
+          <ThemeToggle />
 
           {/* Cart */}
           <Link to="/carrinho" className="btn btn-ghost btn-icon" style={{ position: "relative", minWidth: "44px", minHeight: "44px" }} aria-label="Carrinho">

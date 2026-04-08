@@ -428,3 +428,171 @@ export async function apiRemoveUsuarioEmpresa(fornecedorId: string, usuarioId: s
     method: "DELETE",
   });
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MS-4 — CARRINHO + CARTÃO
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Carrinho ──────────────────────────────────────────────────────────────
+export type CupomCode =
+  | "EMPORIOJJ"
+  | "NAMORACOMIGO"
+  | "BLACKFRIDAY"
+  | "PRIMEIRACOMPRA"
+  | "FRETEGRATIS";
+
+export type CarrinhoItemRemote = {
+  id: string;
+  produto: string;
+  usuario: string;
+  cupom?: CupomCode | null;
+  fornecedorId: string;
+  dataCadastro?: string;
+  dataAtualizacao?: string;
+};
+
+export type CarrinhoCreatePayload = {
+  produto: string;
+  usuario: string;
+  fornecedorId: string;
+  cupom?: CupomCode | null;
+};
+
+export type CarrinhoUpdatePayload = {
+  cupom?: CupomCode | null;
+};
+
+export type CarrinhoResumo = {
+  usuario: string;
+  totalItens: number;
+  itensComCupom: number;
+  totalFornecedores: number;
+  ultimaAtualizacao?: string;
+};
+
+// POST /carrinho — adicionar item
+export async function apiCarrinhoAdicionar(payload: CarrinhoCreatePayload): Promise<CarrinhoItemRemote> {
+  const res = await fetchWithAuth("/carrinho", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Erro ${res.status} ao adicionar item ao carrinho`);
+  return res.json();
+}
+
+// GET /carrinho/usuario/{usuarioId} — itens do usuário
+export async function apiCarrinhoListarUsuario(usuarioId: string): Promise<CarrinhoItemRemote[]> {
+  const res = await fetchWithAuth(`/carrinho/usuario/${usuarioId}`);
+  if (!res.ok) throw new Error(`Erro ${res.status} ao buscar carrinho`);
+  return res.json();
+}
+
+// GET /carrinho/usuario/{usuarioId}/resumo
+export async function apiCarrinhoResumo(usuarioId: string): Promise<CarrinhoResumo> {
+  const res = await fetchWithAuth(`/carrinho/usuario/${usuarioId}/resumo`);
+  if (!res.ok) throw new Error(`Erro ${res.status} ao buscar resumo`);
+  return res.json();
+}
+
+// PUT /carrinho/{id} — atualizar cupom
+export async function apiCarrinhoAtualizar(id: string, payload: CarrinhoUpdatePayload): Promise<CarrinhoItemRemote> {
+  const res = await fetchWithAuth(`/carrinho/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Erro ${res.status} ao atualizar item do carrinho`);
+  return res.json();
+}
+
+// DELETE /carrinho/{id} — remover item
+export async function apiCarrinhoRemover(id: string): Promise<void> {
+  const res = await fetchWithAuth(`/carrinho/${id}`, { method: "DELETE" });
+  if (!res.ok && res.status !== 204) {
+    throw new Error(`Erro ${res.status} ao remover item do carrinho`);
+  }
+}
+
+// DELETE /carrinho/usuario/{usuarioId} — limpar carrinho
+export async function apiCarrinhoLimpar(usuarioId: string): Promise<void> {
+  const res = await fetchWithAuth(`/carrinho/usuario/${usuarioId}`, { method: "DELETE" });
+  if (!res.ok && res.status !== 204) {
+    throw new Error(`Erro ${res.status} ao limpar carrinho`);
+  }
+}
+
+// POST /carrinho/validar — validar adição sem persistir
+export async function apiCarrinhoValidar(payload: CarrinhoCreatePayload): Promise<{ valido: boolean; mensagem?: string }> {
+  const res = await fetchWithAuth("/carrinho/validar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Erro ${res.status} ao validar item`);
+  return res.json();
+}
+
+// ── Cartão ────────────────────────────────────────────────────────────────
+export type Bandeira = "VISA" | "MASTERCARD" | "ELO" | "AMEX" | "HIPERCARD";
+
+export type Cartao = {
+  id: string;
+  nomeTitular: string;
+  numeroCartao: string;
+  validade: string;
+  bandeira: Bandeira;
+  dataCadastro?: string;
+  dataAtualizacao?: string;
+};
+
+export type CartaoListItem = {
+  id: string;
+  nomeTitular: string;
+  numeroCartaoMascarado: string;
+  validade: string;
+  bandeira: Bandeira;
+  dataCadastro?: string;
+};
+
+export type CartaoCreatePayload = {
+  nomeTitular: string;
+  numeroCartao: string;
+  validade: string; // MM/AA
+  bandeira: Bandeira;
+};
+
+// POST /cartao — criar cartão fictício
+export async function apiCartaoCriar(payload: CartaoCreatePayload): Promise<Cartao> {
+  const res = await fetchWithAuth("/cartao", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Erro ${res.status} ao criar cartão`);
+  return res.json();
+}
+
+// GET /cartao — listar todos
+export async function apiCartaoListar(): Promise<CartaoListItem[]> {
+  const res = await fetchWithAuth("/cartao");
+  if (!res.ok) throw new Error(`Erro ${res.status} ao listar cartões`);
+  return res.json();
+}
+
+// POST /cartao/validar — validar antes de salvar
+export async function apiCartaoValidar(payload: CartaoCreatePayload): Promise<{ valido: boolean; mensagem?: string }> {
+  const res = await fetchWithAuth("/cartao/validar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Erro ${res.status} ao validar cartão`);
+  return res.json();
+}
+
+// DELETE /cartao/{id}
+export async function apiCartaoRemover(id: string): Promise<void> {
+  const res = await fetchWithAuth(`/cartao/${id}`, { method: "DELETE" });
+  if (!res.ok && res.status !== 204) throw new Error(`Erro ${res.status} ao remover cartão`);
+}
