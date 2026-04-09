@@ -13,6 +13,7 @@ import { HomePage } from "./pages/HomePage";
 import { ProductsPage } from "./pages/ProductsPage";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
 import { CartPage } from "./pages/CartPage";
+import { CheckoutPage } from "./pages/CheckoutPage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 
@@ -44,6 +45,13 @@ export default function App() {
               <Route path="/produtos" element={<ProductsPage />} />
               <Route path="/produtos/:id" element={<ProductDetailPage />} />
               <Route path="/carrinho" element={<CartPage />} />
+            </Route>
+
+            {/* ===== Checkout (JWT obrigatório) ===== */}
+            <Route element={<ProtectedRoute />}>
+              <Route element={<StoreLayout />}>
+                <Route path="/checkout" element={<CheckoutPage />} />
+              </Route>
             </Route>
 
             {/* ===== JWT obrigatório: Lista e cadastro de empresas ===== */}

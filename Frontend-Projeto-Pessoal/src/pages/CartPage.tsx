@@ -130,9 +130,9 @@ export function CartPage() {
                 </div>
               </div>
 
-              <button className="btn btn-primary" style={{ width: "100%", marginBottom: "12px" }}>
+              <Link to="/checkout" className="btn btn-primary" style={{ width: "100%", marginBottom: "12px" }}>
                 Finalizar Pedido <ArrowRight size={18} />
-              </button>
+              </Link>
 
               <Link to="/produtos" className="btn btn-ghost" style={{ width: "100%" }}>
                 Continuar comprando
