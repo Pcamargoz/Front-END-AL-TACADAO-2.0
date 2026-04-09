@@ -19,18 +19,36 @@ function fornecedorHeaders(): Record<string, string> {
   return {};
 }
 
-// Interceptor global para 401 - limpa token e redireciona
+// Rotas públicas onde NUNCA devemos forçar redirect em 401
+const PUBLIC_PATHS = ["/", "/produtos", "/login", "/cadastro", "/register"];
+
+function isOnPublicPage(): boolean {
+  const path = window.location.pathname;
+  if (PUBLIC_PATHS.includes(path)) return true;
+  // /produtos/:id também é público
+  if (path.startsWith("/produtos/")) return true;
+  return false;
+}
+
+// Interceptor global para 401 - limpa token e redireciona apenas quando
+// havia sessão ativa (token) E o usuário está em uma rota que exige auth.
 async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
   const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+  const hadToken = !!localStorage.getItem("jwt_token");
   const res = await fetch(fullUrl, {
     ...options,
     headers: { ...authHeaders(), ...fornecedorHeaders(), ...options.headers },
   });
   if (res.status === 401) {
-    localStorage.removeItem("jwt_token");
-    sessionStorage.removeItem("fornecedor_token");
-    sessionStorage.removeItem("fornecedor_data");
-    window.location.href = "/login";
+    // Só derruba a sessão e redireciona se já havia token E a página atual
+    // exige autenticação. Em páginas públicas (home, listagem), deixamos
+    // o componente tratar o erro sem jogar o visitante na tela de login.
+    if (hadToken && !isOnPublicPage()) {
+      localStorage.removeItem("jwt_token");
+      sessionStorage.removeItem("fornecedor_token");
+      sessionStorage.removeItem("fornecedor_data");
+      window.location.href = "/login";
+    }
   }
   return res;
 }
